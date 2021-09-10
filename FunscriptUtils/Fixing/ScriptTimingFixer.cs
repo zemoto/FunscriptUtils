@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using FunscriptUtils.Utils;
+using ZemotoCommon.Utils;
 
 namespace FunscriptUtils.Fixing
 {
@@ -15,7 +16,7 @@ namespace FunscriptUtils.Fixing
 
       public void AdjustActionsToMatchBeat()
       {
-         Debug.Assert( ( _script.State & FunscriptState.RoundsAndBeatsAnalyzed ) != 0 );
+         Debug.Assert( _script.Rounds.Count > 0 );
 
          int timesFixed = 0;
          foreach ( var round in _script.Rounds )
@@ -48,7 +49,7 @@ namespace FunscriptUtils.Fixing
 
          var beatTimes = GetBeatTimes( fullBeatTime );
          var beatTime = beatTimes.FirstOrDefault( x => gap.RelativelyEqual( x ) );
-         if ( Math.Abs( beatTime ) < double.Epsilon )
+         if ( beatTime.IsZero() )
          {
             return false;
          }

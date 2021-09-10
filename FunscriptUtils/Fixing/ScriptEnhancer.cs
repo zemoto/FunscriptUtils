@@ -187,12 +187,11 @@ namespace FunscriptUtils.Fixing
             var next = script.Actions[i + 1];
 
             var variedSpeedLimit = SpeedLimit + GetRandomVariance( false );
-            var gap = ( next.Time - current.Time) / 1000.0;
-            var speed = Math.Abs( next.Position - current.Position ) / gap;
 
-            if ( speed > variedSpeedLimit )
+            if ( current.GetSpeedToAction( next ) > variedSpeedLimit )
             {
-               next.Position = (int)( SpeedLimit * gap );
+               var gapInSeconds = ( next.Time - current.Time ) / 1000.0;
+               next.Position = (int)( SpeedLimit * gapInSeconds );
             }
          }
 

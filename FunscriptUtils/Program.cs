@@ -42,8 +42,8 @@ namespace FunscriptUtils
          if ( fixScript )
          {
             var createHardMode = args[0].Contains( 'H', StringComparison.InvariantCultureIgnoreCase );
-            var scriptFixer = new FapHeroFixer( filePath, createHardMode, false );
-            scriptFixer.FixFunscript();
+            var scriptFixer = new FapHeroFixer( filePath, false );
+            scriptFixer.CreateFixedScripts( createHardMode );
          }
          else if ( generateScript )
          {
@@ -53,14 +53,17 @@ namespace FunscriptUtils
          else if ( cleanScript )
          {
             var funscript = FunscriptFactory.Load( filePath );
-            new ScriptCleaner( funscript ).Clean( true );
+
+            var preparer = new ScriptPreparer( funscript );
+            preparer.RemoveMiddleAndHoldActions();
+            preparer.MaxOutActionPositions( true );
 
             funscript.Save( filePath, "cleaned" );
          }
          else if ( maxScript )
          {
             var funscript = FunscriptFactory.Load( filePath );
-            new ScriptCleaner( funscript ).MaxOutActionPositions( true );
+            new ScriptPreparer( funscript ).MaxOutActionPositions( true );
 
             funscript.Save( filePath, "maxed" );
          }

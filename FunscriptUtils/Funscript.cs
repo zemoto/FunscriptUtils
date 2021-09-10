@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,68 +50,6 @@ namespace FunscriptUtils
 
       [JsonIgnore]
       public List<FapHeroRound> Rounds { get; }
-
-      [JsonIgnore]
-      public FunscriptState State { get; set; } = FunscriptState.None;
-   }
-
-   [Flags]
-   internal enum FunscriptState
-   {
-      None = 0,
-      RelativePositionsCalculated = 1,
-      RoundsAndBeatsAnalyzed = 2
-   }
-
-   internal enum ActionRelativePosition
-   {
-      Top,
-      Middle,
-      Hold,
-      Bottom
-   }
-
-   internal sealed class FunscriptAction
-   {
-      public FunscriptAction() { }
-
-      public FunscriptAction( FunscriptAction other )
-      {
-         Position = other.Position;
-         Time = other.Time;
-         DesiredGap = other.DesiredGap;
-         DesiredGapMaster = other.DesiredGapMaster;
-         LastActionBeforeBreak = other.LastActionBeforeBreak;
-         RelativePosition = other.RelativePosition;
-      }
-
-      private int _position;
-      [JsonProperty( PropertyName = "pos" )]
-      public int Position
-      {
-         get => _position;
-         set => _position = Math.Max( Math.Min( value, 100 ), 0 );
-      }
-
-      [JsonProperty( PropertyName = "at" )]
-      public long Time { get; set; }
-
-      private long _desiredGap;
-      [JsonIgnore]
-      public long DesiredGap
-      {
-         get => LastActionBeforeBreak ? -1 : DesiredGapMaster?.DesiredGap ?? _desiredGap;
-         set => _desiredGap = value;
-      }
-
-      [JsonIgnore]
-      public FunscriptAction DesiredGapMaster { get; set; }
-
-      [JsonIgnore]
-      public bool LastActionBeforeBreak { get; set; }
-
-      [JsonIgnore]
-      public ActionRelativePosition RelativePosition { get; set; }
    }
 
    internal sealed class FapHeroRound

@@ -3,21 +3,27 @@ using FunscriptUtils.Utils;
 
 namespace FunscriptUtils.Fixing
 {
-   internal sealed class ScriptAnalyzer
+   internal sealed class ScriptPreparer
    {
       private const long MinMSForRoundBreak = 5000;
       private const long MinActionsPerRound = 10;
 
       private readonly Funscript _script;
 
-      public ScriptAnalyzer( Funscript script ) => _script = script;
+      private bool _relativePositionsCalculated;
 
-      public void Analyze()
+      public ScriptPreparer( Funscript script ) => _script = script;
+
+      public void Prepare()
       {
+         _script.Range = 100;
+
+         CalculateRelativePositions();
+         RemoveMiddleAndHoldActions();
+         MaxOutActionPositions( false );
          CalculateRounds();
          CalculateBeats();
          CalculateDesiredGaps();
-         _script.State |= FunscriptState.RoundsAndBeatsAnalyzed;
 
          for ( int i = 0; i < _script.Rounds.Count; i++ )
          {
@@ -30,6 +36,106 @@ namespace FunscriptUtils.Fixing
          }
 
          ConsoleWriter.Commit();
+      }
+
+      private void CalculateRelativePositions()
+      {
+         var actions = _script.Actions;
+         for ( int i = 0; i < actions.Count; i++ )
+         {
+            FunscriptAction previous = i != 0 ? actions[i - 1] : null;
+            FunscriptAction current = actions[i];
+            FunscriptAction next = i != actions.Count - 1 ? actions[i + 1] : null;
+            current.RelativePosition = DetermineRelativePosition( previous, current, next );
+         }
+
+         _relativePositionsCalculated = true;
+      }
+
+      private static ActionRelativePosition DetermineRelativePosition( FunscriptAction previous, FunscriptAction current, FunscriptAction next )
+      {
+         if ( next is null )
+         {
+            return previous.Position == current.Position
+                ? ActionRelativePosition.Hold
+                : previous.Position < current.Position ? ActionRelativePosition.Top : ActionRelativePosition.Bottom;
+         }
+
+         if ( previous is null )
+         {
+            return current.Position <= next.Position ? ActionRelativePosition.Bottom : ActionRelativePosition.Top;
+         }
+
+         if ( previous.Position == current.Position )
+         {
+            return ActionRelativePosition.Hold;
+         }
+
+         if ( current.Position == next.Position )
+         {
+            return previous.Position < current.Position ? ActionRelativePosition.Top : ActionRelativePosition.Bottom;
+         }
+
+         if ( ( previous.Position < current.Position && current.Position < next.Position ) ||
+              ( previous.Position > current.Position && current.Position > next.Position ) )
+         {
+            return ActionRelativePosition.Middle;
+         }
+
+         return previous.Position < current.Position && current.Position > next.Position
+             ? ActionRelativePosition.Top
+             : ActionRelativePosition.Bottom;
+      }
+
+      public void RemoveMiddleAndHoldActions()
+      {
+         if ( !_relativePositionsCalculated )
+         {
+            CalculateRelativePositions();
+         }
+
+         var oldCount = _script.Actions.Count;
+         _script.Actions.RemoveAll( x => x.RelativePosition is ActionRelativePosition.Middle or ActionRelativePosition.Hold );
+
+         var actionsRemoved = oldCount - _script.Actions.Count;
+         ConsoleWriter.WriteReport( "Removing middle and hold actions", actionsRemoved );
+      }
+
+      public void MaxOutActionPositions( bool forceMax )
+      {
+         if ( !_relativePositionsCalculated )
+         {
+            CalculateRelativePositions();
+         }
+
+         var actionsMaxed = 0;
+         for ( int i = 0; i < _script.Actions.Count; i++ )
+         {
+            var action = _script.Actions[i];
+            switch ( action.RelativePosition )
+            {
+               case ActionRelativePosition.Top when forceMax || action.Position > 95:
+               {
+                  action.Position = 100;
+                  actionsMaxed++;
+                  break;
+               }
+               case ActionRelativePosition.Bottom when forceMax || action.Position < 5:
+               {
+                  action.Position = 0;
+                  actionsMaxed++;
+                  break;
+               }
+               case ActionRelativePosition.Hold when i > 0:
+               {
+                  var prev = _script.Actions[i - 1];
+                  action.Position = prev.Position;
+                  break;
+               }
+            }
+         }
+
+         ConsoleWriter.WriteReport( "Maxing out actions", actionsMaxed );
       }
 
       private void CalculateDesiredGaps()
