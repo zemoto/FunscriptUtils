@@ -12,10 +12,9 @@
     <PackageReference Include="Emgu.CV.Bitmap" Version="4.5.2.4673" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.2.4673" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="5.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ZemotoCommon\ZemotoCommon\ZemotoCommon.csproj" />
-  </ItemGroup>
+  <Import Project="..\ZemotoCommon\ZemotoUtils\ZemotoUtils.projitems" Label="Shared" />
 
 </Project>
