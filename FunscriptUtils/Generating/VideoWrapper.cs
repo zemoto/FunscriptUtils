@@ -27,6 +27,8 @@ namespace FunscriptUtils.Generating
 
       public long GetCurrentFrameTime() => (long)_video.Get( CapProp.PosMsec );
 
+      public TimeSpan GetDuration() => TimeSpan.FromSeconds( _video.Get( CapProp.FrameCount ) / _video.Get( CapProp.Fps ) );
+
       public void Dispose() => _video?.Dispose();
    }
 }

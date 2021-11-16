@@ -21,6 +21,7 @@ namespace FunscriptUtils.Generating
 
       public void GenerateFunscript()
       {
+         var actionGenerator = new ActionGenerator();
          var funscript = FunscriptFactory.CreateFresh();
 
          var templateDimensions = _matcher.GetTemplateDimensions();
@@ -45,33 +46,13 @@ namespace FunscriptUtils.Generating
          ConsoleWriter.Commit();
          foreach ( var matchTime in _matcher.GetMatchTimes() )
          {
-            funscript.Actions.Add( GetNextFunscriptAction( matchTime ) );
+            funscript.Actions.Add( actionGenerator.GetNextAction( matchTime ) );
          }
 
          ConsoleWriter.WriteReport( "Generated Actions", funscript.Actions.Count );
          ConsoleWriter.Commit();
 
          funscript.Save( _videoFilePath );
-      }
-
-      private int _nextPosition;
-
-      private FunscriptAction GetNextFunscriptAction( long time )
-      {
-         var action = new FunscriptAction
-         {
-            Position = _nextPosition,
-            Time = time
-         };
-
-         _nextPosition = _nextPosition switch
-         {
-            0 => 100,
-            100 => 0,
-            _ => throw new ArgumentException( "How the heck did this happen?" )
-         };
-
-         return action;
       }
 
       public void Dispose()

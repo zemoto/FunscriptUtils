@@ -47,8 +47,20 @@ namespace FunscriptUtils
          }
          else if ( generateScript )
          {
-            using var generator = new FapHeroGenerator( GenerationParams.FromFile( filePath ) );
-            generator.GenerateFunscript();
+            if ( args[0].Contains( 'V', StringComparison.InvariantCultureIgnoreCase ) )
+            {
+               using var generator = new FapHeroGenerator( GenerationParams.FromFile( filePath ) );
+               generator.GenerateFunscript();
+            }
+            else
+            {
+               var bpm = int.Parse( args[2] );
+               using var video = new VideoWrapper( filePath );
+               var duration = video.GetDuration();
+               var funscript = SimpleGenerator.GenerateScript( bpm, duration );
+
+               funscript.Save( filePath );
+            }
          }
          else if ( cleanScript )
          {
