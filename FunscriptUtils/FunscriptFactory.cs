@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using FunscriptUtils.Utils;
 using Newtonsoft.Json;
 
 namespace FunscriptUtils
@@ -23,6 +24,34 @@ namespace FunscriptUtils
             ".csv" => FromCsv( filePath ),
             _ => throw new ArgumentException( "Invalid funscript file" )
          };
+
+      public static Funscript CombineScripts( string combineParamsFilePath )
+      {
+         var scripts = new List<(Funscript, TimeSpan)>();
+         var lines = File.ReadAllLines( combineParamsFilePath );
+         for ( int i = 0; i < lines.Length; i += 2 )
+         {
+            var script = Load( lines[i] );
+            var video = new VideoWrapper( lines[i + 1] );
+            scripts.Add( (script, video.GetDuration()) );
+         }
+
+         var newScript = CreateFresh();
+         var currentDuration = TimeSpan.Zero;
+
+         foreach ( var (script, duration) in scripts )
+         {
+            foreach ( var action in script.Actions )
+            {
+               action.Time += (long)currentDuration.TotalMilliseconds;
+            }
+
+            newScript.Actions.AddRange( script.Actions );
+            currentDuration += duration;
+         }
+
+         return newScript;
+      }
 
       private static Funscript FromCsv( string filePath )
       {

@@ -5,7 +5,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 
-namespace FunscriptUtils.Generating
+namespace FunscriptUtils.Utils
 {
    internal sealed class VideoWrapper : IDisposable
    {

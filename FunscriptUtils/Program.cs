@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using FunscriptUtils.Fixing;
-using FunscriptUtils.Generating;
+using FunscriptUtils.Utils;
 
 namespace FunscriptUtils
 {
@@ -30,8 +30,9 @@ namespace FunscriptUtils
 
          var fixScript = args[0].Contains( 'F', StringComparison.InvariantCultureIgnoreCase );
          var generateScript = args[0].Contains( 'G', StringComparison.InvariantCultureIgnoreCase );
-         var cleanScript = args[0].Contains( 'C', StringComparison.InvariantCultureIgnoreCase );
+         var pruneScript = args[0].Contains( 'P', StringComparison.InvariantCultureIgnoreCase );
          var maxScript = args[0].Contains( 'M', StringComparison.InvariantCultureIgnoreCase );
+         var combineScripts = args[0].Contains( 'C', StringComparison.InvariantCultureIgnoreCase );
 
          var filePath = args[1];
          if ( !File.Exists( filePath ) )
@@ -62,7 +63,7 @@ namespace FunscriptUtils
                funscript.Save( filePath );
             }
          }
-         else if ( cleanScript )
+         else if ( pruneScript )
          {
             var funscript = FunscriptFactory.Load( filePath );
 
@@ -78,6 +79,11 @@ namespace FunscriptUtils
             new ScriptPreparer( funscript ).MaxOutActionPositions( true );
 
             funscript.Save( filePath, "maxed" );
+         }
+         else if ( combineScripts )
+         {
+            var script = FunscriptFactory.CombineScripts( filePath );
+            script.Save( filePath, "combined" );
          }
       }
    }
