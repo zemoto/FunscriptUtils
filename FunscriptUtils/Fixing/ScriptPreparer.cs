@@ -5,8 +5,8 @@ namespace FunscriptUtils.Fixing
 {
    internal sealed class ScriptPreparer
    {
-      private const long MinMSForRoundBreak = 5000;
-      private const long MinActionsPerRound = 10;
+      private const long MinMSForSectionBreak = 5000;
+      private const long MinActionsPerSection = 10;
 
       private readonly Funscript _script;
 
@@ -21,17 +21,17 @@ namespace FunscriptUtils.Fixing
          CalculateRelativePositions();
          RemoveMiddleAndHoldActions();
          MaxOutActionPositions( false );
-         CalculateRounds();
+         CalculateSections();
          CalculateBeats();
          CalculateDesiredGaps();
 
-         for ( int i = 0; i < _script.Rounds.Count; i++ )
+         for ( int i = 0; i < _script.Sections.Count; i++ )
          {
-            var round = _script.Rounds[i];
-            ConsoleWriter.WriteReport( $"Round {i + 1}" );
-            ConsoleWriter.WriteReport( $"Start: {round.StartTime.ToDisplayTime()}" );
-            ConsoleWriter.WriteReport( $"Duration: {round.Duration.ToDisplayTime()}" );
-            ConsoleWriter.WriteReport( $"Beat: {round.Beat}bpm (Full Beat: {round.FullBeatTime}ms)" );
+            var section = _script.Sections[i];
+            ConsoleWriter.WriteReport( $"Section {i + 1}" );
+            ConsoleWriter.WriteReport( $"Start: {section.StartTime.ToDisplayTime()}" );
+            ConsoleWriter.WriteReport( $"Duration: {section.Duration.ToDisplayTime()}" );
+            ConsoleWriter.WriteReport( $"Beat: {section.Beat}bpm (Full Beat: {section.FullBeatTime}ms)" );
             ConsoleWriter.Commit();
          }
 
@@ -140,13 +140,13 @@ namespace FunscriptUtils.Fixing
 
       private void CalculateDesiredGaps()
       {
-         foreach ( var round in _script.Rounds )
+         foreach ( var section in _script.Sections )
          {
             var gapTracker = new GapTracker();
-            for ( int i = round.StartIndex; i <= round.EndIndex; i++ )
+            for ( int i = section.StartIndex; i <= section.EndIndex; i++ )
             {
                var current = _script.Actions[i];
-               if ( i == round.EndIndex || gapTracker.IsGapAfterActionABreak( _script.Actions, i ) )
+               if ( i == section.EndIndex || gapTracker.IsGapAfterActionABreak( _script.Actions, i ) )
                {
                   current.LastActionBeforeBreak = true;
                   continue;
@@ -193,29 +193,29 @@ namespace FunscriptUtils.Fixing
          }
       }
 
-      private void CalculateRounds()
+      private void CalculateSections()
       {
-         var roundGapTracker = new GapTracker();
-         var roundStartIdx = 0;
+         var sectionGapTracker = new GapTracker();
+         var sctionStartIdx = 0;
          for ( var i = 0; i < _script.Actions.Count - 1; i++ )
          {
             var current = _script.Actions[i];
             var next = _script.Actions[i + 1];
             var gap = next.Time - current.Time;
 
-            if ( roundGapTracker.GetNumTrackedGaps() >= MinActionsPerRound && roundGapTracker.IsGapAfterActionABreak( _script.Actions, i ) && gap >= MinMSForRoundBreak )
+            if ( sectionGapTracker.GetNumTrackedGaps() >= MinActionsPerSection && sectionGapTracker.IsGapAfterActionABreak( _script.Actions, i ) && gap >= MinMSForSectionBreak )
             {
-               _script.Rounds.Add( new FapHeroRound( _script, roundStartIdx, i ) );
-               roundStartIdx = i + 1;
-               roundGapTracker.Reset();
+               _script.Sections.Add( new ScriptSection( _script, sctionStartIdx, i ) );
+               sctionStartIdx = i + 1;
+               sectionGapTracker.Reset();
             }
             else
             {
-               roundGapTracker.TrackGap( gap );
+               sectionGapTracker.TrackGap( gap );
             }
          }
 
-         _script.Rounds.Add( new FapHeroRound( _script, roundStartIdx, _script.Actions.Count - 1 ) );
+         _script.Sections.Add( new ScriptSection( _script, sctionStartIdx, _script.Actions.Count - 1 ) );
       }
 
       private void CalculateBeats()
@@ -227,24 +227,24 @@ namespace FunscriptUtils.Fixing
 
          static bool GapsAreClose( long left, long right ) => Math.Abs( left - right ) < 75;
 
-         foreach ( var round in _script.Rounds )
+         foreach ( var section in _script.Sections )
          {
-            while ( round.Beat == default )
+            while ( section.Beat == default )
             {
-               var randomIndex = new Random().Next( round.StartIndex, round.EndIndex - 1 );
+               var randomIndex = new Random().Next( section.StartIndex, section.EndIndex - 1 );
                var gap = _script.Actions[randomIndex + 1].Time - _script.Actions[randomIndex].Time;
 
                if ( GapsAreClose( gap, fullBeat ) )
                {
-                  round.Beat = (int)Math.Round( beatsInMinute / gap, MidpointRounding.AwayFromZero );
+                  section.Beat = (int)Math.Round( beatsInMinute / gap, MidpointRounding.AwayFromZero );
                }
                else if ( GapsAreClose( gap, halfBeat ) )
                {
-                  round.Beat = (int)Math.Round( beatsInMinute / gap / 2.0, MidpointRounding.AwayFromZero );
+                  section.Beat = (int)Math.Round( beatsInMinute / gap / 2.0, MidpointRounding.AwayFromZero );
                }
                else if ( GapsAreClose( gap, quarterBeat ) )
                {
-                  round.Beat = (int)Math.Round( beatsInMinute / gap / 4.0, MidpointRounding.AwayFromZero );
+                  section.Beat = (int)Math.Round( beatsInMinute / gap / 4.0, MidpointRounding.AwayFromZero );
                }
             }
          }

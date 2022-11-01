@@ -16,13 +16,13 @@ namespace FunscriptUtils.Fixing
 
       public void AdjustActionsToMatchBeat()
       {
-         Debug.Assert( _script.Rounds.Count > 0 );
+         Debug.Assert( _script.Sections.Count > 0 );
 
          int timesFixed = 0;
-         foreach ( var round in _script.Rounds )
+         foreach ( var section in _script.Sections )
          {
             _roundingError.Reset();
-            for ( int i = round.StartIndex; i < round.EndIndex; i++ )
+            for ( int i = section.StartIndex; i < section.EndIndex; i++ )
             {
                var current = _script.Actions[i];
                if ( current.LastActionBeforeBreak )
@@ -32,7 +32,7 @@ namespace FunscriptUtils.Fixing
                }
 
                var next = _script.Actions[i + 1];
-               if ( FixGap( round.FullBeatTime, current, next ) )
+               if ( FixGap( section.FullBeatTime, current, next ) )
                {
                   timesFixed++;
                }

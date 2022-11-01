@@ -2,12 +2,12 @@
 
 namespace FunscriptUtils.Fixing
 {
-   public sealed class FapHeroFixer
+   public sealed class HeroScriptFixer
    {
       private readonly string _filePath;
       private readonly bool _limitSpeed;
 
-      public FapHeroFixer( string filePath, bool limitSpeed )
+      public HeroScriptFixer( string filePath, bool limitSpeed )
       {
          _filePath = filePath;
          _limitSpeed = limitSpeed;

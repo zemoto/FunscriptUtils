@@ -8,7 +8,7 @@ namespace FunscriptUtils
 {
    internal class Funscript
    {
-      public Funscript() => Rounds = new List<FapHeroRound>();
+      public Funscript() => Sections = new List<ScriptSection>();
 
       public Funscript( Funscript other )
       {
@@ -16,7 +16,7 @@ namespace FunscriptUtils
          Inverted = other.Inverted;
          Range = other.Range;
          Actions = other.Actions.ConvertAll( x => new FunscriptAction( x ) );
-         Rounds = other.Rounds.ConvertAll( x => new FapHeroRound( x ) );
+         Sections = other.Sections.ConvertAll( x => new ScriptSection( x ) );
       }
 
       public void Save( string oldFileName, string suffix = "" )
@@ -49,21 +49,21 @@ namespace FunscriptUtils
       public List<FunscriptAction> Actions { get; set; }
 
       [JsonIgnore]
-      public List<FapHeroRound> Rounds { get; }
+      public List<ScriptSection> Sections { get; }
    }
 
-   internal sealed class FapHeroRound
+   internal sealed class ScriptSection
    {
       private readonly Funscript _parent;
 
-      public FapHeroRound( Funscript parent, int startIdx, int endIdx )
+      public ScriptSection( Funscript parent, int startIdx, int endIdx )
       {
          _parent = parent;
          StartIndex = startIdx;
          EndIndex = endIdx;
       }
 
-      public FapHeroRound( FapHeroRound other )
+      public ScriptSection( ScriptSection other )
       {
          _parent = other._parent;
          Beat = other.Beat;
