@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using FunscriptUtils.Fixing;
-using FunscriptUtils.Utils;
 
 namespace FunscriptUtils
 {
@@ -29,7 +28,6 @@ namespace FunscriptUtils
          }
 
          var fixScript = args[0].Contains( 'F', StringComparison.InvariantCultureIgnoreCase );
-         var generateScript = args[0].Contains( 'G', StringComparison.InvariantCultureIgnoreCase );
          var pruneScript = args[0].Contains( 'P', StringComparison.InvariantCultureIgnoreCase );
          var maxScript = args[0].Contains( 'M', StringComparison.InvariantCultureIgnoreCase );
          var combineScripts = args[0].Contains( 'C', StringComparison.InvariantCultureIgnoreCase );
@@ -45,23 +43,6 @@ namespace FunscriptUtils
             var createHardMode = args[0].Contains( 'H', StringComparison.InvariantCultureIgnoreCase );
             var scriptFixer = new FapHeroFixer( filePath, false );
             scriptFixer.CreateFixedScripts( createHardMode );
-         }
-         else if ( generateScript )
-         {
-            if ( args[0].Contains( 'V', StringComparison.InvariantCultureIgnoreCase ) )
-            {
-               using var generator = new FapHeroGenerator( GenerationParams.FromFile( filePath ) );
-               generator.GenerateFunscript();
-            }
-            else
-            {
-               var bpm = int.Parse( args[2] );
-               using var video = new VideoWrapper( filePath );
-               var duration = video.GetDuration();
-               var funscript = SimpleGenerator.GenerateScript( bpm, duration );
-
-               funscript.Save( filePath );
-            }
          }
          else if ( pruneScript )
          {
