@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using FunscriptUtils.Utils;
-using ZemotoUtils;
+using ZemotoCommon;
 
 namespace FunscriptUtils.Fixing
 {
