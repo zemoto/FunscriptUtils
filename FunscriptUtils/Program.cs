@@ -31,6 +31,7 @@ namespace FunscriptUtils
          var pruneScript = args[0].Contains( 'P', StringComparison.InvariantCultureIgnoreCase );
          var maxScript = args[0].Contains( 'M', StringComparison.InvariantCultureIgnoreCase );
          var combineScripts = args[0].Contains( 'C', StringComparison.InvariantCultureIgnoreCase );
+         var vibrateScript = args[0].Contains( 'V', StringComparison.InvariantCultureIgnoreCase );
 
          var filePath = args[1];
          if ( !File.Exists( filePath ) )
@@ -65,6 +66,15 @@ namespace FunscriptUtils
          {
             var script = FunscriptFactory.CombineScripts( filePath );
             script.Save( filePath, "combined" );
+         }
+         else if ( vibrateScript )
+         {
+            var funscript = FunscriptFactory.Load( filePath );
+
+            var vibrator = new ScriptVibrator( funscript );
+            vibrator.Vibrate();
+
+            funscript.Save( filePath, "vibrated" );
          }
       }
    }
