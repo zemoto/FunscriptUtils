@@ -101,7 +101,7 @@ namespace FunscriptUtils.Fixing
          ConsoleWriter.WriteReport( "Removing middle and hold actions", actionsRemoved );
       }
 
-      public void MaxOutActionPositions( bool forceMax )
+      public void MaxOutActionPositions( bool forceMax, int max = 100 )
       {
          if ( !_relativePositionsCalculated )
          {
@@ -114,9 +114,9 @@ namespace FunscriptUtils.Fixing
             var action = _script.Actions[i];
             switch ( action.RelativePosition )
             {
-               case ActionRelativePosition.Top when forceMax || action.Position > 95:
+               case ActionRelativePosition.Top when forceMax || action.Position > max - 5:
                {
-                  action.Position = 100;
+                  action.Position = max;
                   actionsMaxed++;
                   break;
                }

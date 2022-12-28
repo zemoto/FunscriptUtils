@@ -57,8 +57,14 @@ namespace FunscriptUtils
          }
          else if ( maxScript )
          {
+            int max = 100;
+            var useCustomMax = args[0].Contains( 'C', StringComparison.InvariantCultureIgnoreCase );
+            if ( useCustomMax && args.Count >= 3 && !int.TryParse( args[2], out max ) )
+            {
+               throw new ArgumentException( "Invalid custom max, must be a whole number" );
+            }
             var funscript = FunscriptFactory.Load( filePath );
-            new ScriptPreparer( funscript ).MaxOutActionPositions( true );
+            new ScriptPreparer( funscript ).MaxOutActionPositions( true, max );
 
             funscript.Save( filePath, "maxed" );
          }
