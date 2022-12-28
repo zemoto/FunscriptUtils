@@ -5,14 +5,14 @@ using System.Linq;
 using FunscriptUtils.Utils;
 using ZemotoCommon;
 
-namespace FunscriptUtils.Fixing
+namespace FunscriptUtils.Fixing.Hero
 {
-   internal sealed class ScriptTimingFixer
+   internal sealed class HeroScriptTimingFixer
    {
       private readonly Funscript _script;
       private readonly RoundingErrorCorrector _roundingError = new();
 
-      public ScriptTimingFixer( Funscript script ) => _script = script;
+      public HeroScriptTimingFixer( Funscript script ) => _script = script;
 
       public void AdjustActionsToMatchBeat()
       {

@@ -1,8 +1,8 @@
 ﻿using FunscriptUtils.Utils;
 
-namespace FunscriptUtils.Fixing
+namespace FunscriptUtils.Fixing.Hero
 {
-   public sealed class HeroScriptFixer
+   internal sealed class HeroScriptFixer
    {
       private readonly string _filePath;
       private readonly bool _limitSpeed;
@@ -13,17 +13,17 @@ namespace FunscriptUtils.Fixing
          _limitSpeed = limitSpeed;
       }
 
-      public void CreateFixedScripts( bool createHardMode )
+      public void CreateFixedScripts( bool createHardMode, string sectionDescriptorFilePath )
       {
          var funscript = FunscriptFactory.Load( _filePath );
 
          ConsoleWriter.WriteReport( "Number of actions", funscript.Actions.Count );
          ConsoleWriter.Commit();
 
-         new ScriptPreparer( funscript ).Prepare();
-         new ScriptTimingFixer( funscript ).AdjustActionsToMatchBeat();
+         new HeroScriptPreparer( funscript, sectionDescriptorFilePath ).Prepare();
+         new HeroScriptTimingFixer( funscript ).AdjustActionsToMatchBeat();
 
-         var enhancer = new ScriptEnhancer( funscript );
+         var enhancer = new HeroScriptEnhancer( funscript );
          var easyScript = enhancer.GetEnhancedScript( _limitSpeed );
          easyScript.Save( _filePath, createHardMode ? "Easy" : string.Empty );
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using FunscriptUtils.Fixing;
+using FunscriptUtils.Fixing.Hero;
 
 namespace FunscriptUtils
 {
@@ -28,8 +29,6 @@ namespace FunscriptUtils
          }
 
          var fixScript = args[0].Contains( 'F', StringComparison.InvariantCultureIgnoreCase );
-         var pruneScript = args[0].Contains( 'P', StringComparison.InvariantCultureIgnoreCase );
-         var maxScript = args[0].Contains( 'M', StringComparison.InvariantCultureIgnoreCase );
          var combineScripts = args[0].Contains( 'C', StringComparison.InvariantCultureIgnoreCase );
          var vibrateScript = args[0].Contains( 'V', StringComparison.InvariantCultureIgnoreCase );
 
@@ -41,32 +40,14 @@ namespace FunscriptUtils
 
          if ( fixScript )
          {
+            string sectionDescriptorFilePath = string.Empty;
+            if ( args.Count >= 3 )
+            {
+               sectionDescriptorFilePath = args[2];
+            }
             var createHardMode = args[0].Contains( 'H', StringComparison.InvariantCultureIgnoreCase );
             var scriptFixer = new HeroScriptFixer( filePath, true );
-            scriptFixer.CreateFixedScripts( createHardMode );
-         }
-         else if ( pruneScript )
-         {
-            var funscript = FunscriptFactory.Load( filePath );
-
-            var preparer = new ScriptPreparer( funscript );
-            preparer.RemoveMiddleAndHoldActions();
-            preparer.MaxOutActionPositions( true );
-
-            funscript.Save( filePath, "cleaned" );
-         }
-         else if ( maxScript )
-         {
-            int max = 100;
-            var useCustomMax = args[0].Contains( 'C', StringComparison.InvariantCultureIgnoreCase );
-            if ( useCustomMax && args.Count >= 3 && !int.TryParse( args[2], out max ) )
-            {
-               throw new ArgumentException( "Invalid custom max, must be a whole number" );
-            }
-            var funscript = FunscriptFactory.Load( filePath );
-            new ScriptPreparer( funscript ).MaxOutActionPositions( true, max );
-
-            funscript.Save( filePath, "maxed" );
+            scriptFixer.CreateFixedScripts( createHardMode, sectionDescriptorFilePath );
          }
          else if ( combineScripts )
          {

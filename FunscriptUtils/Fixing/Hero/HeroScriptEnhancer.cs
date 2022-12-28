@@ -4,9 +4,9 @@ using System.Linq;
 using FunscriptUtils.Utils;
 using ZemotoCommon;
 
-namespace FunscriptUtils.Fixing
+namespace FunscriptUtils.Fixing.Hero
 {
-   internal sealed class ScriptEnhancer
+   internal sealed class HeroScriptEnhancer
    {
       private const int HighSpeedLimit = 600;
       private const int SpeedLimit = 470;
@@ -14,7 +14,7 @@ namespace FunscriptUtils.Fixing
 
       private readonly Funscript _originalScript;
 
-      public ScriptEnhancer( Funscript script ) => _originalScript = script;
+      public HeroScriptEnhancer( Funscript script ) => _originalScript = script;
 
       public Funscript GetEnhancedScript( bool limitSpeed )
       {
@@ -130,12 +130,12 @@ namespace FunscriptUtils.Fixing
                   newActions.Add( holdAction );
                   actionsAdded++;
 
-                  newTime = next.Time - ( next.DesiredGap / 2 );
+                  newTime = next.Time - next.DesiredGap / 2;
                   newPosition = HeroScriptMax;
                }
                else if ( desiredGap <= next.Time - current.Time )
                {
-                  newTime = next.Time - ( desiredGap / 2 );
+                  newTime = next.Time - desiredGap / 2;
                   newPosition = Math.Min( HeroScriptMax, Math.Abs( current.Position - next.Position ) );
                   current.DesiredGap = newTime - current.Time;
                }

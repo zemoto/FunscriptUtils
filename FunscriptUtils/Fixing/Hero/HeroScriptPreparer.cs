@@ -1,18 +1,22 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using FunscriptUtils.Utils;
 
-namespace FunscriptUtils.Fixing
+namespace FunscriptUtils.Fixing.Hero
 {
-   internal sealed class ScriptPreparer
+   internal sealed class HeroScriptPreparer
    {
-      private const long MinMSForSectionBreak = 5000;
-      private const long MinActionsPerSection = 10;
-
       private readonly Funscript _script;
+      private readonly string _sectionDescriptorFilePath;
 
       private bool _relativePositionsCalculated;
 
-      public ScriptPreparer( Funscript script ) => _script = script;
+      public HeroScriptPreparer( Funscript script, string sectionDescriptorFilePath )
+      {
+         _script = script;
+         _sectionDescriptorFilePath = sectionDescriptorFilePath;
+      }
 
       public void Prepare()
       {
@@ -21,16 +25,19 @@ namespace FunscriptUtils.Fixing
          CalculateRelativePositions();
          RemoveMiddleAndHoldActions();
          MaxOutActionPositions( false );
-         CalculateSections();
+         GenerateSections();
          CalculateBeats();
          CalculateDesiredGaps();
 
          for ( int i = 0; i < _script.Sections.Count; i++ )
          {
             var section = _script.Sections[i];
-            ConsoleWriter.WriteReport( $"Section {i + 1}" );
-            ConsoleWriter.WriteReport( $"Start: {section.StartTime.ToDisplayTime()}" );
-            ConsoleWriter.WriteReport( $"Duration: {section.Duration.ToDisplayTime()}" );
+            if ( _script.Sections.Count > 1 )
+            {
+               ConsoleWriter.WriteReport( $"Section {i + 1}" );
+               ConsoleWriter.WriteReport( $"Start: {section.StartTime.ToDisplayTime()}" );
+               ConsoleWriter.WriteReport( $"Duration: {section.Duration.ToDisplayTime()}" );
+            }
             ConsoleWriter.WriteReport( $"Beat: {section.Beat}bpm (Full Beat: {section.FullBeatTime}ms)" );
             ConsoleWriter.Commit();
          }
@@ -43,9 +50,9 @@ namespace FunscriptUtils.Fixing
          var actions = _script.Actions;
          for ( int i = 0; i < actions.Count; i++ )
          {
-            FunscriptAction previous = i != 0 ? actions[i - 1] : null;
-            FunscriptAction current = actions[i];
-            FunscriptAction next = i != actions.Count - 1 ? actions[i + 1] : null;
+            var previous = i != 0 ? actions[i - 1] : null;
+            var current = actions[i];
+            var next = i != actions.Count - 1 ? actions[i + 1] : null;
             current.RelativePosition = DetermineRelativePosition( previous, current, next );
          }
 
@@ -76,8 +83,8 @@ namespace FunscriptUtils.Fixing
             return previous.Position < current.Position ? ActionRelativePosition.Top : ActionRelativePosition.Bottom;
          }
 
-         if ( ( previous.Position < current.Position && current.Position < next.Position ) ||
-              ( previous.Position > current.Position && current.Position > next.Position ) )
+         if ( previous.Position < current.Position && current.Position < next.Position ||
+               previous.Position > current.Position && current.Position > next.Position )
          {
             return ActionRelativePosition.Middle;
          }
@@ -87,7 +94,7 @@ namespace FunscriptUtils.Fixing
              : ActionRelativePosition.Bottom;
       }
 
-      public void RemoveMiddleAndHoldActions()
+      private void RemoveMiddleAndHoldActions()
       {
          if ( !_relativePositionsCalculated )
          {
@@ -101,7 +108,7 @@ namespace FunscriptUtils.Fixing
          ConsoleWriter.WriteReport( "Removing middle and hold actions", actionsRemoved );
       }
 
-      public void MaxOutActionPositions( bool forceMax, int max = 100 )
+      private void MaxOutActionPositions( bool forceMax, int max = 100 )
       {
          if ( !_relativePositionsCalculated )
          {
@@ -193,29 +200,37 @@ namespace FunscriptUtils.Fixing
          }
       }
 
-      private void CalculateSections()
+      private void GenerateSections()
       {
-         var sectionGapTracker = new GapTracker();
-         var sctionStartIdx = 0;
-         for ( var i = 0; i < _script.Actions.Count - 1; i++ )
+         if ( string.IsNullOrEmpty( _sectionDescriptorFilePath ) )
          {
-            var current = _script.Actions[i];
-            var next = _script.Actions[i + 1];
-            var gap = next.Time - current.Time;
-
-            if ( sectionGapTracker.GetNumTrackedGaps() >= MinActionsPerSection && sectionGapTracker.IsGapAfterActionABreak( _script.Actions, i ) && gap >= MinMSForSectionBreak )
-            {
-               _script.Sections.Add( new ScriptSection( _script, sctionStartIdx, i ) );
-               sctionStartIdx = i + 1;
-               sectionGapTracker.Reset();
-            }
-            else
-            {
-               sectionGapTracker.TrackGap( gap );
-            }
+            _script.Sections.Add( new ScriptSection( _script, 0, _script.Actions.Count - 1 ) );
+            return;
          }
 
-         _script.Sections.Add( new ScriptSection( _script, sctionStartIdx, _script.Actions.Count - 1 ) );
+         try
+         {
+            var sectionStartTimes = File.ReadAllLines( _sectionDescriptorFilePath ).Select( x => long.Parse( x ) ).ToList();
+            for ( int i = 0; i < sectionStartTimes.Count; i++ )
+            {
+               var startTime = sectionStartTimes[i];
+               var nextStartTime = sectionStartTimes[i + 1];
+
+               int startIdx = i == 0 ? 0 : _script.Actions.FindIndex( x => x.Time > startTime );
+               int endIdx = i == sectionStartTimes.Count - 1 ? _script.Actions.Count - 1 : _script.Actions.FindLastIndex( x => x.Time < nextStartTime );
+
+               if ( startIdx == -1 || endIdx == -1 )
+               {
+                  throw new Exception();
+               }
+
+               _script.Sections.Add( new ScriptSection( _script, startIdx, endIdx ) );
+            }
+         }
+         catch
+         {
+            throw new ArgumentException( "Invalid section descriptor file" );
+         }
       }
 
       private void CalculateBeats()
