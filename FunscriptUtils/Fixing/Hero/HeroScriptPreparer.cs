@@ -98,13 +98,13 @@ namespace FunscriptUtils.Fixing.Hero
             var action = _script.Actions[i];
             switch ( action.RelativePosition )
             {
-               case ActionRelativePosition.Top when action.Position > HeroScriptMax - 5:
+               case ActionRelativePosition.Top:
                {
                   action.Position = HeroScriptMax;
                   actionsMaxed++;
                   break;
                }
-               case ActionRelativePosition.Bottom when action.Position < 5:
+               case ActionRelativePosition.Bottom:
                {
                   action.Position = 0;
                   actionsMaxed++;
