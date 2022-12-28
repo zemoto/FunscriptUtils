@@ -45,9 +45,9 @@ namespace FunscriptUtils
             {
                sectionDescriptorFilePath = args[2];
             }
-            var createHardMode = args[0].Contains( 'H', StringComparison.InvariantCultureIgnoreCase );
-            var scriptFixer = new HeroScriptFixer( filePath, true );
-            scriptFixer.CreateFixedScripts( createHardMode, sectionDescriptorFilePath );
+
+            var scriptFixer = new HeroScriptFixer( filePath, sectionDescriptorFilePath );
+            scriptFixer.CreateFixedScripts();
          }
          else if ( combineScripts )
          {

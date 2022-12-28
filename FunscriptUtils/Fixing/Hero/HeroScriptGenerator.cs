@@ -6,47 +6,36 @@ using ZemotoCommon;
 
 namespace FunscriptUtils.Fixing.Hero
 {
-   internal sealed class HeroScriptEnhancer
+   internal sealed partial class HeroScriptFixer
    {
       private const int HighSpeedLimit = 600;
       private const int SpeedLimit = 470;
-      private const int HeroScriptMax = 75;
 
-      private readonly Funscript _originalScript;
-
-      public HeroScriptEnhancer( Funscript script ) => _originalScript = script;
-
-      public Funscript GetEnhancedScript( bool limitSpeed )
+      private void CreateEasyModeScript()
       {
          ConsoleWriter.WriteReport( "**Easy Mode Script**" );
 
-         var script = new Funscript( _originalScript );
+         var easyModeScript = new Funscript( _script );
 
-         if ( limitSpeed )
-         {
-            LimitActionSpeed( script );
-         }
+         LimitActionSpeed( easyModeScript );
+         AddHoldPositionActionsForLongerPauses( easyModeScript, false );
+         AddStarterAction( easyModeScript );
 
-         AddHoldPositionActionsForLongerPauses( script, false );
-         AddStarterAction( script );
-         return script;
+         easyModeScript.Save( _filePath, "Easy" );
       }
 
-      public Funscript GetHardModeScript( bool limitSpeed )
+      private void CreateHardModeScript()
       {
          ConsoleWriter.WriteReport( "**Hard Mode Script**" );
 
-         var script = new Funscript( _originalScript );
-         AddHardModeActions( script );
+         var hardModeScript = new Funscript( _script );
 
-         if ( limitSpeed )
-         {
-            LimitActionSpeed( script );
-         }
+         AddHardModeActions( hardModeScript );
+         LimitActionSpeed( hardModeScript );
+         AddHoldPositionActionsForLongerPauses( hardModeScript, true );
+         AddStarterAction( hardModeScript );
 
-         AddHoldPositionActionsForLongerPauses( script, true );
-         AddStarterAction( script );
-         return script;
+         hardModeScript.Save( _filePath, "Hard" );
       }
 
       private static void AddHoldPositionActionsForLongerPauses( Funscript script, bool hardMode )

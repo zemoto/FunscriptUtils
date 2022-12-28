@@ -2,36 +2,31 @@
 
 namespace FunscriptUtils.Fixing.Hero
 {
-   internal sealed class HeroScriptFixer
+   internal sealed partial class HeroScriptFixer
    {
-      private readonly string _filePath;
-      private readonly bool _limitSpeed;
+      private const int HeroScriptMax = 75;
 
-      public HeroScriptFixer( string filePath, bool limitSpeed )
+      private readonly string _filePath;
+      private readonly string _sectionDescriptorFilePath;
+      private readonly Funscript _script;
+
+      public HeroScriptFixer( string filePath, string sectionDescriptorFilePath )
       {
          _filePath = filePath;
-         _limitSpeed = limitSpeed;
+         _sectionDescriptorFilePath = sectionDescriptorFilePath;
+         _script = FunscriptFactory.Load( _filePath );
       }
 
-      public void CreateFixedScripts( bool createHardMode, string sectionDescriptorFilePath )
+      public void CreateFixedScripts()
       {
-         var funscript = FunscriptFactory.Load( _filePath );
-
-         ConsoleWriter.WriteReport( "Number of actions", funscript.Actions.Count );
+         ConsoleWriter.WriteReport( "Number of actions", _script.Actions.Count );
          ConsoleWriter.Commit();
 
-         new HeroScriptPreparer( funscript, sectionDescriptorFilePath ).Prepare();
-         new HeroScriptTimingFixer( funscript ).AdjustActionsToMatchBeat();
+         AnalyzeAndPrepareScript();
+         AdjustActionsToMatchBeat();
 
-         var enhancer = new HeroScriptEnhancer( funscript );
-         var easyScript = enhancer.GetEnhancedScript( _limitSpeed );
-         easyScript.Save( _filePath, createHardMode ? "Easy" : string.Empty );
-
-         if ( createHardMode )
-         {
-            var hardScript = enhancer.GetHardModeScript( _limitSpeed );
-            hardScript.Save( _filePath, "Hard" );
-         }
+         CreateEasyModeScript();
+         CreateHardModeScript();
       }
    }
 }

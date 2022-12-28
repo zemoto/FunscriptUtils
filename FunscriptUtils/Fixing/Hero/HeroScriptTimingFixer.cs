@@ -7,14 +7,11 @@ using ZemotoCommon;
 
 namespace FunscriptUtils.Fixing.Hero
 {
-   internal sealed class HeroScriptTimingFixer
+   internal sealed partial class HeroScriptFixer
    {
-      private readonly Funscript _script;
       private readonly RoundingErrorCorrector _roundingError = new();
 
-      public HeroScriptTimingFixer( Funscript script ) => _script = script;
-
-      public void AdjustActionsToMatchBeat()
+      private void AdjustActionsToMatchBeat()
       {
          Debug.Assert( _script.Sections.Count > 0 );
 
