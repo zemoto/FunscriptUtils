@@ -8,7 +8,7 @@ namespace FunscriptUtils.Fixing
    internal sealed class ScriptEnhancer
    {
       private const int HighSpeedLimit = 600;
-      private const int SpeedLimit = 400;
+      private const int SpeedLimit = 470;
 
       private readonly Funscript _originalScript;
 
@@ -26,6 +26,7 @@ namespace FunscriptUtils.Fixing
          }
 
          AddHoldPositionActionsForLongerPauses( script, false );
+         AddStarterAction( script );
          return script;
       }
 
@@ -42,6 +43,7 @@ namespace FunscriptUtils.Fixing
          }
 
          AddHoldPositionActionsForLongerPauses( script, true );
+         AddStarterAction( script );
          return script;
       }
 
@@ -162,17 +164,10 @@ namespace FunscriptUtils.Fixing
 
       private static void LimitActionSpeed( Funscript script )
       {
-         bool biasHigh = false;
-
          // Speed limit all Top -> Bottom gaps
          foreach ( var action in script.Actions.Where( x => x.RelativePosition == ActionRelativePosition.Top && !x.LastActionBeforeBreak ) )
          {
-            var variedSpeedLimit = SpeedLimit + GetRandomVariance( biasHigh );
-            action.Position = variedSpeedLimit * (int)action.DesiredGap / 1000;
-            if ( action.Position != 100 )
-            {
-               biasHigh = !biasHigh;
-            }
+            action.Position = SpeedLimit * (int)action.DesiredGap / 1000;
          }
 
          // Speed limit all Bottom -> Top gaps, only lowering the Top action
@@ -186,9 +181,7 @@ namespace FunscriptUtils.Fixing
 
             var next = script.Actions[i + 1];
 
-            var variedSpeedLimit = SpeedLimit + GetRandomVariance( false );
-
-            if ( current.GetSpeedToAction( next ) > variedSpeedLimit )
+            if ( current.GetSpeedToAction( next ) > SpeedLimit )
             {
                var gapInSeconds = ( next.Time - current.Time ) / 1000.0;
                next.Position = (int)( SpeedLimit * gapInSeconds );
@@ -198,18 +191,36 @@ namespace FunscriptUtils.Fixing
          ConsoleWriter.WriteReport( "Speed limiting actions" );
       }
 
-      private static readonly Random Random = new();
-      private static int GetRandomVariance( bool biasHigh )
+      private static void AddStarterAction( Funscript script )
       {
-         const int max = 15;
-         const int min = -max;
+         if ( script.Actions.Count < 2 )
+         {
+            return;
+         }
 
-         var bias = biasHigh ? max : min;
-         var influence = biasHigh ? 1.0 : 0;
+         var firstAction = script.Actions[0];
+         var secondAction = script.Actions[1];
 
-         var rnd = ( Random.NextDouble() * ( max - min ) ) + min;
-         var mix = Random.NextDouble() * influence;
-         return (int)( ( rnd * ( 1 - mix ) ) + ( bias * mix ) );
+         var starterTime = firstAction.Time - secondAction.Time + firstAction.Time;
+         if ( starterTime < 0 )
+         {
+            return;
+         }
+
+         var starterAction = new FunscriptAction
+         {
+            Time = starterTime,
+            Position = secondAction.Position,
+            DesiredGap = firstAction.DesiredGap,
+            RelativePosition = secondAction.RelativePosition
+         };
+
+         script.Actions.Insert( 0, starterAction );
+
+         if ( starterAction.RelativePosition is not ActionRelativePosition.Bottom )
+         {
+            AddStarterAction( script );
+         }
       }
    }
 }

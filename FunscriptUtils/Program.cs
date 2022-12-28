@@ -42,7 +42,7 @@ namespace FunscriptUtils
          if ( fixScript )
          {
             var createHardMode = args[0].Contains( 'H', StringComparison.InvariantCultureIgnoreCase );
-            var scriptFixer = new HeroScriptFixer( filePath, false );
+            var scriptFixer = new HeroScriptFixer( filePath, true );
             scriptFixer.CreateFixedScripts( createHardMode );
          }
          else if ( pruneScript )
