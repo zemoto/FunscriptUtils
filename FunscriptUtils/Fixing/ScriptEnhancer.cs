@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FunscriptUtils.Utils;
+using ZemotoCommon;
 
 namespace FunscriptUtils.Fixing
 {
@@ -9,6 +10,7 @@ namespace FunscriptUtils.Fixing
    {
       private const int HighSpeedLimit = 600;
       private const int SpeedLimit = 470;
+      private const int HeroScriptMax = 75;
 
       private readonly Funscript _originalScript;
 
@@ -129,18 +131,18 @@ namespace FunscriptUtils.Fixing
                   actionsAdded++;
 
                   newTime = next.Time - ( next.DesiredGap / 2 );
-                  newPosition = 100;
+                  newPosition = HeroScriptMax;
                }
                else if ( desiredGap <= next.Time - current.Time )
                {
                   newTime = next.Time - ( desiredGap / 2 );
-                  newPosition = Math.Min( 100, Math.Abs( current.Position - next.Position ) );
+                  newPosition = Math.Min( HeroScriptMax, Math.Abs( current.Position - next.Position ) );
                   current.DesiredGap = newTime - current.Time;
                }
                else
                {
                   newTime = ( current.Time + next.Time ) / 2;
-                  newPosition = Math.Min( 100, Math.Abs( current.Position - next.Position ) );
+                  newPosition = Math.Min( HeroScriptMax, Math.Abs( current.Position - next.Position ) );
                   current.DesiredGap = newTime - current.Time;
                }
 
@@ -187,6 +189,8 @@ namespace FunscriptUtils.Fixing
                next.Position = (int)( SpeedLimit * gapInSeconds );
             }
          }
+
+         script.Actions.Where( x => x.RelativePosition is ActionRelativePosition.Top ).ForEach( x => x.Position = Math.Min( x.Position, HeroScriptMax ) );
 
          ConsoleWriter.WriteReport( "Speed limiting actions" );
       }
