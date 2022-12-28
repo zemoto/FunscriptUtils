@@ -53,6 +53,24 @@ namespace FunscriptUtils
          return newScript;
       }
 
+      public static Funscript SeparateScript( string scriptFilePath, long startTimeMS, long durationMS )
+      {
+         var script = Load( scriptFilePath );
+         var startIdx = script.Actions.FindIndex( x => x.Time >= startTimeMS );
+         var endIdx = script.Actions.FindLastIndex( x => x.Time <= startTimeMS + durationMS );
+
+         var subActions = script.Actions.GetRange( startIdx, endIdx - startIdx + 1 );
+         foreach ( var action in subActions )
+         {
+            action.Time -= startTimeMS;
+         }
+
+         var newScript = CreateFresh();
+         newScript.Actions = subActions;
+
+         return newScript;
+      }
+
       private static Funscript FromCsv( string filePath )
       {
          var funscript = new Funscript();
