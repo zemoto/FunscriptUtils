@@ -72,7 +72,14 @@ namespace FunscriptUtils
             }
 
             var script = FunscriptFactory.SeparateScript( filePath, (long)startTimeSpan.TotalMilliseconds, (long)duration.TotalMilliseconds );
-            script.Save( filePath, "separated" );
+            if ( args.Count == 5 )
+            {
+               script.Save( args[4] );
+            }
+            else
+            {
+               script.Save( filePath, "separated" );
+            }
          }
       }
    }
