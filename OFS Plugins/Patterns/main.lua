@@ -2,6 +2,8 @@ local vibrateModule = require("vibrate")
 local changingMaxModule = require("changingMax")
 local doublerModule = require("doubler")
 local fillerModule = require("filler")
+local impactBounceModule = require("impactBounce")
+local softenImpactModule = require("softenImpact")
 
 local Pattern = {}
 Pattern.SelectedPatternIdx = 1
@@ -44,7 +46,7 @@ function gui()
 	
 	ofs.Separator()
 
-	Pattern.SelectedPatternIdx, changed = ofs.Combo( "", Pattern.SelectedPatternIdx, { "Vibrate", "Changing Max", "Doubler", "Filler" } )
+	Pattern.SelectedPatternIdx, changed = ofs.Combo( "", Pattern.SelectedPatternIdx, { "Vibrate", "Changing Max", "Doubler", "Filler", "Impact Bounce", "Soften Impact" } )
 
 	if Pattern.SelectedPatternIdx == 2 then -- Changing Max
 		ChangingMax.StartMax, startChanged = ofs.SliderInt("Start Max", ChangingMax.StartMax, 0, 100)
@@ -64,5 +66,9 @@ function applyPattern()
 		doublerModule.doubler()
 	elseif Pattern.SelectedPatternIdx == 4 then -- Filler
 		fillerModule.filler(Filler.Distance,Filler.Gap)
+	elseif Pattern.SelectedPatternIdx == 5 then -- Impact Bounce
+		impactBounceModule.impactBounce()
+	elseif Pattern.SelectedPatternIdx == 6 then -- Soften Impact
+		softenImpactModule.softenImpact()
 	end
 end

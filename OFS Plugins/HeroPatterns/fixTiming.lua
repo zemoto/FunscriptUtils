@@ -4,6 +4,7 @@ function fixTiming(bpm)
 	
 	local fullBeatTiming = 240.0 / bpm
 
+	local changesMade = false
 	local totalMovement = 0
 	for i=2,actionCount do
 		local prev = script.actions[i-1]
@@ -16,6 +17,7 @@ function fixTiming(bpm)
 		current.at = current.at + totalMovement
 		local gap = current.at - prev.at
 		
+		local changesMade = changesMade or gap ~= newGap
 		local newGap = getCorrectGap(gap,fullBeatTiming)
 		totalMovement = totalMovement - gap + newGap
 		current.at = prev.at + newGap
@@ -23,7 +25,9 @@ function fixTiming(bpm)
 		::continue::
 	end
 
-	script:commit()
+	if changesMade then
+		script:commit()
+	end
 end
 
 function getCorrectGap(currentGap,fullBeatTiming)
