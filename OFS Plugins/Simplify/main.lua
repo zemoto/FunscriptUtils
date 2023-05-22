@@ -1,7 +1,7 @@
 -- OFS plugin to remove actions that don't add much to the motion (based on a set threshold)
 
 local Simplify = {}
-Simplify.Threshold = 36
+Simplify.Difference = 10
 
 function init()
 end
@@ -16,8 +16,8 @@ function gui()
 	
 	ofs.Separator()
 
-	Simplify.Threshold, thresholdChanged = ofs.Drag("Threshold", Simplify.Threshold, 0.1)
-	if thresholdChanged and ofs.Undo() then
+	Simplify.Difference, differenceChanged = ofs.SliderInt("Difference(%)", Simplify.Difference, 5, 50)
+	if differenceChanged and ofs.Undo() then
 		simplify()
 	end
 end
@@ -36,12 +36,13 @@ function simplify()
 		local nextAction = script.actions[idx + 1]
 		
 		-- Don't remove points that are at the top or bottom of a movement, or points that are meant to hold the actions in place
-		if ( action.pos < nextAction.pos and action.pos < previousAction.pos ) or ( action.pos > nextAction.pos and action.pos > previousAction.pos ) or 
-			( action.pos == nextAction.pos and action.pos ~= previousAction.pos ) or ( action.pos ~= nextAction.pos and action.pos == previousAction.pos ) then
+		if (action.pos < nextAction.pos and action.pos < previousAction.pos) or (action.pos > nextAction.pos and action.pos > previousAction.pos) or 
+		   (action.pos == nextAction.pos and action.pos ~= previousAction.pos) or (action.pos ~= nextAction.pos and action.pos == previousAction.pos) then
 			goto continue
 		end
 		
-		if math.abs( getSpeedBetweenActions( previousAction, action ) - getSpeedBetweenActions( action, nextAction ) ) < Simplify.Threshold then
+		if (previousAction.pos == action.pos and action.pos == nextAction.pos) or
+		   (math.abs(getSpeedBetweenActions(previousAction, action) / getSpeedBetweenActions(action, nextAction) - 1) < Simplify.Difference/100.0) then
 			script:markForRemoval(idx)
 			actionsToRemoveFound = true
 		end

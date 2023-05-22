@@ -2,26 +2,31 @@ local vibrateModule = require("vibrate")
 local changingMaxModule = require("changingMax")
 local doublerModule = require("doubler")
 local fillerModule = require("filler")
-local impactBounceModule = require("impactBounce")
+local sharpenImpactModule = require("sharpenImpact")
 local softenImpactModule = require("softenImpact")
 
 local Pattern = {}
 Pattern.SelectedPatternIdx = 1
+Pattern.SpeedLimit = 453
 
 local Vibrate = {}
-Vibrate.Speed = 365
+Vibrate.Intensity = 100
+Vibrate.Speed = Pattern.SpeedLimit
 Vibrate.TimeBetweenVibrations = 0.05
 
 local ChangingMax = {}
-ChangingMax.StartMax = 100
-ChangingMax.EndMax = 0
+ChangingMax.StartMax = 50
+ChangingMax.EndMax = 50
 
 local Filler = {}
 Filler.Distance = 40
 Filler.Gap = 1
 
-function binding.vibrate()
-	vibrateModule.vibrate(Vibrate.Speed,Vibrate.TimeBetweenVibrations)
+local SoftenImpact = {}
+SoftenImpact.PercentDistance = 15
+
+function binding.pattern()
+	applyPattern()
 end
 
 function init()
@@ -46,12 +51,25 @@ function gui()
 	
 	ofs.Separator()
 
-	Pattern.SelectedPatternIdx, changed = ofs.Combo( "", Pattern.SelectedPatternIdx, { "Vibrate", "Changing Max", "Doubler", "Filler", "Impact Bounce", "Soften Impact" } )
+	Pattern.SelectedPatternIdx, changed = ofs.Combo( "", Pattern.SelectedPatternIdx, { "Vibrate", "Changing Max", "Doubler", "Filler", "Sharpen Impact", "Soften Impact" } )
 
-	if Pattern.SelectedPatternIdx == 2 then -- Changing Max
+	if Pattern.SelectedPatternIdx == 1 then -- Vibrate
+		Vibrate.Intensity, intensityChanged = ofs.SliderInt("Intensity(%)", Vibrate.Intensity, 45, 100)
+		if intensityChanged then
+			Vibrate.Speed = Pattern.SpeedLimit * (Vibrate.Intensity / 100.0)
+			if ofs.Undo() then
+				applyPattern()
+			end
+		end
+	elseif Pattern.SelectedPatternIdx == 2 then -- Changing Max
 		ChangingMax.StartMax, startChanged = ofs.SliderInt("Start Max", ChangingMax.StartMax, 0, 100)
 		
 		ChangingMax.EndMax, endChanged = ofs.SliderInt("End Max", ChangingMax.EndMax, 0, 100)
+	elseif Pattern.SelectedPatternIdx == 6 then -- Soften Impact
+		SoftenImpact.PercentDistance, changed = ofs.SliderInt("Percent Distance", SoftenImpact.PercentDistance, 10, 40)
+		if changed and ofs.Undo() then
+			applyPattern()
+		end
 	end
 end
 
@@ -66,9 +84,9 @@ function applyPattern()
 		doublerModule.doubler()
 	elseif Pattern.SelectedPatternIdx == 4 then -- Filler
 		fillerModule.filler(Filler.Distance,Filler.Gap)
-	elseif Pattern.SelectedPatternIdx == 5 then -- Impact Bounce
-		impactBounceModule.impactBounce()
+	elseif Pattern.SelectedPatternIdx == 5 then -- Sharpen Impact
+		sharpenImpactModule.sharpenImpact()
 	elseif Pattern.SelectedPatternIdx == 6 then -- Soften Impact
-		softenImpactModule.softenImpact()
+		softenImpactModule.softenImpact(Pattern.SpeedLimit,SoftenImpact.PercentDistance)
 	end
 end

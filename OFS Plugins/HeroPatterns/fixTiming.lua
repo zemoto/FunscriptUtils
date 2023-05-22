@@ -2,8 +2,9 @@ function fixTiming(bpm)
 	local script = ofs.Script(ofs.ActiveIdx())
 	local actionCount = #script.actions
 	
-	local fullBeatTiming = 240.0 / bpm
+	local beatTime = 7.5 / bpm -- seconds between every 1/32th measure
 
+	local itemsToReview = {}
 	local changesMade = false
 	local totalMovement = 0
 	for i=2,actionCount do
@@ -14,15 +15,25 @@ function fixTiming(bpm)
 			goto continue
 		end
 		
+		prev.selected = false
 		current.at = current.at + totalMovement
 		local gap = current.at - prev.at
+		local newGap = getCorrectGap(gap,beatTime)
 		
-		local changesMade = changesMade or gap ~= newGap
-		local newGap = getCorrectGap(gap,fullBeatTiming)
+		if math.abs(gap - newGap) + totalMovement > 0.4 * beatTime then
+			table.insert(itemsToReview, i)
+		end
+		
+		changesMade = changesMade or gap ~= newGap
 		totalMovement = totalMovement - gap + newGap
 		current.at = prev.at + newGap
 		
 		::continue::
+	end
+	
+	-- Select the actions that were moved a lot for review
+	for idx,reviewIdx in ipairs(itemsToReview) do
+		script.actions[reviewIdx].selected = true;
 	end
 
 	if changesMade then
@@ -30,16 +41,12 @@ function fixTiming(bpm)
 	end
 end
 
-function getCorrectGap(currentGap,fullBeatTiming)
-	local closestBeatTiming = fullBeatTiming	
-	local newClosest = fullBeatTiming/2
-	while true do
-		if math.abs(newClosest - currentGap) < math.abs(closestBeatTiming - currentGap) then
-			closestBeatTiming = newClosest
-			newClosest = newClosest / 2
-		else
-			return closestBeatTiming
-		end
+function getCorrectGap(currentGap,beatTime)
+	local errorGap = currentGap % beatTime
+	if errorGap > beatTime * 0.5 then
+		return currentGap - errorGap + beatTime
+	else
+		return currentGap - errorGap
 	end
 end
 

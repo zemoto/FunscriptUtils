@@ -17,14 +17,14 @@ function gui()
 	
 	ofs.Separator()
 
-	MinMax.Max, maxChanged = ofs.SliderInt("Max", MinMax.Max, 20, 100)
+	MinMax.Max, maxChanged = ofs.SliderInt("Max", MinMax.Max, 10, 100)
 	if maxChanged then
 		if MinMax.Max <= MinMax.Min then
 			MinMax.Max = MinMax.Min + 1
 		end
 	end
 	
-	MinMax.Min, minChanged = ofs.SliderInt("Min", MinMax.Min, 0, 80)
+	MinMax.Min, minChanged = ofs.SliderInt("Min", MinMax.Min, 0, 90)
 	if minChanged then
 		if MinMax.Min >= MinMax.Max then
 			MinMax.Min = MinMax.Max - 1

@@ -13,7 +13,7 @@ function vibrate(speed,timeBetweenVibrations)
 	end
    
     local maxSpeedThreshold = speed / 2
-	local vibrationDistance = (speed * timeBetweenVibrations) / 2
+	local vibrationDistance = math.floor((speed * timeBetweenVibrations) / 2 + 0.5)
     local newActions = {}
 	local changesMade = false
 	for i=1,actionCount-1 do
@@ -23,7 +23,7 @@ function vibrate(speed,timeBetweenVibrations)
 		if not start.selected or not endAction.selected or speedBetweenStartAndEnd > maxSpeedThreshold then 
 			goto continue
 		end
-			
+		
 		local timePoints = {}
 		local currentTime = start.at + timeBetweenVibrations		
 		while currentTime < endAction.at - timeBetweenVibrations do
@@ -35,14 +35,20 @@ function vibrate(speed,timeBetweenVibrations)
 			goto continue
 		end
 		
-		if #timePoints % 2 == 1 then
+		-- Only want an odd number of points if the vibration will clip near the bounds
+		local vibrationWillClip = (start.pos < vibrationDistance and endAction.pos < vibrationDistance) or (start.pos > 100 - vibrationDistance and endAction.pos > 100 - vibrationDistance)
+		if not vibrationWillClip and #timePoints % 2 == 1 then
 			table.remove(timePoints, numberOfTimePoints)
 		end
 		
-		-- Place the vibrations along the line connecting the start and end
-		-- Also ensure the new actions dont clip out the top or bottom
-		local startPos = math.max(math.min(start.pos, 100 - vibrationDistance), vibrationDistance)
-		local endPos = math.max(math.min(endAction.pos, 100 - vibrationDistance), vibrationDistance)		
+		-- Ensure the vibration don't clip
+		local startPos = start.pos
+		local endPos = endAction.pos
+		if vibrationWillClip then
+			startPos = math.max(math.min(start.pos, 100 - vibrationDistance), vibrationDistance)
+			endPos = math.max(math.min(endAction.pos, 100 - vibrationDistance), vibrationDistance)
+		end
+		
 		local slope = (endPos - startPos) / (endAction.at - start.at)
 		local intercept = startPos - (slope * start.at)
 		
@@ -66,15 +72,6 @@ function vibrate(speed,timeBetweenVibrations)
 		
 		local numberOfNewActions = #vibrationActions
 		if numberOfNewActions > 0 then
-			-- When vibrating between two points in the same position, ensure we dont end on a redundant action
-			if slope == 0 and vibrationActions[numberOfNewActions].pos == endAction.pos then
-				table.remove(vibrationActions, numberOfNewActions)
-				numberOfNewActions = numberOfNewActions - 1
-				if numberOfNewActions == 0 then
-					goto continue
-				end
-			end
-			
 			-- Position the actions equal distances from start and end
 			local distanceFromStart = math.abs(vibrationActions[1].pos - start.pos)
 			local distanceFromEnd = math.abs(vibrationActions[numberOfNewActions].pos - endAction.pos )
@@ -102,8 +99,8 @@ function vibrate(speed,timeBetweenVibrations)
 					prevAction = vibrationActions[i-1]
 				end
 				
-				if getSpeedBetweenActions(prevAction,newAction) > speed then
-					local maxDistance = math.floor(speed * (newAction.at - prevAction.at))
+				local maxDistance = math.floor(speed * (newAction.at - prevAction.at))
+				if math.abs(prevAction.pos - newAction.pos) > maxDistance then				
 					if newAction.pos < prevAction.pos then
 						newAction.pos = prevAction.pos - maxDistance
 					else
@@ -111,12 +108,14 @@ function vibrate(speed,timeBetweenVibrations)
 					end
 				end
 				
-				if i == numberOfNewActions and getSpeedBetweenActions(newAction,endAction) > speed then
-					local maxDistance = math.floor(speed * (endAction.at - newAction.at))
-					if newAction.pos < endAction.pos then
-						newAction.pos = endAction.pos - maxDistance
-					else
-						newAction.pos = endAction.pos + maxDistance
+				if i == numberOfNewActions then
+					maxDistance = math.floor(speed * (endAction.at - newAction.at))
+					if math.abs(endAction.pos - newAction.pos) > maxDistance then
+						if newAction.pos < endAction.pos then
+							newAction.pos = endAction.pos - maxDistance
+						else
+							newAction.pos = endAction.pos + maxDistance
+						end
 					end
 				end
 			end

@@ -7,6 +7,8 @@ SpeedLimit.YellowSpeed = 300
 SpeedLimit.RedSpeed = 364
 SpeedLimit.BlackSpeed = 454
 SpeedLimit.OnlyAdjustTopActions = false
+SpeedLimit.MaintainHolds = true
+SpeedLimit.HoldsAllowHighSpeeds = true
 
 function init()
 end
@@ -39,7 +41,17 @@ function gui()
 	
 	ofs.Separator()
 
-	SpeedLimit.OnlyAdjustTopActions, onlyTopChanged = ofs.Checkbox( "Only adjust top actions", SpeedLimit.OnlyAdjustTopActions )
+	SpeedLimit.OnlyAdjustTopActions, changed = ofs.Checkbox( "Only adjust top actions", SpeedLimit.OnlyAdjustTopActions )
+	
+	SpeedLimit.MaintainHolds, maintainChanged = ofs.Checkbox( "Maintain Holds", SpeedLimit.MaintainHolds )
+	if maintainChanged and not SpeedLimit.MaintainHolds then
+		SpeedLimit.HoldsAllowHighSpeeds = false
+	end
+	
+	SpeedLimit.HoldsAllowHighSpeeds, holdsAllowChanged = ofs.Checkbox( "Holds allow high speeds", SpeedLimit.HoldsAllowHighSpeeds )
+	if holdsAllowChanged and SpeedLimit.HoldsAllowHighSpeeds then
+		SpeedLimit.MaintainHolds = true
+	end
 end
 
 function limitSpeed(speedLimit)
@@ -56,10 +68,16 @@ function limitSpeed(speedLimit)
 		local nextAction = nil
 		if idx ~= actionCount then
 			nextAction = script.actions[idx + 1]
+		elseif SpeedLimit.HoldsAllowHighSpeeds then
+			goto continue
 		end
-		
-		local nextActionIsHold = nextAction ~= nil and nextAction.pos == action.pos
-		local prevActionIsHold = previousAction.pos == action.pos
+
+		local nextActionIsHold = false
+		local prevActionIsHold = false
+		if SpeedLimit.MaintainHolds then
+			nextActionIsHold = nextAction ~= nil and nextAction.pos == action.pos
+			prevActionIsHold = previousAction.pos == action.pos
+		end
 		
 		-- A "top" action is one where it has a higher or equal position than both the previous and next action
 		if SpeedLimit.OnlyAdjustTopActions and ( previousAction.pos > action.pos or ( nextAction ~= nil and nextAction.pos > action.pos ) ) then
@@ -68,19 +86,35 @@ function limitSpeed(speedLimit)
 		
 		if getSpeedBetweenActions(previousAction, action) > speedLimit then
 			local maxDistance = math.floor(speedLimit * (action.at - previousAction.at))
-				
+			if SpeedLimit.HoldsAllowHighSpeeds and nextActionIsHold then
+				maxDistance = math.floor(speedLimit * (nextAction.at - previousAction.at))
+			end
+
 			if previousAction.pos > action.pos then
 				maxDistance = maxDistance * -1
 			end
 		
-			action.pos = clamp( previousAction.pos + maxDistance, 0, 100 )
-			changesMade = true
+			local newPos = clamp( previousAction.pos + maxDistance, 0, 100 )
+			changesMade = changesMade or action.pos ~= newPos
+			action.pos = newPos
 		end
 		
 		if SpeedLimit.OnlyAdjustTopActions and nextAction ~= nil and getSpeedBetweenActions(action, nextAction) > speedLimit then
 			local maxDistance = math.floor(speedLimit * (nextAction.at - action.at))
-			action.pos = clamp( nextAction.pos + maxDistance, 0, 100 )
-			changesMade = true
+			if SpeedLimit.HoldsAllowHighSpeeds then
+				if idx == actionCount - 1 then
+					goto continue
+				end
+				
+				local nextNextAction = script.actions[idx + 2]
+				if nextNextAction.pos == nextAction.pos then
+					maxDistance = math.floor(speedLimit * (nextNextAction.at - action.at))
+				end
+			end
+			
+			local newPos = clamp( nextAction.pos + maxDistance, 0, 100 )
+			changesMade = changesMade or action.pos ~= newPos
+			action.pos = newPos
 		end
 
 		if nextActionIsHold then

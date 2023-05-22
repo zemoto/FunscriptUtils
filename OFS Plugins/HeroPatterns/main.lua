@@ -35,8 +35,6 @@ function gui()
 end
 
 function applyPattern()
-	local script = ofs.Script(ofs.ActiveIdx())
-	
 	if HeroPatterns.SelectedPatternIdx == 1 then -- Match Pattern
 		if MatchPattern.IsHardMode then
 			matchPatternModule.matchPattern.hard()

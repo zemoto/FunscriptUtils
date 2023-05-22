@@ -28,12 +28,21 @@ function changingMax(startMax,endMax)
 	local slope = (endMax - startMax) / (endAction.at - startAction.at)
 	local intercept = startMax - (slope * startAction.at)
 	
+	local localMax = 0
+	for i=startIdx,endIdx do
+		local action = script.actions[i]
+		localMax = math.max(localMax, action.pos)
+	end
+	
 	local changesMade = false
 	for i=startIdx,endIdx do
 		local action = script.actions[i]
 		local maxAtTime = math.floor((slope * action.at) + intercept)
-		if action.pos > maxAtTime then		
-			action.pos = maxAtTime
+		local adjustment = maxAtTime/localMax
+		
+		local newPos = math.min(action.pos * adjustment, 100)
+		if action.pos ~= newPos then
+			action.pos = newPos
 			changesMade = true
 		end
 	end
