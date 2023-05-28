@@ -1,0 +1,36 @@
+<Window x:Class="VlcScriptPlayer.UI.VideoPlayer.VideoPlayerWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wpf="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
+        xmlns:videoPlayer="clr-namespace:VlcScriptPlayer.UI.VideoPlayer"
+        mc:Ignorable="d"
+        x:Name="Root"
+        WindowStartupLocation="CenterScreen"
+        AllowsTransparency="True"
+        ShowActivated="True"
+        SizeToContent="Manual"
+        WindowStyle="None"
+        WindowState="Maximized"
+        Closing="OnClosing"
+        Cursor="Arrow">
+   <wpf:VideoView x:Name="VideoPlayer"
+                  Background="Black">
+      <Grid MouseLeave="OnMouseLeavingVideo"
+            MouseMove="OnMouseMoveOverVideo"
+            MouseWheel="OnMouseWheel">
+         <Rectangle x:Name="VideoClickHandler"
+                    Fill="#01FFFFFF" />
+
+         <videoPlayer:PlayPauseIndicator x:Name="PlayPauseindicator"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center" />
+
+         <videoPlayer:VideoControls x:Name="VideoControls"
+                                    VerticalAlignment="Bottom"
+                                    Visibility="Collapsed" />
+      </Grid>
+   </wpf:VideoView>
+</Window>

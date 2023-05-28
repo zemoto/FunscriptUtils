@@ -1,0 +1,197 @@
+﻿<Window x:Class="VlcScriptPlayer.UI.MainWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:handy="clr-namespace:VlcScriptPlayer.Handy"
+        xmlns:ui="clr-namespace:VlcScriptPlayer.UI"
+        xmlns:commonui="clr-namespace:ZemotoCommon.UI"
+        mc:Ignorable="d"
+        Title="VLC Script Player"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        d:DataContext="{d:DesignInstance Type={x:Type ui:MainWindowViewModel}}">
+   <Window.Resources>
+      <commonui:InvertBoolConverter x:Key="InvertBoolConverter" />
+
+      <commonui:BoolToObjectConverter x:Key="ConnectedTextColorConverter"
+                                      TrueValue="Green"
+                                      FalseValue="Red" />
+
+      <Style TargetType="{x:Type Button}">
+         <Setter Property="Height"
+                 Value="24" />
+         <Setter Property="Padding"
+                 Value="6,0" />
+      </Style>
+
+      <Style TargetType="{x:Type TextBox}">
+         <Setter Property="Height"
+                 Value="24" />
+         <Setter Property="MinWidth"
+                 Value="100" />
+      </Style>
+
+   </Window.Resources>
+   <Grid>
+      <Grid.RowDefinitions>
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+         <ColumnDefinition Width="Auto" />
+         <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <!--Connection-->
+      <GroupBox Header="Handy"
+                IsEnabled="{Binding RequestInProgress, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}"
+                Grid.Row="0"
+                Grid.Column="0"
+                Margin="8,4,4,4">
+         <StackPanel Margin="4">
+            <TextBlock FontWeight="SemiBold"
+                       Text="{Binding IsConnected, Mode=OneWay, StringFormat={}Connected: {0}}"
+                       Foreground="{Binding IsConnected, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}"/>
+            
+            <Grid Margin="0,4,0,0">
+               <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+               </Grid.ColumnDefinitions>
+
+               <TextBox Grid.Column="0"
+                        Text="{Binding ConnectionId, Mode=TwoWay}"
+                        VerticalContentAlignment="Center" />
+
+               <Button Grid.Column="1"
+                       Margin="4,0,0,0"
+                       Content="Connect"
+                       Command="{Binding ConnectCommand, Mode=OneTime}" />
+            </Grid>
+            
+            <TextBlock Margin="0,4,0,0"
+                       FontWeight="SemiBold"
+                       Text="{Binding CurrentOffset, Mode=OneWay, StringFormat={}Current Offset: {0}ms}" />
+
+            <Grid Margin="0,4,0,0">
+               <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+               </Grid.ColumnDefinitions>
+               <TextBox Grid.Column="0"
+                        Text="{Binding DesiredOffset, Mode=TwoWay}"
+                        VerticalContentAlignment="Center"
+                        IsEnabled="{Binding IsConnected, Mode=OneWay}" />
+
+               <Button Grid.Column="1"
+                       Margin="4,0,0,0"
+                       Content="Set Offset"
+                       Command="{Binding SetOffsetCommand, Mode=OneTime}"
+                       IsEnabled="{Binding IsConnected, Mode=OneWay}" />
+            </Grid>
+         </StackPanel>
+      </GroupBox>
+
+      <!--Video/Script-->
+      <GroupBox Header="Video/Script"
+                Grid.Row="0"
+                Grid.Column="1"
+                Margin="4,4,8,4">
+         <Grid Margin="4">
+            <Grid.RowDefinitions>
+               <RowDefinition Height="Auto" />
+               <RowDefinition Height="4" />
+               <RowDefinition Height="Auto" />
+               <RowDefinition Height="8" />
+               <RowDefinition Height="Auto" />
+               <RowDefinition Height="4" />
+               <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+               <ColumnDefinition Width="*"
+                                 MinWidth="400" />
+               <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Row="0"
+                     Grid.Column="0"
+                     IsReadOnly="True"
+                     Text="{Binding VideoFilePath, Mode=OneWay}"
+                     VerticalContentAlignment="Center" />
+
+            <Button Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="4,0,0,0"
+                    Content="Select"
+                    Command="{Binding SelectVideoCommand, Mode=OneTime}" />
+
+            <TextBox Grid.Row="2"
+                     Grid.Column="0"
+                     IsReadOnly="True"
+                     Text="{Binding ScriptFilePath, Mode=OneWay}"
+                     VerticalContentAlignment="Center" />
+
+            <Button Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="4,0,0,0"
+                    Content="Select"
+                    Command="{Binding SelectScriptCommand, Mode=OneTime}" />
+
+            <TextBlock Grid.Row="4"
+                       Grid.Column="0"
+                       Text="Script Folders"
+                       VerticalAlignment="Bottom" />
+
+            <StackPanel Grid.Row="4"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="99"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+               <Button Content="Add"
+                       Command="{Binding AddScriptFolderCommand, Mode=OneTime}" />
+               <Button Margin="4,0,0,0"
+                       Content="Remove"
+                       Command="{Binding RemoveScriptFolderCommand, Mode=OneTime}" />
+            </StackPanel>
+
+            <ListBox Grid.Row="6"
+                     Grid.Column="0"
+                     Grid.ColumnSpan="99"
+                     Height="70"
+                     SelectedItem="{Binding SelectedScriptFilePath, Mode=OneWayToSource}"
+                     SelectionMode="Single"
+                     ItemsSource="{Binding ScriptFolders, Mode=OneWay}" />
+         </Grid>
+
+      </GroupBox>
+
+      <Button Grid.Row="1"
+              Grid.Column="0"
+              Grid.ColumnSpan="99"
+              Margin="8,0"
+              Content="Upload Script and Launch Player"
+              IsEnabled="{Binding ScriptAndVideoReady, Mode=OneWay}"
+              Command="{Binding UploadScriptCommand, Mode=OneTime}" />
+
+      <TextBox x:Name="LogTextBox"
+               Grid.Row="2"
+               Grid.Column="0"
+               Grid.ColumnSpan="99"
+               Height="100"
+               Width="670"
+               Padding="4"
+               Margin="8,4,8,8"
+               TextChanged="OnLogTextChanged"
+               Text="{Binding Source={x:Static handy:HandyLogger.Instance}, Path=LogData, Mode=OneWay}"
+               FontFamily="Consolas"
+               FontSize="12"
+               IsReadOnly="True"
+               VerticalScrollBarVisibility="Auto"
+               HorizontalScrollBarVisibility="Disabled"
+               TextWrapping="Wrap" />
+   </Grid>
+</Window>
