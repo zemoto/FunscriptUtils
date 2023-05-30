@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -31,6 +31,7 @@ internal partial class VideoPlayerWindow
       var vlc = (VlcManager)sender;
       vlc.MediaSetupComplete -= OnMediaSetupComplete;
 
+      VolumeOverlay.Player = vlc.Player;
       PlayPauseindicator.Player = vlc.Player;
       VideoControls.Player = vlc.Player;
    }

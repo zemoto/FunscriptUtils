@@ -24,6 +24,10 @@
          <Rectangle x:Name="VideoClickHandler"
                     Fill="#01FFFFFF" />
 
+         <videoPlayer:VolumeControl x:Name="VolumeOverlay"
+                                    Margin="0,28,100,28"
+                                    HorizontalAlignment="Right" />
+
          <videoPlayer:PlayPauseIndicator x:Name="PlayPauseindicator"
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center" />
