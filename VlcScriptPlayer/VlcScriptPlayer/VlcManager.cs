@@ -58,7 +58,7 @@ internal sealed class VlcManager : IDisposable
 			Player.SetPause( true );
 			Player.Time = 0;
 
-			Thread.Sleep( 200 ); // Give VLC time to process
+			Thread.Sleep( 400 ); // Give VLC time to process
 			Application.Current.Dispatcher.BeginInvoke( () => MediaSetupComplete.Invoke( this, EventArgs.Empty ) );
 		} );
 	}

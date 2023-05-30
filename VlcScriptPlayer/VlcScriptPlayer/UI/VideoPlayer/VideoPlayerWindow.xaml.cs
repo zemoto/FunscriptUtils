@@ -30,6 +30,7 @@ internal partial class VideoPlayerWindow
 
 	private void OnMediaSetupComplete( object sender, EventArgs e )
 	{
+		_vlc.MediaSetupComplete -= OnMediaSetupComplete;
 		PlayPauseindicator.Player = VideoPlayer.MediaPlayer;
 		VideoControls.Player = VideoPlayer.MediaPlayer;
 	}
