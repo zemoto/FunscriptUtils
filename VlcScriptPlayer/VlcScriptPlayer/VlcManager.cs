@@ -28,6 +28,7 @@ internal sealed class VlcManager : IDisposable
 
 		Player.EndReached += OnEndReached;
 		Player.VolumeChanged += OnVolumeChanged;
+		Player.Paused += OnPlayerPaused;
 	}
 
 	public void Dispose()
@@ -82,4 +83,7 @@ internal sealed class VlcManager : IDisposable
 			_hideMarqueeTimer.Change( 1000, -1 );
 		} );
 	}
+
+	// Force the player to resync itself with where it paused, as this can be incorrect sometimes
+	private void OnPlayerPaused( object sender, EventArgs e ) => Player.Position -= 0.0001f;
 }
