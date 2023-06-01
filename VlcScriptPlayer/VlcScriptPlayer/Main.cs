@@ -1,4 +1,4 @@
-﻿using Ookii.Dialogs.Wpf;
+using Ookii.Dialogs.Wpf;
 using System;
 using System.IO;
 using System.Linq;
@@ -175,7 +175,7 @@ internal sealed class Main : IDisposable
       var videoPlayer = new VideoPlayerWindow( _vlcManager );
       using ( var monitor = new HandyMonitor( _vlcManager, _handyApi ) )
       {
-         _vlcManager.OpenVideo( _model.VideoFilePath );
+         _vlcManager.OpenVideo( _model.VideoFilePath, _model.BoostBase );
          videoPlayer.ShowDialog();
          _ = ThreadPool.QueueUserWorkItem( _ => _vlcManager.Player.Stop() );
       }

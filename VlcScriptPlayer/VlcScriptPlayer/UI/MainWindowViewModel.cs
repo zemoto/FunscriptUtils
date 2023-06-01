@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using ZemotoCommon.UI;
 
@@ -45,6 +45,13 @@ internal sealed class MainWindowViewModel : ViewModelBase
    {
       get => _desiredOffset;
       set => SetProperty( ref _desiredOffset, value );
+   }
+
+   private bool _boostBase;
+   public bool BoostBase
+   {
+      get => _boostBase;
+      set => SetProperty( ref _boostBase, value );
    }
 
    private string _videoFilePath;

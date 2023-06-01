@@ -55,8 +55,8 @@
          <StackPanel Margin="4">
             <TextBlock FontWeight="SemiBold"
                        Text="{Binding IsConnected, Mode=OneWay, StringFormat={}Connected: {0}}"
-                       Foreground="{Binding IsConnected, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}"/>
-            
+                       Foreground="{Binding IsConnected, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
+
             <Grid Margin="0,4,0,0">
                <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
@@ -72,7 +72,7 @@
                        Content="Connect"
                        Command="{Binding ConnectCommand, Mode=OneTime}" />
             </Grid>
-            
+
             <TextBlock Margin="0,4,0,0"
                        FontWeight="SemiBold"
                        Text="{Binding CurrentOffset, Mode=OneWay, StringFormat={}Current Offset: {0}ms}" />
@@ -93,6 +93,10 @@
                        Command="{Binding SetOffsetCommand, Mode=OneTime}"
                        IsEnabled="{Binding IsConnected, Mode=OneWay}" />
             </Grid>
+
+            <CheckBox Margin="0,8,0,0"
+                      Content="Boost Base"
+                      IsChecked="{Binding BoostBase, Mode=TwoWay}" />
          </StackPanel>
       </GroupBox>
 
