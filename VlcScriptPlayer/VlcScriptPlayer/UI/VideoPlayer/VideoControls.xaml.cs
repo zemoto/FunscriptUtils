@@ -1,10 +1,12 @@
-﻿using LibVLCSharp.Shared;
+using LibVLCSharp.Shared;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using VlcScriptPlayer.Vlc;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI.VideoPlayer;
@@ -14,42 +16,50 @@ internal partial class VideoControls
    private readonly DispatcherTimer _playbackTimer;
 
    private MediaPlayer _player;
+   private VlcFilter _filter;
    private TimeSpan _videoDuration;
 
    public VideoControls()
    {
-      _playbackTimer = new DispatcherTimer( TimeSpan.FromSeconds( 1 ), DispatcherPriority.Normal, OnPlaybackTimerTick, Dispatcher ) { IsEnabled = false };
+      _playbackTimer = new DispatcherTimer( TimeSpan.FromMilliseconds( 500 ), DispatcherPriority.Normal, OnPlaybackTimerTick, Dispatcher ) { IsEnabled = false };
 
       InitializeComponent();
 
       UniversalClick.AddClickHandler( PositionTrack, OnTrackClicked );
    }
 
-   public void SetPlayer( MediaPlayer player )
+   public void SetVlc( VlcManager vlc )
    {
-      _player = player;
+      _player = vlc.Player;
       _player.Playing += OnPlayerPlaying;
       _player.Paused += OnPlayerPaused;
       _player.Stopped += OnPlayerStopped;
+
+      _filter = vlc.Filter;
+      _filter.PropertyChanged += OnFilterPropertyChanged;
+
       Dispatcher.BeginInvoke( () =>
       {
          _videoDuration = TimeSpan.FromMilliseconds( _player.Media.Duration );
          DurationLabel.Text = TimeSpanToString( _videoDuration );
          CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.Zero );
+         UpdateFilterState();
       } );
    }
 
    private void OnUnloaded( object sender, RoutedEventArgs e )
    {
-      var player = _player;
-      if ( player is null )
+      if ( _player is not null )
       {
-         return;
+         _player.Playing -= OnPlayerPlaying;
+         _player.Paused -= OnPlayerPaused;
+         _player.Stopped -= OnPlayerStopped;
       }
 
-      player.Playing -= OnPlayerPlaying;
-      player.Paused -= OnPlayerPaused;
-      player.Stopped -= OnPlayerStopped;
+      if ( _filter is not null )
+      {
+         _filter.PropertyChanged -= OnFilterPropertyChanged;
+      }
    }
 
    private void OnPlaybackTimerTick( object sender, EventArgs e )
@@ -62,19 +72,9 @@ internal partial class VideoControls
 
    private void OnPlayerPaused( object sender, EventArgs e ) => _playbackTimer.Stop();
 
-   private void OnPlayerPositionChanged( object sender, MediaPlayerPositionChangedEventArgs e )
-   {
-      Dispatcher.BeginInvoke( () =>
-      {
-         var time = TimeSpan.FromMilliseconds( _player.Time );
-         CurrentTimeLabel.Text = TimeSpanToString( time );
-
-         SetTrackProgress( _player.Position );
-      } );
-   }
-
    private void OnPlayerStopped( object sender, EventArgs e )
    {
+      _playbackTimer.Stop();
       Dispatcher.BeginInvoke( () =>
       {
          CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.Zero );
@@ -82,11 +82,31 @@ internal partial class VideoControls
       } );
    }
 
+   private void OnFilterPropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e ) => UpdateFilterState();
+
+   private void UpdateFilterState()
+   {
+      var filterString = new StringBuilder( 3 );
+      if ( _filter.VolumeAmpEnabled )
+      {
+         filterString.Append( 'V' );
+      }
+      if ( _filter.SaturationBoostEnabled )
+      {
+         filterString.Append( 'S' );
+      }
+      if ( _filter.BaseBoostEnabled )
+      {
+         filterString.Append( 'B' );
+      }
+      FilterIndicator.Text = filterString.ToString();
+   }
+
    private string TimeSpanToString( TimeSpan time ) => _videoDuration.TotalHours >= 1 ? time.ToString( @"h\:mm\:ss" ) : time.ToString( @"m\:ss" );
 
-   private void SetTrackProgress( double value )
+   private void SetTrackProgress( float value )
    {
-      value = Math.Clamp( value, 0, 100 );
+      value = Math.Clamp( value, 0f, 1f );
       TrackIndicator.Width = value * PositionTrack.ActualWidth;
    }
 
