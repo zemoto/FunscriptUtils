@@ -7,7 +7,7 @@ using VlcScriptPlayer.Vlc;
 
 namespace VlcScriptPlayer.UI.VideoPlayer;
 
-internal partial class VolumeControl
+internal sealed partial class VolumeControl
 {
    private readonly DispatcherTimer _fadeOutTimer;
    private static readonly DoubleAnimation _fadeOutAnimation = new( 1.0, 0.0, TimeSpan.FromMilliseconds( 250 ) );

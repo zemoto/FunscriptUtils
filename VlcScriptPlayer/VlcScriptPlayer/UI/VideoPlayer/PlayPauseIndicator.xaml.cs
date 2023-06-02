@@ -6,7 +6,7 @@ using MediaPlayer = LibVLCSharp.Shared.MediaPlayer;
 
 namespace VlcScriptPlayer.UI.VideoPlayer;
 
-internal partial class PlayPauseIndicator
+internal sealed partial class PlayPauseIndicator
 {
    private static readonly ScaleTransform _scaleTransform = new( 0.5, 0.5 );
    private static readonly DoubleAnimation _animation = new( 0.5, 1.0, TimeSpan.FromMilliseconds( 250 ) );

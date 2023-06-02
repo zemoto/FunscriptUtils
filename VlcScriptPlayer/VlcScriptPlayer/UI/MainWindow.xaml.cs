@@ -1,6 +1,6 @@
 ﻿namespace VlcScriptPlayer.UI;
 
-internal partial class MainWindow
+internal sealed partial class MainWindow
 {
    public MainWindow( MainWindowViewModel model )
    {

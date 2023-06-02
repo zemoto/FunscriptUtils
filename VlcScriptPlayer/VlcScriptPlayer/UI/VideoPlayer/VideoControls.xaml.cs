@@ -1,5 +1,6 @@
 using LibVLCSharp.Shared;
 using System;
+using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,7 +12,7 @@ using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI.VideoPlayer;
 
-internal partial class VideoControls
+internal sealed partial class VideoControls
 {
    private readonly DispatcherTimer _playbackTimer;
 
@@ -102,7 +103,7 @@ internal partial class VideoControls
       FilterIndicator.Text = filterString.ToString();
    }
 
-   private string TimeSpanToString( TimeSpan time ) => _videoDuration.TotalHours >= 1 ? time.ToString( @"h\:mm\:ss" ) : time.ToString( @"m\:ss" );
+   private string TimeSpanToString( TimeSpan time ) => time.ToString( _videoDuration.TotalHours >= 1 ? @"h\:mm\:ss" : @"m\:ss", CultureInfo.InvariantCulture );
 
    private void SetTrackProgress( float value )
    {
@@ -149,7 +150,7 @@ internal partial class VideoControls
       if ( _playbackTimer.IsEnabled )
       {
          _player.SetPause( true );
-         await Task.Delay( 200 );
+         await Task.Delay( 200 ).ConfigureAwait( true );
       }
 
       _player.Time = (long)( newPosition * _videoDuration.TotalMilliseconds );

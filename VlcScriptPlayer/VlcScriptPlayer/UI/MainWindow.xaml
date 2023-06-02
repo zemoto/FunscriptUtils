@@ -48,7 +48,6 @@
 
       <!--Settings-->
       <GroupBox Header="Settings"
-                IsEnabled="{Binding RequestInProgress, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}"
                 Grid.Row="0"
                 Grid.Column="0"
                 Margin="8,4,4,4">
@@ -57,7 +56,8 @@
                        Text="{Binding IsConnected, Mode=OneWay, StringFormat={}Connected: {0}}"
                        Foreground="{Binding IsConnected, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
 
-            <Grid Margin="0,4,0,0">
+            <Grid Margin="0,4,0,0"
+                  IsEnabled="{Binding RequestInProgress, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}">
                <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
@@ -77,7 +77,8 @@
                        FontWeight="SemiBold"
                        Text="{Binding CurrentOffset, Mode=OneWay, StringFormat={}Current Offset: {0}ms}" />
 
-            <Grid Margin="0,4,0,0">
+            <Grid Margin="0,4,0,0"
+                  IsEnabled="{Binding RequestInProgress, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}">
                <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />

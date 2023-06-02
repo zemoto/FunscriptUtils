@@ -7,6 +7,8 @@
 		<LangVersion>latest</LangVersion>
 		<ApplicationIcon>Logo.ico</ApplicationIcon>
 		<PlatformTarget>x64</PlatformTarget>
+		<EnableNETAnalyzers>True</EnableNETAnalyzers>
+		<AnalysisLevel>latest-recommended</AnalysisLevel>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

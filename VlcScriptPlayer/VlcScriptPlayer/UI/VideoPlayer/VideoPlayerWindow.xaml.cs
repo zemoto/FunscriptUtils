@@ -7,7 +7,7 @@ using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI.VideoPlayer;
 
-internal partial class VideoPlayerWindow
+internal sealed partial class VideoPlayerWindow
 {
    private readonly DispatcherTimer _hideScrubberTimer;
    private readonly VlcFilter _vlcFilter;

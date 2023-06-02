@@ -5,7 +5,7 @@ using System.Windows;
 
 namespace VlcScriptPlayer;
 
-internal partial class App
+internal sealed partial class App
 {
    private const string _configName = "config.json";
    private static readonly string _configFilePath = Path.Combine( Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location ), _configName );
@@ -29,8 +29,7 @@ internal partial class App
       _main.Dispose();
    }
 
-
-   public Config ReadConfig()
+   public static Config ReadConfig()
    {
       if ( !File.Exists( _configFilePath ) )
       {

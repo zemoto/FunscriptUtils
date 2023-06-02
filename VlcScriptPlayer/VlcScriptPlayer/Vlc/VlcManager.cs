@@ -69,5 +69,5 @@ internal sealed class VlcManager : IDisposable
    private void OnEndReached( object sender, EventArgs e ) => _ = ThreadPool.QueueUserWorkItem( _ => Player.Stop() );
 
    // Force the player to resync itself with where it paused, as this can be incorrect sometimes
-   private void OnPlayerPaused( object sender, EventArgs e ) => Player.Position -= 0.0001f;
+   private void OnPlayerPaused( object sender, EventArgs e ) => Player.Position -= float.Epsilon;
 }
