@@ -46,8 +46,8 @@
          <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
 
-      <!--Connection-->
-      <GroupBox Header="Handy"
+      <!--Settings-->
+      <GroupBox Header="Settings"
                 IsEnabled="{Binding RequestInProgress, Mode=OneWay, Converter={StaticResource InvertBoolConverter}}"
                 Grid.Row="0"
                 Grid.Column="0"
@@ -97,6 +97,10 @@
             <CheckBox Margin="0,8,0,0"
                       Content="Boost Base"
                       IsChecked="{Binding BoostBase, Mode=TwoWay}" />
+
+            <CheckBox Margin="0,8,0,0"
+                      Content="Boost Saturation"
+                      IsChecked="{Binding BoostSaturation, Mode=TwoWay}" />
          </StackPanel>
       </GroupBox>
 

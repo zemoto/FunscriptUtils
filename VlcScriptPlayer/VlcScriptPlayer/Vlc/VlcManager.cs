@@ -36,10 +36,10 @@ internal sealed class VlcManager : IDisposable
       Player.Dispose();
    }
 
-   public void OpenVideo( string filePath, bool boostBase )
+   public void OpenVideo( string filePath, IFilterConfig filterConfig )
    {
+      Filter.SetFilters( filterConfig );
       Filter.SetVolumeAmpEnabled( false );
-      Filter.SetBaseBoostEnabled( boostBase );
 
       Player.Buffering += OnPlayerFirstTimeBuffering;
       var media = new Media( _libvlc, new Uri( filePath ) );

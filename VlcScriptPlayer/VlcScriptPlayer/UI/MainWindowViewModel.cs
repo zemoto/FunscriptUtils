@@ -1,10 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using VlcScriptPlayer.Vlc;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI;
 
-internal sealed class MainWindowViewModel : ViewModelBase
+internal sealed class MainWindowViewModel : ViewModelBase, IFilterConfig
 {
    public MainWindowViewModel( Config config )
    {
@@ -52,6 +53,13 @@ internal sealed class MainWindowViewModel : ViewModelBase
    {
       get => _boostBase;
       set => SetProperty( ref _boostBase, value );
+   }
+
+   private bool _boostSaturation;
+   public bool BoostSaturation
+   {
+      get => _boostSaturation;
+      set => SetProperty( ref _boostSaturation, value );
    }
 
    private string _videoFilePath;

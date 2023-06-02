@@ -3,6 +3,12 @@ using System;
 
 namespace VlcScriptPlayer.Vlc;
 
+internal interface IFilterConfig
+{
+   bool BoostBase { get; }
+   bool BoostSaturation { get; }
+}
+
 internal sealed class VlcFilter : IDisposable
 {
    private readonly MediaPlayer _player;
@@ -11,15 +17,24 @@ internal sealed class VlcFilter : IDisposable
 
    public bool IsBaseBoostEnabled { get; private set; }
    public bool IsVolumeAmpEnabled { get; private set; }
+   public bool IsSaturationBoostEnabled { get; private set; }
 
    public VlcFilter( MediaPlayer player, VlcMarquee marquee )
    {
       _player = player;
       _marquee = marquee;
       _equalizer = new Equalizer( 0 );
+      _player.SetEqualizer( _equalizer );
+      _player.SetAdjustInt( VideoAdjustOption.Enable, 1 );
    }
 
    public void Dispose() => _equalizer.Dispose();
+
+   public void SetFilters( IFilterConfig filterConfig )
+   {
+      SetBaseBoostEnabled( filterConfig.BoostBase );
+      SetSaturationBoostEnabled( filterConfig.BoostSaturation );
+   }
 
    public void SetVolumeAmpEnabled( bool enable )
    {
@@ -54,6 +69,18 @@ internal sealed class VlcFilter : IDisposable
          _equalizer.SetAmp( 0f, 2 );
       }
       _player.SetEqualizer( _equalizer );
-      _marquee.DisplayMarqueeText( IsBaseBoostEnabled ? "Base Boost Enabled" : "Base Boost Disabled" );
+      _marquee.DisplayMarqueeText( enable ? "Base Boost Enabled" : "Base Boost Disabled" );
+   }
+
+   public void SetSaturationBoostEnabled( bool enable )
+   {
+      if ( IsSaturationBoostEnabled == enable )
+      {
+         return;
+      }
+
+      IsSaturationBoostEnabled = enable;
+      _player.SetAdjustFloat( VideoAdjustOption.Saturation, enable ? 1.5f: 1f );
+      _marquee.DisplayMarqueeText( enable ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
    }
 }

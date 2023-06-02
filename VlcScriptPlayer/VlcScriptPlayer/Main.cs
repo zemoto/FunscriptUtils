@@ -176,7 +176,7 @@ internal sealed class Main : IDisposable
       var videoPlayer = new VideoPlayerWindow( _vlc );
       using ( new VlcScriptSynchronizer( _vlc, _handyApi ) )
       {
-         _vlc.OpenVideo( _model.VideoFilePath, _model.BoostBase );
+         _vlc.OpenVideo( _model.VideoFilePath, _model );
          videoPlayer.ShowDialog();
          _ = ThreadPool.QueueUserWorkItem( _ => _vlc.Player.Stop() );
       }

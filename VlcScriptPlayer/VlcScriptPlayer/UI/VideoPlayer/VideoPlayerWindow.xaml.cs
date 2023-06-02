@@ -70,6 +70,11 @@ internal partial class VideoPlayerWindow
             _vlcFilter.SetBaseBoostEnabled( !_vlcFilter.IsBaseBoostEnabled );
             break;
          }
+         case Key.S when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
+         {
+            _vlcFilter.SetSaturationBoostEnabled( !_vlcFilter.IsSaturationBoostEnabled );
+            break;
+         }
       }
    }
 
