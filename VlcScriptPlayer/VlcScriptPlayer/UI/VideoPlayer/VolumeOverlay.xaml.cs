@@ -39,7 +39,7 @@ internal partial class VolumeControl
       {
          _fadeOutTimer.Stop();
 
-         if ( _vlc.Filter.IsVolumeAmpEnabled )
+         if ( _vlc.Filter.VolumeAmpEnabled )
          {
             VolumeTextBlock.Text = "Volume 200%";
             VolumeIndicator.Height = VolumeTrack.ActualHeight;

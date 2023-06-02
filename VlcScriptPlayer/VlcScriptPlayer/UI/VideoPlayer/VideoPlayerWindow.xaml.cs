@@ -67,12 +67,12 @@ internal partial class VideoPlayerWindow
          }
          case Key.B when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
          {
-            _vlcFilter.SetBaseBoostEnabled( !_vlcFilter.IsBaseBoostEnabled );
+            _vlcFilter.BaseBoostEnabled = !_vlcFilter.BaseBoostEnabled;
             break;
          }
          case Key.S when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
          {
-            _vlcFilter.SetSaturationBoostEnabled( !_vlcFilter.IsSaturationBoostEnabled );
+            _vlcFilter.SaturationBoostEnabled = !_vlcFilter.SaturationBoostEnabled;
             break;
          }
       }
@@ -113,7 +113,7 @@ internal partial class VideoPlayerWindow
       {
          if ( volume == 100 )
          {
-            _vlcFilter.SetVolumeAmpEnabled( true );
+            _vlcFilter.VolumeAmpEnabled = true;
          }
          else
          {
@@ -124,9 +124,9 @@ internal partial class VideoPlayerWindow
       }
       else if ( e.Delta < 0 )
       {
-         if ( _vlcFilter.IsVolumeAmpEnabled )
+         if ( _vlcFilter.VolumeAmpEnabled )
          {
-            _vlcFilter.SetVolumeAmpEnabled( false );
+            _vlcFilter.VolumeAmpEnabled = false;
          }
          else
          {

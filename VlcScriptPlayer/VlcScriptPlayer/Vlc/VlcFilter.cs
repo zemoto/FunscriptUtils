@@ -1,5 +1,6 @@
 ﻿using LibVLCSharp.Shared;
 using System;
+using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc;
 
@@ -9,15 +10,11 @@ internal interface IFilterConfig
    bool BoostSaturation { get; }
 }
 
-internal sealed class VlcFilter : IDisposable
+internal sealed class VlcFilter : ViewModelBase, IDisposable
 {
    private readonly MediaPlayer _player;
    private readonly VlcMarquee _marquee;
    private readonly Equalizer _equalizer;
-
-   public bool IsBaseBoostEnabled { get; private set; }
-   public bool IsVolumeAmpEnabled { get; private set; }
-   public bool IsSaturationBoostEnabled { get; private set; }
 
    public VlcFilter( MediaPlayer player, VlcMarquee marquee )
    {
@@ -32,55 +29,51 @@ internal sealed class VlcFilter : IDisposable
 
    public void SetFilters( IFilterConfig filterConfig )
    {
-      SetBaseBoostEnabled( filterConfig.BoostBase );
-      SetSaturationBoostEnabled( filterConfig.BoostSaturation );
+      BaseBoostEnabled = filterConfig.BoostBase;
+      SaturationBoostEnabled = filterConfig.BoostSaturation;
    }
 
-   public void SetVolumeAmpEnabled( bool enable )
+   private bool _volumeAmpEnabled;
+   public bool VolumeAmpEnabled
    {
-      if ( IsVolumeAmpEnabled == enable )
+      get => _volumeAmpEnabled;
+      set
       {
-         return;
+         if ( SetProperty( ref _volumeAmpEnabled, value ) )
+         {
+            _equalizer.SetPreamp( value ? 20 : 12 );
+            _player.SetEqualizer( _equalizer );
+         }
       }
-
-      IsVolumeAmpEnabled = enable;
-      _equalizer.SetPreamp( enable ? 20 : 12 );
-      _player.SetEqualizer( _equalizer );
    }
 
-   public void SetBaseBoostEnabled( bool enable )
+   private bool _baseBoostEnabled;
+   public bool BaseBoostEnabled
    {
-      if ( IsBaseBoostEnabled == enable )
+      get => _baseBoostEnabled;
+      set
       {
-         return;
+         if ( SetProperty( ref _baseBoostEnabled, value ) )
+         {
+            _equalizer.SetAmp( value ? 15f : 0f, 0 );
+            _equalizer.SetAmp( value ? 7.5f : 0f, 1 );
+            _player.SetEqualizer( _equalizer );
+            _marquee.DisplayMarqueeText( value ? "Base Boost Enabled" : "Base Boost Disabled" );
+         }
       }
-
-      IsBaseBoostEnabled = enable;
-      if ( enable )
-      {
-         _equalizer.SetAmp( 15f, 0 );
-         _equalizer.SetAmp( 10f, 1 );
-         _equalizer.SetAmp( 5f, 2 );
-      }
-      else
-      {
-         _equalizer.SetAmp( 0f, 0 );
-         _equalizer.SetAmp( 0f, 1 );
-         _equalizer.SetAmp( 0f, 2 );
-      }
-      _player.SetEqualizer( _equalizer );
-      _marquee.DisplayMarqueeText( enable ? "Base Boost Enabled" : "Base Boost Disabled" );
    }
 
-   public void SetSaturationBoostEnabled( bool enable )
+   private bool _saturationBoostEnabled;
+   public bool SaturationBoostEnabled
    {
-      if ( IsSaturationBoostEnabled == enable )
+      get => _saturationBoostEnabled;
+      set
       {
-         return;
+         if ( SetProperty( ref _saturationBoostEnabled, value ) )
+         {
+            _player.SetAdjustFloat( VideoAdjustOption.Saturation, value ? 1.5f : 1f );
+            _marquee.DisplayMarqueeText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
+         }
       }
-
-      IsSaturationBoostEnabled = enable;
-      _player.SetAdjustFloat( VideoAdjustOption.Saturation, enable ? 1.5f: 1f );
-      _marquee.DisplayMarqueeText( enable ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
    }
 }

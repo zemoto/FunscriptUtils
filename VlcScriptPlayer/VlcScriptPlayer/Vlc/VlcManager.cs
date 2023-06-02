@@ -39,7 +39,7 @@ internal sealed class VlcManager : IDisposable
    public void OpenVideo( string filePath, IFilterConfig filterConfig )
    {
       Filter.SetFilters( filterConfig );
-      Filter.SetVolumeAmpEnabled( false );
+      Filter.VolumeAmpEnabled = false;
 
       Player.Buffering += OnPlayerFirstTimeBuffering;
       var media = new Media( _libvlc, new Uri( filePath ) );
