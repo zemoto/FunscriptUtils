@@ -9,12 +9,14 @@ namespace VlcScriptPlayer.UI.VideoPlayer;
 internal partial class VideoPlayerWindow
 {
    private readonly DispatcherTimer _hideScrubberTimer;
+   private readonly VlcFilter _vlcFilter;
 
    private DateTime _lastPauseToggleTime = DateTime.MinValue;
 
    public VideoPlayerWindow( VlcManager vlc )
    {
       _hideScrubberTimer = new DispatcherTimer( TimeSpan.FromSeconds( 3 ), DispatcherPriority.Normal, OnHideScrubberTimerTick, Dispatcher ) { IsEnabled = false };
+      _vlcFilter = vlc.Filter;
 
       InitializeComponent();
 
@@ -60,6 +62,11 @@ internal partial class VideoPlayerWindow
          case Key.Escape:
          {
             Close();
+            break;
+         }
+         case Key.B when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
+         {
+            _vlcFilter.ToggleBaseBoost();
             break;
          }
       }

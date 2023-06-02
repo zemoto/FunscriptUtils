@@ -7,21 +7,21 @@ namespace VlcScriptPlayer;
 
 internal sealed class VlcManager : IDisposable
 {
-   private readonly LibVLC _vlc = new();
-   private readonly VlcFilter _filter;
+   private readonly LibVLC _libvlc = new();
+   public VlcFilter Filter { get; }
    public MediaPlayer Player { get; }
 
    public event EventHandler MediaSetupComplete;
 
    public VlcManager()
    {
-      Player = new MediaPlayer( _vlc )
+      Player = new MediaPlayer( _libvlc )
       {
          FileCaching = 3000,
          EnableHardwareDecoding = true
       };
 
-      _filter = new VlcFilter( Player );
+      Filter = new VlcFilter( Player );
 
       Player.EndReached += OnEndReached;
       Player.Paused += OnPlayerPaused;
@@ -29,17 +29,17 @@ internal sealed class VlcManager : IDisposable
 
    public void Dispose()
    {
-      _vlc.Dispose();
-      _filter.Dispose();
+      _libvlc.Dispose();
+      Filter.Dispose();
       Player.Dispose();
    }
 
    public void OpenVideo( string filePath, bool boostBase )
    {
-      _filter.SetBaseBoostEnabled( boostBase );
+      Filter.SetBaseBoostEnabled( boostBase );
 
       Player.Buffering += OnPlayerFirstTimeBuffering;
-      var media = new Media( _vlc, new Uri( filePath ) );
+      var media = new Media( _libvlc, new Uri( filePath ) );
       media.Parse();
       Player.Play( media );
    }

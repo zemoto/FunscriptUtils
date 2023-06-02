@@ -20,7 +20,7 @@ internal sealed class Main : IDisposable
    private readonly MainWindowViewModel _model;
    private readonly HandyApi _handyApi = new();
 
-   private readonly VlcManager _vlcManager = new();
+   private readonly VlcManager _vlc = new();
 
    public Main( Config config )
    {
@@ -43,7 +43,7 @@ internal sealed class Main : IDisposable
    public void Dispose()
    {
       _handyApi.Dispose();
-      _vlcManager.Dispose();
+      _vlc.Dispose();
    }
 
    public void Start() => _window.Show();
@@ -172,12 +172,12 @@ internal sealed class Main : IDisposable
    {
       _window.Hide();
 
-      var videoPlayer = new VideoPlayerWindow( _vlcManager );
-      using ( var monitor = new HandyMonitor( _vlcManager, _handyApi ) )
+      var videoPlayer = new VideoPlayerWindow( _vlc );
+      using ( var monitor = new HandyMonitor( _vlc, _handyApi ) )
       {
-         _vlcManager.OpenVideo( _model.VideoFilePath, _model.BoostBase );
+         _vlc.OpenVideo( _model.VideoFilePath, _model.BoostBase );
          videoPlayer.ShowDialog();
-         _ = ThreadPool.QueueUserWorkItem( _ => _vlcManager.Player.Stop() );
+         _ = ThreadPool.QueueUserWorkItem( _ => _vlc.Player.Stop() );
       }
 
       _window.Show();
