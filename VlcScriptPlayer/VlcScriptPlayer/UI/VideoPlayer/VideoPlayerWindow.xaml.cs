@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -67,7 +67,7 @@ internal partial class VideoPlayerWindow
          }
          case Key.B when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
          {
-            _vlcFilter.ToggleBaseBoost();
+            _vlcFilter.SetBaseBoostEnabled( !_vlcFilter.IsBaseBoostEnabled );
             break;
          }
       }

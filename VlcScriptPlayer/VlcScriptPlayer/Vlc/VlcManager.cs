@@ -8,6 +8,7 @@ namespace VlcScriptPlayer.Vlc;
 internal sealed class VlcManager : IDisposable
 {
    private readonly LibVLC _libvlc = new();
+   private readonly VlcMarquee _marquee;
    public VlcFilter Filter { get; }
    public MediaPlayer Player { get; }
 
@@ -21,7 +22,8 @@ internal sealed class VlcManager : IDisposable
          EnableHardwareDecoding = true
       };
 
-      Filter = new VlcFilter( Player );
+      _marquee = new VlcMarquee( Player );
+      Filter = new VlcFilter( Player, _marquee );
 
       Player.EndReached += OnEndReached;
       Player.Paused += OnPlayerPaused;
@@ -59,6 +61,7 @@ internal sealed class VlcManager : IDisposable
 
          Thread.Sleep( 500 ); // Give VLC time to process
          Application.Current.Dispatcher.BeginInvoke( () => MediaSetupComplete?.Invoke( this, EventArgs.Empty ) );
+         _marquee.Enabled = true;
       } );
    }
 
