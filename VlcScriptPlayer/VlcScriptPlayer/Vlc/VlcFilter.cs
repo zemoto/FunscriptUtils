@@ -1,4 +1,4 @@
-using LibVLCSharp.Shared;
+﻿using LibVLCSharp.Shared;
 using System;
 
 namespace VlcScriptPlayer.Vlc;
@@ -10,6 +10,7 @@ internal sealed class VlcFilter : IDisposable
    private readonly Equalizer _equalizer;
 
    public bool IsBaseBoostEnabled { get; private set; }
+   public bool IsVolumeAmpEnabled { get; private set; }
 
    public VlcFilter( MediaPlayer player, VlcMarquee marquee )
    {
@@ -19,6 +20,18 @@ internal sealed class VlcFilter : IDisposable
    }
 
    public void Dispose() => _equalizer.Dispose();
+
+   public void SetVolumeAmpEnabled( bool enable )
+   {
+      if ( IsVolumeAmpEnabled == enable )
+      {
+         return;
+      }
+
+      IsVolumeAmpEnabled = enable;
+      _equalizer.SetPreamp( enable ? 20 : 12 );
+      _player.SetEqualizer( _equalizer );
+   }
 
    public void SetBaseBoostEnabled( bool enable )
    {

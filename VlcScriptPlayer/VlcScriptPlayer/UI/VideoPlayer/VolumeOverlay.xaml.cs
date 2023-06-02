@@ -3,6 +3,7 @@ using System;
 using System.Windows;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using VlcScriptPlayer.Vlc;
 
 namespace VlcScriptPlayer.UI.VideoPlayer;
 
@@ -10,7 +11,7 @@ internal partial class VolumeControl
 {
    private readonly DispatcherTimer _fadeOutTimer;
    private static readonly DoubleAnimation _fadeOutAnimation = new( 1.0, 0.0, TimeSpan.FromMilliseconds( 250 ) );
-   private MediaPlayer _player;
+   private VlcManager _vlc;
 
    public VolumeControl()
    {
@@ -18,13 +19,13 @@ internal partial class VolumeControl
       InitializeComponent();
    }
 
-   public void SetPlayer( MediaPlayer player )
+   public void SetVlc( VlcManager vlc )
    {
-      _player = player;
-      _player.VolumeChanged += OnVolumeChanged;
+      _vlc = vlc;
+      _vlc.Player.VolumeChanged += OnVolumeChanged;
    }
 
-   private void OnUnloaded( object sender, RoutedEventArgs e ) => _player.VolumeChanged -= OnVolumeChanged;
+   private void OnUnloaded( object sender, RoutedEventArgs e ) => _vlc.Player.VolumeChanged -= OnVolumeChanged;
 
    private void OnFadeOutTimerTick( object sender, EventArgs e )
    {
@@ -37,8 +38,17 @@ internal partial class VolumeControl
       Dispatcher.Invoke( () =>
       {
          _fadeOutTimer.Stop();
-         VolumeTextBlock.Text = $"Volume {Math.Round( e.Volume * 100.0 )}%";
-         VolumeIndicator.Height = e.Volume * VolumeTrack.ActualHeight;
+
+         if ( _vlc.Filter.IsVolumeAmpEnabled )
+         {
+            VolumeTextBlock.Text = "Volume 200%";
+            VolumeIndicator.Height = VolumeTrack.ActualHeight;
+         }
+         else
+         {
+            VolumeTextBlock.Text = $"Volume {Math.Round( e.Volume * 100.0 )}%";
+            VolumeIndicator.Height = e.Volume * VolumeTrack.ActualHeight;
+         }
 
          BeginAnimation( OpacityProperty, null );
          Opacity = 1;

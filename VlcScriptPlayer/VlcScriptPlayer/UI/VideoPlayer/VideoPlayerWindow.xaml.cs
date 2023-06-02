@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -34,7 +34,7 @@ internal partial class VideoPlayerWindow
       var vlc = (VlcManager)sender;
       vlc.MediaSetupComplete -= OnMediaSetupComplete;
 
-      VolumeOverlay.SetPlayer( vlc.Player );
+      VolumeOverlay.SetVlc( vlc );
       PlayPauseindicator.SetPlayer( vlc.Player );
       VideoControls.SetPlayer( vlc.Player );
    }
@@ -108,20 +108,26 @@ internal partial class VideoPlayerWindow
       {
          if ( volume == 100 )
          {
-            return;
+            _vlcFilter.SetVolumeAmpEnabled( true );
+         }
+         else
+         {
+            volume += volumeIncrement;
          }
 
-         volume = Math.Min( volume + volumeIncrement, 100 );
          player.Volume = volume;
       }
       else if ( e.Delta < 0 )
       {
-         if ( volume == 0 )
+         if ( _vlcFilter.IsVolumeAmpEnabled )
          {
-            return;
+            _vlcFilter.SetVolumeAmpEnabled( false );
+         }
+         else
+         {
+            volume -= volumeIncrement;
          }
 
-         volume = Math.Max( volume - volumeIncrement, 0 );
          player.Volume = volume;
       }
    }
