@@ -8,21 +8,9 @@ namespace VlcScriptPlayer.UI.VideoPlayer;
 
 internal partial class PlayPauseIndicator
 {
-   public static readonly DependencyProperty PlayerProperty = DependencyProperty.Register( nameof( Player ), typeof( MediaPlayer ), typeof( PlayPauseIndicator ), new PropertyMetadata( null, OnPlayerChanged ) );
-   public MediaPlayer Player
-   {
-      get => (MediaPlayer)GetValue( PlayerProperty );
-      set => SetValue( PlayerProperty, value );
-   }
-   private static void OnPlayerChanged( DependencyObject d, DependencyPropertyChangedEventArgs e ) => ( (PlayPauseIndicator)d ).OnPlayerChanged();
-   private void OnPlayerChanged()
-   {
-      Player.Playing += OnMediaPlaying;
-      Player.Paused += OnMediaPaused;
-   }
-
    private static readonly ScaleTransform _scaleTransform = new( 0.5, 0.5 );
    private static readonly DoubleAnimation _animation = new( 0.5, 1.0, TimeSpan.FromMilliseconds( 250 ) );
+   private MediaPlayer _player;
 
    public PlayPauseIndicator()
    {
@@ -33,16 +21,22 @@ internal partial class PlayPauseIndicator
       LayoutTransform = _scaleTransform;
    }
 
+   public void SetPlayer( MediaPlayer player )
+   {
+      _player = player;
+      _player.Playing += OnMediaPlaying;
+      _player.Paused += OnMediaPaused;
+   }
+
    private void OnUnloaded( object sender, RoutedEventArgs e )
    {
-      var player = Player;
-      if ( player is null )
+      if ( _player is null )
       {
          return;
       }
 
-      player.Playing -= OnMediaPlaying;
-      player.Paused -= OnMediaPaused;
+      _player.Playing -= OnMediaPlaying;
+      _player.Paused -= OnMediaPaused;
    }
 
    private void OnAnimationCompleted( object sender, EventArgs e )

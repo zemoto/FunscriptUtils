@@ -34,9 +34,9 @@ internal partial class VideoPlayerWindow
       var vlc = (VlcManager)sender;
       vlc.MediaSetupComplete -= OnMediaSetupComplete;
 
-      VolumeOverlay.Player = vlc.Player;
-      PlayPauseindicator.Player = vlc.Player;
-      VideoControls.Player = vlc.Player;
+      VolumeOverlay.SetPlayer( vlc.Player );
+      PlayPauseindicator.SetPlayer( vlc.Player );
+      VideoControls.SetPlayer( vlc.Player );
    }
 
    private void OnClosing( object sender, System.ComponentModel.CancelEventArgs e )

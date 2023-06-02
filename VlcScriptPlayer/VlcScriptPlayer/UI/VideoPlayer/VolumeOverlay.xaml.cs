@@ -8,17 +8,9 @@ namespace VlcScriptPlayer.UI.VideoPlayer;
 
 internal partial class VolumeControl
 {
-   public static readonly DependencyProperty PlayerProperty = DependencyProperty.Register( nameof( Player ), typeof( MediaPlayer ), typeof( VolumeControl ), new PropertyMetadata( null, OnPlayerChanged ) );
-   public MediaPlayer Player
-   {
-      get => (MediaPlayer)GetValue( PlayerProperty );
-      set => SetValue( PlayerProperty, value );
-   }
-   private static void OnPlayerChanged( DependencyObject d, DependencyPropertyChangedEventArgs e ) => ( (VolumeControl)d ).OnPlayerChanged();
-   private void OnPlayerChanged() => Player.VolumeChanged += OnVolumeChanged;
-
    private readonly DispatcherTimer _fadeOutTimer;
    private static readonly DoubleAnimation _fadeOutAnimation = new( 1.0, 0.0, TimeSpan.FromMilliseconds( 250 ) );
+   private MediaPlayer _player;
 
    public VolumeControl()
    {
@@ -26,7 +18,13 @@ internal partial class VolumeControl
       InitializeComponent();
    }
 
-   private void OnUnloaded( object sender, RoutedEventArgs e ) => Player.VolumeChanged -= OnVolumeChanged;
+   public void SetPlayer( MediaPlayer player )
+   {
+      _player = player;
+      _player.VolumeChanged += OnVolumeChanged;
+   }
+
+   private void OnUnloaded( object sender, RoutedEventArgs e ) => _player.VolumeChanged -= OnVolumeChanged;
 
    private void OnFadeOutTimerTick( object sender, EventArgs e )
    {

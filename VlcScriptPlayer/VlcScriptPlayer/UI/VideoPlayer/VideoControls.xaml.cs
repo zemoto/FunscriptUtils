@@ -11,28 +11,9 @@ namespace VlcScriptPlayer.UI.VideoPlayer;
 
 internal partial class VideoControls
 {
-   public static readonly DependencyProperty PlayerProperty = DependencyProperty.Register( nameof( Player ), typeof( MediaPlayer ), typeof( VideoControls ), new PropertyMetadata( null, OnPlayerChanged ) );
-   public MediaPlayer Player
-   {
-      get => (MediaPlayer)GetValue( PlayerProperty );
-      set => SetValue( PlayerProperty, value );
-   }
-   private static void OnPlayerChanged( DependencyObject d, DependencyPropertyChangedEventArgs e ) => ( (VideoControls)d ).OnPlayerChanged();
-   private void OnPlayerChanged()
-   {
-      Player.Playing += OnPlayerPlaying;
-      Player.Paused += OnPlayerPaused;
-      Player.Stopped += OnPlayerStopped;
-      Dispatcher.BeginInvoke( () =>
-      {
-         _videoDuration = TimeSpan.FromMilliseconds( Player.Media.Duration );
-         DurationLabel.Text = TimeSpanToString( _videoDuration );
-         CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.Zero );
-      } );
-   }
-
    private readonly DispatcherTimer _playbackTimer;
 
+   private MediaPlayer _player;
    private TimeSpan _videoDuration;
 
    public VideoControls()
@@ -44,9 +25,23 @@ internal partial class VideoControls
       UniversalClick.AddClickHandler( PositionTrack, OnTrackClicked );
    }
 
+   public void SetPlayer( MediaPlayer player )
+   {
+      _player = player;
+      _player.Playing += OnPlayerPlaying;
+      _player.Paused += OnPlayerPaused;
+      _player.Stopped += OnPlayerStopped;
+      Dispatcher.BeginInvoke( () =>
+      {
+         _videoDuration = TimeSpan.FromMilliseconds( _player.Media.Duration );
+         DurationLabel.Text = TimeSpanToString( _videoDuration );
+         CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.Zero );
+      } );
+   }
+
    private void OnUnloaded( object sender, RoutedEventArgs e )
    {
-      var player = Player;
+      var player = _player;
       if ( player is null )
       {
          return;
@@ -60,7 +55,7 @@ internal partial class VideoControls
    private void OnPlaybackTimerTick( object sender, EventArgs e )
    {
       UpdateCurrentTimeLabel();
-      SetTrackProgress( Player.Position );
+      SetTrackProgress( _player.Position );
    }
 
    private void OnPlayerPlaying( object sender, EventArgs e ) => _playbackTimer.Start();
@@ -71,10 +66,10 @@ internal partial class VideoControls
    {
       Dispatcher.BeginInvoke( () =>
       {
-         var time = TimeSpan.FromMilliseconds( Player.Time );
+         var time = TimeSpan.FromMilliseconds( _player.Time );
          CurrentTimeLabel.Text = TimeSpanToString( time );
 
-         SetTrackProgress( Player.Position );
+         SetTrackProgress( _player.Position );
       } );
    }
 
@@ -95,7 +90,7 @@ internal partial class VideoControls
       TrackIndicator.Width = value * PositionTrack.ActualWidth;
    }
 
-   private void UpdateCurrentTimeLabel() => CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.FromMilliseconds( Player.Time ) );
+   private void UpdateCurrentTimeLabel() => CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.FromMilliseconds( _player.Time ) );
 
    private void OnScrubberMouseEnter( object sender, MouseEventArgs e )
    {
@@ -133,11 +128,11 @@ internal partial class VideoControls
 
       if ( _playbackTimer.IsEnabled )
       {
-         Player.SetPause( true );
+         _player.SetPause( true );
          await Task.Delay( 200 );
       }
 
-      Player.Time = (long)( newPosition * _videoDuration.TotalMilliseconds );
+      _player.Time = (long)( newPosition * _videoDuration.TotalMilliseconds );
 
       SetTrackProgress( newPosition );
       UpdateCurrentTimeLabel();
