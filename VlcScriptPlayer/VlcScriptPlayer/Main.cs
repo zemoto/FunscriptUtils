@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.UI;
 using VlcScriptPlayer.UI.VideoPlayer;
+using VlcScriptPlayer.Vlc;
 using ZemotoCommon;
 using ZemotoCommon.UI;
 
@@ -157,7 +158,7 @@ internal sealed class Main : IDisposable
    private async Task UploadScriptAsync()
    {
       _model.RequestInProgress = true;
-      using ( _ = new ScopeGuard( () => _model.RequestInProgress = false ) )
+      using ( new ScopeGuard( () => _model.RequestInProgress = false ) )
       {
          if ( !await _handyApi.UploadScriptAsync( _model.ScriptFilePath ) )
          {
@@ -173,7 +174,7 @@ internal sealed class Main : IDisposable
       _window.Hide();
 
       var videoPlayer = new VideoPlayerWindow( _vlc );
-      using ( var monitor = new HandyMonitor( _vlc, _handyApi ) )
+      using ( new VlcScriptSynchronizer( _vlc, _handyApi ) )
       {
          _vlc.OpenVideo( _model.VideoFilePath, _model.BoostBase );
          videoPlayer.ShowDialog();

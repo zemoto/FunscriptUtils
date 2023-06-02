@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Windows;
 
-namespace VlcScriptPlayer;
+namespace VlcScriptPlayer.Vlc;
 
 internal sealed class VlcManager : IDisposable
 {
