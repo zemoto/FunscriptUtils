@@ -45,6 +45,13 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
       _player.SetAdjustFloat( VideoAdjustOption.Saturation, _saturationBoostEnabled ? 1.5f : 1f );
    }
 
+   // This must be called before MediaPlayer.Stop() or else an Access Violation will occur when libvlc unloads the filters module.
+   // This also has to be done while the video window is still loaded or else the change won't be registered by the player.
+   public void UnsetFilters()
+   {
+      _player.SetAdjustInt( VideoAdjustOption.Enable, 0 );
+   }
+
    private void SetEqualizer( EqualizerUpdateType updateType )
    {
       if ( updateType.HasFlag( EqualizerUpdateType.Volume ) )

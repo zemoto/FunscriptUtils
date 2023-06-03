@@ -39,13 +39,10 @@ internal sealed partial class VideoControls
       _filter = vlc.Filter;
       _filter.PropertyChanged += OnFilterPropertyChanged;
 
-      Dispatcher.BeginInvoke( () =>
-      {
-         _videoDuration = TimeSpan.FromMilliseconds( _player.Media.Duration );
-         DurationLabel.Text = TimeSpanToString( _videoDuration );
-         CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.Zero );
-         UpdateFilterState();
-      } );
+      _videoDuration = TimeSpan.FromMilliseconds( _player.Media.Duration );
+      DurationLabel.Text = TimeSpanToString( _videoDuration );
+      CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.Zero );
+      UpdateFilterState();
    }
 
    private void OnUnloaded( object sender, RoutedEventArgs e )

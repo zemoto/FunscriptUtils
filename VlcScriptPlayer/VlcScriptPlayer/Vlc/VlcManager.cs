@@ -37,14 +37,21 @@ internal sealed class VlcManager : IDisposable
 
    public void OpenVideo( string filePath, IFilterConfig filterConfig )
    {
-      Player.Media?.Dispose();
-
       Filter.SetFilters( filterConfig );
 
       Player.Buffering += OnPlayerFirstTimeBuffering;
       var media = new Media( _libvlc, new Uri( filePath ) );
       media.Parse();
       Player.Play( media );
+   }
+
+   public void CloseVideo()
+   {
+      Filter.UnsetFilters();
+      Player.Stop();
+      Player.Media?.Dispose();
+      Player.Media = null;
+      _marquee.Enabled = false;
    }
 
    private void OnPlayerFirstTimeBuffering( object sender, MediaPlayerBufferingEventArgs e )

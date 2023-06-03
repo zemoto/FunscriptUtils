@@ -35,6 +35,11 @@ internal sealed partial class VolumeControl
 
    private void OnVolumeChanged( object sender, MediaPlayerVolumeChangedEventArgs e )
    {
+      if ( e.Volume < 0 )
+      {
+         return;
+      }
+
       Dispatcher.BeginInvoke( () =>
       {
          _fadeOutTimer.Stop();
