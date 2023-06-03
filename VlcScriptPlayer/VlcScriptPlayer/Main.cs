@@ -176,11 +176,11 @@ internal sealed class Main : IDisposable
       _window.Hide();
 
       var videoPlayer = new VideoPlayerWindow( _vlc );
+      videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.VideoFilePath, _model );
+      videoPlayer.Unloaded += ( _, _ ) => _ = ThreadPool.QueueUserWorkItem( _ => _vlc.Player.Stop() );
       using ( new VlcScriptSynchronizer( _vlc, _handyApi ) )
       {
-         _vlc.OpenVideo( _model.VideoFilePath, _model );
          videoPlayer.ShowDialog();
-         _ = ThreadPool.QueueUserWorkItem( _ => _vlc.Player.Stop() );
       }
 
       _window.Show();

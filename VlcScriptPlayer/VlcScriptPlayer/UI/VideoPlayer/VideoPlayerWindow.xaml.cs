@@ -10,14 +10,14 @@ namespace VlcScriptPlayer.UI.VideoPlayer;
 internal sealed partial class VideoPlayerWindow
 {
    private readonly DispatcherTimer _hideScrubberTimer;
-   private readonly VlcFilter _vlcFilter;
+   private readonly VlcManager _vlc;
 
    private DateTime _lastPauseToggleTime = DateTime.MinValue;
 
    public VideoPlayerWindow( VlcManager vlc )
    {
       _hideScrubberTimer = new DispatcherTimer( TimeSpan.FromSeconds( 3 ), DispatcherPriority.Normal, OnHideScrubberTimerTick, Dispatcher ) { IsEnabled = false };
-      _vlcFilter = vlc.Filter;
+      _vlc = vlc;
 
       InitializeComponent();
 
@@ -31,12 +31,13 @@ internal sealed partial class VideoPlayerWindow
 
    private void OnMediaSetupComplete( object sender, EventArgs e )
    {
-      var vlc = (VlcManager)sender;
-      vlc.MediaSetupComplete -= OnMediaSetupComplete;
+      _vlc.MediaSetupComplete -= OnMediaSetupComplete;
 
-      VolumeOverlay.SetVlc( vlc );
-      PlayPauseindicator.SetPlayer( vlc.Player );
-      VideoControls.SetVlc( vlc );
+      VolumeOverlay.SetVlc( _vlc );
+      PlayPauseindicator.SetPlayer( _vlc.Player );
+      VideoControls.SetVlc( _vlc );
+
+      _vlc.Player.EndReached += OnPlayerEndReached;
    }
 
    private void OnClosing( object sender, System.ComponentModel.CancelEventArgs e )
@@ -44,6 +45,7 @@ internal sealed partial class VideoPlayerWindow
       Mouse.OverrideCursor = null;
       _hideScrubberTimer.Stop();
       InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput;
+      _vlc.Player.EndReached -= OnPlayerEndReached;
    }
 
    private void OnInputManagerPreProcessInput( object sender, PreProcessInputEventArgs e )
@@ -67,16 +69,18 @@ internal sealed partial class VideoPlayerWindow
          }
          case Key.B when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
          {
-            _vlcFilter.BaseBoostEnabled = !_vlcFilter.BaseBoostEnabled;
+            _vlc.Filter.BaseBoostEnabled = !_vlc.Filter.BaseBoostEnabled;
             break;
          }
          case Key.S when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
          {
-            _vlcFilter.SaturationBoostEnabled = !_vlcFilter.SaturationBoostEnabled;
+            _vlc.Filter.SaturationBoostEnabled = !_vlc.Filter.SaturationBoostEnabled;
             break;
          }
       }
    }
+
+   private void OnPlayerEndReached( object sender, EventArgs e ) => Dispatcher.BeginInvoke( Close );
 
    private void OnMouseMoveOverVideo( object sender, MouseEventArgs e )
    {
@@ -113,7 +117,7 @@ internal sealed partial class VideoPlayerWindow
       {
          if ( volume == 100 )
          {
-            _vlcFilter.VolumeAmpEnabled = true;
+            _vlc.Filter.VolumeAmpEnabled = true;
          }
          else
          {
@@ -124,9 +128,9 @@ internal sealed partial class VideoPlayerWindow
       }
       else if ( e.Delta < 0 )
       {
-         if ( _vlcFilter.VolumeAmpEnabled )
+         if ( _vlc.Filter.VolumeAmpEnabled )
          {
-            _vlcFilter.VolumeAmpEnabled = false;
+            _vlc.Filter.VolumeAmpEnabled = false;
          }
          else
          {

@@ -25,7 +25,6 @@ internal sealed class VlcManager : IDisposable
       _marquee = new VlcMarquee( Player );
       Filter = new VlcFilter( Player, _marquee );
 
-      Player.EndReached += OnEndReached;
       Player.Paused += OnPlayerPaused;
    }
 
@@ -66,8 +65,6 @@ internal sealed class VlcManager : IDisposable
          _marquee.Enabled = true;
       } );
    }
-
-   private void OnEndReached( object sender, EventArgs e ) => _ = ThreadPool.QueueUserWorkItem( _ => Player.Stop() );
 
    // Force the player to resync itself with where it paused, as this can be incorrect sometimes
    private void OnPlayerPaused( object sender, EventArgs e ) => Player.Position -= float.Epsilon;
