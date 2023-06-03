@@ -14,6 +14,7 @@ internal sealed class HandyApi : IDisposable
    private readonly HttpClient _client = new();
 
    private long _estimatedClientServerOffset;
+   private string _lastUploadedScriptSha256;
 
    public void Dispose() => _client.Dispose();
 
@@ -112,7 +113,7 @@ internal sealed class HandyApi : IDisposable
       return response?.IsSuccessStatusCode == true;
    }
 
-   public async Task<bool> UploadScriptAsync( string scriptFilePath )
+   public async Task<bool> UploadScriptAsync( string scriptFilePath, bool forceUploadScript )
    {
       string csv;
       if ( Path.GetExtension( scriptFilePath ) == ".funscript" )
@@ -126,6 +127,14 @@ internal sealed class HandyApi : IDisposable
       {
          csv = File.ReadAllText( scriptFilePath );
       }
+
+      var csvSha256Hash = ComputeSha256Hash( csv );
+      if ( !forceUploadScript && csvSha256Hash == _lastUploadedScriptSha256 )
+      {
+         HandyLogger.Log( "Script is identical to last uploaded, skipping upload." );
+         return true;
+      }
+      _lastUploadedScriptSha256 = csvSha256Hash;
 
       var formData = new MultipartFormDataContent { { new StringContent( csv ), "syncFile", $"{Path.GetFileNameWithoutExtension( scriptFilePath )}.csv" } };
 
@@ -198,5 +207,18 @@ internal sealed class HandyApi : IDisposable
       }
 
       return response;
+   }
+
+   private static string ComputeSha256Hash( string rawData )
+   {
+      using var hasher = System.Security.Cryptography.SHA256.Create();
+      byte[] bytes = hasher.ComputeHash( Encoding.UTF8.GetBytes( rawData ) );
+
+      var sb = new StringBuilder();
+      for ( int i = 0; i < bytes.Length; i++ )
+      {
+         sb.Append( bytes[i].ToString( "x2", System.Globalization.CultureInfo.InvariantCulture ) );
+      }
+      return sb.ToString();
    }
 }

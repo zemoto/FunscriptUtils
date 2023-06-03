@@ -62,6 +62,13 @@ internal sealed class MainWindowViewModel : ViewModelBase, IFilterConfig
       set => SetProperty( ref _boostSaturation, value );
    }
 
+   private bool _forceUploadScript;
+   public bool ForceUploadScript
+   {
+      get => _forceUploadScript;
+      set => SetProperty( ref _forceUploadScript, value );
+   }
+
    private string _videoFilePath;
    public string VideoFilePath
    {

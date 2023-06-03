@@ -162,7 +162,7 @@ internal sealed class Main : IDisposable
       _model.RequestInProgress = true;
       using ( new ScopeGuard( () => _model.RequestInProgress = false ) )
       {
-         if ( !await _handyApi.UploadScriptAsync( _model.ScriptFilePath ).ConfigureAwait( true ) )
+         if ( !await _handyApi.UploadScriptAsync( _model.ScriptFilePath, _model.ForceUploadScript ).ConfigureAwait( true ) )
          {
             return;
          }
