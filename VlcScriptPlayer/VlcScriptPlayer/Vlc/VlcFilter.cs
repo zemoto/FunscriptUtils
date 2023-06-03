@@ -12,6 +12,15 @@ internal interface IFilterConfig
 
 internal sealed class VlcFilter : ViewModelBase, IDisposable
 {
+   [Flags]
+   private enum EqualizerUpdateType
+   {
+      None = 0,
+      Volume = 1,
+      Base = 2,
+      All = Volume | Base
+   }
+
    private readonly MediaPlayer _player;
    private readonly VlcMarquee _marquee;
    private readonly Equalizer _equalizer;
@@ -21,16 +30,34 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
       _player = player;
       _marquee = marquee;
       _equalizer = new Equalizer( 0 );
-      _player.SetEqualizer( _equalizer );
-      _player.SetAdjustInt( VideoAdjustOption.Enable, 1 );
    }
 
    public void Dispose() => _equalizer.Dispose();
 
    public void SetFilters( IFilterConfig filterConfig )
    {
-      BaseBoostEnabled = filterConfig.BoostBase;
-      SaturationBoostEnabled = filterConfig.BoostSaturation;
+      _volumeAmpEnabled = false; // Always disable volume amp initially
+      _baseBoostEnabled = filterConfig.BoostBase;
+      SetEqualizer( EqualizerUpdateType.All );
+
+      _saturationBoostEnabled = filterConfig.BoostSaturation;
+      _player.SetAdjustInt( VideoAdjustOption.Enable, 1 );
+      _player.SetAdjustFloat( VideoAdjustOption.Saturation, _saturationBoostEnabled ? 1.5f : 1f );
+   }
+
+   private void SetEqualizer( EqualizerUpdateType updateType )
+   {
+      if ( updateType.HasFlag( EqualizerUpdateType.Volume ) )
+      {
+         _equalizer.SetPreamp( _volumeAmpEnabled ? 20 : 12 );
+      }
+      if ( updateType.HasFlag( EqualizerUpdateType.Base ) )
+      {
+         _equalizer.SetAmp( _baseBoostEnabled ? 15f : 0f, 0 );
+         _equalizer.SetAmp( _baseBoostEnabled ? 7.5f : 0f, 1 );
+      }
+
+      _player.SetEqualizer( _equalizer );
    }
 
    private bool _volumeAmpEnabled;
@@ -41,8 +68,7 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
       {
          if ( SetProperty( ref _volumeAmpEnabled, value ) )
          {
-            _equalizer.SetPreamp( value ? 20 : 12 );
-            _player.SetEqualizer( _equalizer );
+            SetEqualizer( EqualizerUpdateType.Volume );
          }
       }
    }
@@ -55,9 +81,7 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
       {
          if ( SetProperty( ref _baseBoostEnabled, value ) )
          {
-            _equalizer.SetAmp( value ? 15f : 0f, 0 );
-            _equalizer.SetAmp( value ? 7.5f : 0f, 1 );
-            _player.SetEqualizer( _equalizer );
+            SetEqualizer( EqualizerUpdateType.Base );
             _marquee.DisplayMarqueeText( value ? "Base Boost Enabled" : "Base Boost Disabled" );
          }
       }
