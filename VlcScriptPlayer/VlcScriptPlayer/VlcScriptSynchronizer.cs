@@ -23,6 +23,8 @@ internal sealed class VlcScriptSynchronizer : IDisposable
       player.Playing -= OnPlayerPlaying;
       player.Paused -= OnPlayStoppedOrPaused;
       player.Stopped -= OnPlayStoppedOrPaused;
+
+      _ = _api.StopScriptAsync();
    }
 
    private void OnMediaSetupComplete( object sender, EventArgs e )
