@@ -93,7 +93,7 @@ internal sealed partial class VideoControls
       {
          filterString.Append( 'S' );
       }
-      if ( _filter.BaseBoostEnabled )
+      if ( _filter.BassBoostEnabled )
       {
          filterString.Append( 'B' );
       }

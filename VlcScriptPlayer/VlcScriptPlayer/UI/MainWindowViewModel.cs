@@ -48,11 +48,11 @@ internal sealed class MainWindowViewModel : ViewModelBase, IFilterConfig
       set => SetProperty( ref _desiredOffset, value );
    }
 
-   private bool _boostBase;
-   public bool BoostBase
+   private bool _boostBass;
+   public bool BoostBass
    {
-      get => _boostBase;
-      set => SetProperty( ref _boostBase, value );
+      get => _boostBass;
+      set => SetProperty( ref _boostBass, value );
    }
 
    private bool _boostSaturation;

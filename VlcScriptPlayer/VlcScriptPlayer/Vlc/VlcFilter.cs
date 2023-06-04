@@ -6,7 +6,7 @@ namespace VlcScriptPlayer.Vlc;
 
 internal interface IFilterConfig
 {
-   bool BoostBase { get; }
+   bool BoostBass { get; }
    bool BoostSaturation { get; }
 }
 
@@ -17,8 +17,8 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
    {
       None = 0,
       Volume = 1,
-      Base = 2,
-      All = Volume | Base
+      Bass = 2,
+      All = Volume | Bass
    }
 
    private readonly MediaPlayer _player;
@@ -37,7 +37,7 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
    public void SetFilters( IFilterConfig filterConfig )
    {
       _volumeAmpEnabled = false; // Always disable volume amp initially
-      _baseBoostEnabled = filterConfig.BoostBase;
+      _bassBoostEnabled = filterConfig.BoostBass;
       SetEqualizer( EqualizerUpdateType.All );
 
       _saturationBoostEnabled = filterConfig.BoostSaturation;
@@ -58,10 +58,10 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
       {
          _equalizer.SetPreamp( _volumeAmpEnabled ? 20 : 12 );
       }
-      if ( updateType.HasFlag( EqualizerUpdateType.Base ) )
+      if ( updateType.HasFlag( EqualizerUpdateType.Bass ) )
       {
-         _equalizer.SetAmp( _baseBoostEnabled ? 15f : 0f, 0 );
-         _equalizer.SetAmp( _baseBoostEnabled ? 7.5f : 0f, 1 );
+         _equalizer.SetAmp( _bassBoostEnabled ? 15f : 0f, 0 );
+         _equalizer.SetAmp( _bassBoostEnabled ? 7.5f : 0f, 1 );
       }
 
       _player.SetEqualizer( _equalizer );
@@ -80,16 +80,16 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
       }
    }
 
-   private bool _baseBoostEnabled;
-   public bool BaseBoostEnabled
+   private bool _bassBoostEnabled;
+   public bool BassBoostEnabled
    {
-      get => _baseBoostEnabled;
+      get => _bassBoostEnabled;
       set
       {
-         if ( SetProperty( ref _baseBoostEnabled, value ) )
+         if ( SetProperty( ref _bassBoostEnabled, value ) )
          {
-            SetEqualizer( EqualizerUpdateType.Base );
-            _marquee.DisplayMarqueeText( value ? "Base Boost Enabled" : "Base Boost Disabled" );
+            SetEqualizer( EqualizerUpdateType.Bass );
+            _marquee.DisplayMarqueeText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
          }
       }
    }

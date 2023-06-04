@@ -96,8 +96,8 @@
             </Grid>
 
             <CheckBox Margin="0,8,0,0"
-                      Content="Boost Base"
-                      IsChecked="{Binding BoostBase, Mode=TwoWay}" />
+                      Content="Boost Bass"
+                      IsChecked="{Binding BoostBass, Mode=TwoWay}" />
 
             <CheckBox Margin="0,8,0,0"
                       Content="Boost Saturation"

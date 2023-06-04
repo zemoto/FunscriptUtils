@@ -69,7 +69,7 @@ internal sealed partial class VideoPlayerWindow
          }
          case Key.B when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
          {
-            _vlc.Filter.BaseBoostEnabled = !_vlc.Filter.BaseBoostEnabled;
+            _vlc.Filter.BassBoostEnabled = !_vlc.Filter.BassBoostEnabled;
             break;
          }
          case Key.S when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
