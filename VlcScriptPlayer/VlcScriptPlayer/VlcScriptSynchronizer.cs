@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Windows;
+using System.Windows.Threading;
 using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.Vlc;
 
@@ -37,8 +39,7 @@ internal sealed class VlcScriptSynchronizer : IDisposable
       player.Stopped += OnPlayStoppedOrPaused;
    }
 
-   // Fire and forget async. We don't care what thread they are executed on and don't care to wait for the return value.
-   private void OnPlayerPlaying( object sender, EventArgs e ) => _ = _api.PlayScriptAsync( _vlc.Player.Time );
+   private void OnPlayerPlaying( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await _api.PlayScriptAsync( _vlc.Player.Time ), DispatcherPriority.Send );
 
-   private void OnPlayStoppedOrPaused( object sender, EventArgs e ) => _ = _api.StopScriptAsync();
+   private void OnPlayStoppedOrPaused( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await _api.StopScriptAsync(), DispatcherPriority.Send );
 }
