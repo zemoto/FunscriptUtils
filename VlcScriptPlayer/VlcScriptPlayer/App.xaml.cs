@@ -3,6 +3,15 @@
 internal sealed partial class App
 {
    private Main _main;
+   private readonly ZemotoCommon.SingleInstance _singleInstance = new( "VlcScriptPlayer", listenForOtherInstances: false );
+
+   public App()
+   {
+      if ( !_singleInstance.Claim() )
+      {
+         Shutdown();
+      }
+   }
 
    protected override void OnStartup( System.Windows.StartupEventArgs e )
    {
@@ -15,5 +24,6 @@ internal sealed partial class App
    protected override void OnExit( System.Windows.ExitEventArgs e )
    {
       _main.Dispose();
+      _singleInstance.Dispose();
    }
 }
