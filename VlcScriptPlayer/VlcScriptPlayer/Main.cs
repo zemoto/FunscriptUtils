@@ -15,34 +15,29 @@ namespace VlcScriptPlayer;
 
 internal sealed class Main : IDisposable
 {
-   private readonly Config _config;
-
    private readonly MainWindow _window;
    private readonly MainWindowViewModel _model;
    private readonly HandyApi _handyApi = new();
 
    private readonly VlcManager _vlc = new();
 
-   public Main( Config config )
+   public Main()
    {
-      _config = config;
-
-      _model = new MainWindowViewModel( _config )
-      {
-         ConnectCommand = new RelayCommand( () => _ = ConnectToHandyAsync() ),
-         SetOffsetCommand = new RelayCommand( () => _ = SetHandyOffsetAsync( _model.DesiredOffset ) ),
-         SelectVideoCommand = new RelayCommand( SelectVideo ),
-         SelectScriptCommand = new RelayCommand( SelectScript ),
-         AddScriptFolderCommand = new RelayCommand( AddScriptFolder ),
-         RemoveScriptFolderCommand = new RelayCommand( RemoveScriptFolder ),
-         UploadScriptCommand = new RelayCommand( async () => await UploadScriptAsync().ConfigureAwait( false ) )
-      };
+      _model = Config.ReadFromFile<MainWindowViewModel>();
+      _model.ConnectCommand = new RelayCommand( () => _ = ConnectToHandyAsync() );
+      _model.SetOffsetCommand = new RelayCommand( () => _ = SetHandyOffsetAsync( _model.DesiredOffset ) );
+      _model.SelectVideoCommand = new RelayCommand( SelectVideo );
+      _model.SelectScriptCommand = new RelayCommand( SelectScript );
+      _model.AddScriptFolderCommand = new RelayCommand( AddScriptFolder );
+      _model.RemoveScriptFolderCommand = new RelayCommand( RemoveScriptFolder );
+      _model.UploadScriptCommand = new RelayCommand( async () => await UploadScriptAsync().ConfigureAwait( false ) );
 
       _window = new MainWindow( _model );
    }
 
    public void Dispose()
    {
+      _model.SaveToFile();
       _handyApi.Dispose();
       _vlc.Dispose();
    }
@@ -63,16 +58,15 @@ internal sealed class Main : IDisposable
          return;
       }
 
-      if ( _config.DesiredOffset != 0 )
+      if ( _model.DesiredOffset != 0 )
       {
-         await SetHandyOffsetAsync( _config.DesiredOffset ).ConfigureAwait( false );
+         await SetHandyOffsetAsync( _model.DesiredOffset ).ConfigureAwait( false );
       }
       else
       {
          _model.CurrentOffset = await _handyApi.GetOffsetAsync().ConfigureAwait( false );
       }
 
-      _config.ConnectionId = _model.ConnectionId;
       _model.IsConnected = true;
    }
 
@@ -81,7 +75,6 @@ internal sealed class Main : IDisposable
       _model.RequestInProgress = true;
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
 
-      _config.DesiredOffset = desiredOffset;
       if ( await _handyApi.SetOffsetAsync( desiredOffset ).ConfigureAwait( false ) )
       {
          _model.CurrentOffset = desiredOffset;
@@ -147,15 +140,10 @@ internal sealed class Main : IDisposable
       if ( dlg.ShowDialog( _window ) == true )
       {
          _model.ScriptFolders.Add( dlg.SelectedPath );
-         _config.ScriptFolders.Add( dlg.SelectedPath );
       }
    }
 
-   private void RemoveScriptFolder()
-   {
-      _config.ScriptFolders.Remove( _model.SelectedScriptFilePath );
-      _model.ScriptFolders.Remove( _model.SelectedScriptFilePath );
-   }
+   private void RemoveScriptFolder() => _model.ScriptFolders.Remove( _model.SelectedScriptFilePath );
 
    private async Task UploadScriptAsync()
    {

@@ -1,37 +1,25 @@
-using System.Collections.ObjectModel;
 using System.Windows.Input;
 using VlcScriptPlayer.Vlc;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI;
 
-internal sealed class MainWindowViewModel : ViewModelBase, IFilterConfig
+internal sealed class MainWindowViewModel : Config, IFilterConfig
 {
-   public MainWindowViewModel( Config config )
-   {
-      ConnectionId = config.ConnectionId;
-      DesiredOffset = config.DesiredOffset;
-      ScriptFolders = new ObservableCollection<string>( config.ScriptFolders );
-   }
+   public MainWindowViewModel() => PropertyChanged += OnPropertyChanged;
 
-   private string _connectionId;
-   public string ConnectionId
+   private void OnPropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
    {
-      get => _connectionId;
-      set => SetProperty( ref _connectionId, value );
+      if ( e.PropertyName is nameof( IsConnected ) or nameof( VideoFilePath ) or nameof( ScriptFilePath ) )
+      {
+         OnPropertyChanged( nameof( ScriptAndVideoReady ) );
+      }
    }
 
    private bool _isConnected;
    public bool IsConnected
    {
       get => _isConnected;
-      set
-      {
-         if ( SetProperty( ref _isConnected, value ) )
-         {
-            OnPropertyChanged( nameof( ScriptAndVideoReady ) );
-         }
-      }
+      set => SetProperty( ref _isConnected, value );
    }
 
    private int _currentOffset;
@@ -41,58 +29,11 @@ internal sealed class MainWindowViewModel : ViewModelBase, IFilterConfig
       set => SetProperty( ref _currentOffset, value );
    }
 
-   private int _desiredOffset;
-   public int DesiredOffset
-   {
-      get => _desiredOffset;
-      set => SetProperty( ref _desiredOffset, value );
-   }
-
-   private bool _boostBass;
-   public bool BoostBass
-   {
-      get => _boostBass;
-      set => SetProperty( ref _boostBass, value );
-   }
-
-   private bool _boostSaturation;
-   public bool BoostSaturation
-   {
-      get => _boostSaturation;
-      set => SetProperty( ref _boostSaturation, value );
-   }
-
    private bool _forceUploadScript;
    public bool ForceUploadScript
    {
       get => _forceUploadScript;
       set => SetProperty( ref _forceUploadScript, value );
-   }
-
-   private string _videoFilePath;
-   public string VideoFilePath
-   {
-      get => _videoFilePath;
-      set
-      {
-         if ( SetProperty( ref _videoFilePath, value ) )
-         {
-            OnPropertyChanged( nameof( ScriptAndVideoReady ) );
-         }
-      }
-   }
-
-   private string _scriptFilePath;
-   public string ScriptFilePath
-   {
-      get => _scriptFilePath;
-      set
-      {
-         if ( SetProperty( ref _scriptFilePath, value ) )
-         {
-            OnPropertyChanged( nameof( ScriptAndVideoReady ) );
-         }
-      }
    }
 
    private bool _requestInProgress;
@@ -102,17 +43,14 @@ internal sealed class MainWindowViewModel : ViewModelBase, IFilterConfig
       set => SetProperty( ref _requestInProgress, value );
    }
 
-   public bool ScriptAndVideoReady => !string.IsNullOrEmpty( _videoFilePath ) && !string.IsNullOrEmpty( _scriptFilePath ) && IsConnected;
+   public bool ScriptAndVideoReady => !string.IsNullOrEmpty( VideoFilePath ) && !string.IsNullOrEmpty( ScriptFilePath ) && IsConnected;
 
    private string _selectedScriptFilePath;
-
    public string SelectedScriptFilePath
    {
       get => _selectedScriptFilePath;
       set => SetProperty( ref _selectedScriptFilePath, value );
    }
-
-   public ObservableCollection<string> ScriptFolders { get; }
 
    public ICommand ConnectCommand { get; set; }
    public ICommand SetOffsetCommand { get; set; }
