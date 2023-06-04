@@ -134,7 +134,6 @@ internal sealed class HandyApi : IDisposable
          HandyLogger.Log( "Script is identical to last uploaded, skipping upload." );
          return true;
       }
-      _lastUploadedScriptSha256 = csvSha256Hash;
 
       var formData = new MultipartFormDataContent { { new StringContent( csv ), "syncFile", $"{Path.GetFileNameWithoutExtension( scriptFilePath )}.csv" } };
 
@@ -169,6 +168,7 @@ internal sealed class HandyApi : IDisposable
          return false;
       }
 
+      _lastUploadedScriptSha256 = csvSha256Hash;
       return true;
    }
 
