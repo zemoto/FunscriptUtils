@@ -30,7 +30,7 @@ internal sealed class Main : IDisposable
       _model.SelectScriptCommand = new RelayCommand( SelectScript );
       _model.AddScriptFolderCommand = new RelayCommand( AddScriptFolder );
       _model.RemoveScriptFolderCommand = new RelayCommand( RemoveScriptFolder );
-      _model.UploadScriptCommand = new RelayCommand( async () => await UploadScriptAsync().ConfigureAwait( false ) );
+      _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync().ConfigureAwait( false ) );
 
       _window = new MainWindow( _model );
    }
@@ -145,7 +145,7 @@ internal sealed class Main : IDisposable
 
    private void RemoveScriptFolder() => _model.ScriptFolders.Remove( _model.SelectedScriptFilePath );
 
-   private async Task UploadScriptAsync()
+   private async Task UploadScriptAndLaunchPlayerAsync()
    {
       _model.RequestInProgress = true;
       using ( new ScopeGuard( () => _model.RequestInProgress = false ) )
@@ -156,21 +156,15 @@ internal sealed class Main : IDisposable
          }
       }
 
-      LaunchPlayer();
-   }
-
-   private void LaunchPlayer()
-   {
       _window.Hide();
-
       var videoPlayer = new VideoPlayerWindow( _vlc );
       videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.VideoFilePath, _model );
       videoPlayer.Closing += ( _, _ ) => _ = ThreadPool.QueueUserWorkItem( _ => _vlc.CloseVideo() );
+
       using ( new VlcScriptSynchronizer( _vlc, _handyApi ) )
       {
          videoPlayer.ShowDialog();
       }
-
       _window.Show();
    }
 }

@@ -187,7 +187,7 @@
               Margin="8,0"
               Content="Upload Script and Launch Player"
               IsEnabled="{Binding ScriptAndVideoReady, Mode=OneWay}"
-              Command="{Binding UploadScriptCommand, Mode=OneTime}" />
+              Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}" />
 
       <TextBox x:Name="LogTextBox"
                Grid.Row="2"

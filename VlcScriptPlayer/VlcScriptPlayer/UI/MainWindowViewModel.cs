@@ -58,5 +58,5 @@ internal sealed class MainWindowViewModel : Config, IFilterConfig
    public ICommand SelectScriptCommand { get; set; }
    public ICommand AddScriptFolderCommand { get; set; }
    public ICommand RemoveScriptFolderCommand { get; set; }
-   public ICommand UploadScriptCommand { get; set; }
+   public ICommand UploadScriptAndLaunchPlayerCommand { get; set; }
 }
