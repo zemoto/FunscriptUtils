@@ -1,6 +1,6 @@
 ﻿namespace VlcScriptPlayer;
 
-internal sealed partial class App
+internal sealed partial class App : System.IDisposable
 {
    private Main _main;
    private readonly ZemotoCommon.SingleInstance _singleInstance = new( "VlcScriptPlayer", listenForOtherInstances: false );
@@ -13,6 +13,12 @@ internal sealed partial class App
       }
    }
 
+   public void Dispose()
+   {
+      _main.Dispose();
+      _singleInstance.Dispose();
+   }
+
    protected override void OnStartup( System.Windows.StartupEventArgs e )
    {
       LibVLCSharp.Shared.Core.Initialize();
@@ -21,9 +27,5 @@ internal sealed partial class App
       _main.Start();
    }
 
-   protected override void OnExit( System.Windows.ExitEventArgs e )
-   {
-      _main.Dispose();
-      _singleInstance.Dispose();
-   }
+   protected override void OnExit( System.Windows.ExitEventArgs e ) => Dispose();
 }
