@@ -72,10 +72,7 @@ internal sealed class HandyApi : IDisposable
 
       var mean = calculatedOffsets.Average();
       var sd = Math.Sqrt( calculatedOffsets.Select( offset => Math.Pow( offset - mean, 2 ) ).Average() );
-      var validValues = calculatedOffsets.Where( offset => Math.Abs( offset - mean ) < sd );
-
-      _estimatedClientServerOffset = (long)validValues.Average();
-      var unfileteredNonse = calculatedOffsets.Average();
+      _estimatedClientServerOffset = (long)calculatedOffsets.Where( offset => Math.Abs( offset - mean ) < sd ).Average();
       HandyLogger.Log( $"Server clock sync completed: {_estimatedClientServerOffset}ms offset" );
 
       return true;

@@ -1,5 +1,6 @@
 ﻿namespace VlcScriptPlayer.Handy;
 
+// https://www.handyfeeling.com/api/handy/v2/docs/
 internal static class Endpoints
 {
 	public const string RootEndpoint = "https://www.handyfeeling.com/api/handy/v2/";
