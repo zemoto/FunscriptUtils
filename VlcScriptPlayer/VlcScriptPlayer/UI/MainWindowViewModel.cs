@@ -5,16 +5,6 @@ namespace VlcScriptPlayer.UI;
 
 internal sealed class MainWindowViewModel : Config, IFilterConfig
 {
-   public MainWindowViewModel() => PropertyChanged += OnPropertyChanged;
-
-   private void OnPropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
-   {
-      if ( e.PropertyName is nameof( IsConnected ) or nameof( VideoFilePath ) or nameof( ScriptFilePath ) )
-      {
-         OnPropertyChanged( nameof( ScriptAndVideoReady ) );
-      }
-   }
-
    private bool _isConnected;
    public bool IsConnected
    {
@@ -42,8 +32,6 @@ internal sealed class MainWindowViewModel : Config, IFilterConfig
       get => _requestInProgress;
       set => SetProperty( ref _requestInProgress, value );
    }
-
-   public bool ScriptAndVideoReady => !string.IsNullOrEmpty( VideoFilePath ) && !string.IsNullOrEmpty( ScriptFilePath ) && IsConnected;
 
    private string _selectedScriptFilePath;
    public string SelectedScriptFilePath
