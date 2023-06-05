@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ZemotoCommon;
 
 namespace VlcScriptPlayer.Handy;
 
@@ -51,23 +52,21 @@ internal sealed class HandyApi : IDisposable
       for ( int i = 0; i < 30; i++ )
       {
          var clientSendTime = DateTimeOffset.Now;
-         using var response = await _client.GetAsync( Endpoints.ServerClockEndpoint ).ConfigureAwait( false );
+         using var response = await SafeMethod.InvokeSafelyAsync( _client.GetAsync( Endpoints.ServerClockEndpoint ) ).ConfigureAwait( false );
          var clientReceiveTime = DateTimeOffset.Now;
-         if ( response?.IsSuccessStatusCode == true )
-         {
-            var serverTimeRawResponse = await response.Content.ReadAsStringAsync().ConfigureAwait( false );
-            var serverTimeResponse = JsonSerializer.Deserialize<ServerTimeResponse>( serverTimeRawResponse );
-
-            var rtd = clientReceiveTime - clientSendTime;
-            var clientReceiveServerTime = serverTimeResponse.ServerTime + ( rtd / 2 ).TotalMilliseconds;
-
-            calculatedOffsets.Add( clientReceiveServerTime - clientReceiveTime.ToUnixTimeMilliseconds() );
-         }
-         else
+         if ( response?.IsSuccessStatusCode != true )
          {
             HandyLogger.LogRequestFail( response.StatusCode );
             return false;
          }
+
+         var serverTimeRawResponse = await response.Content.ReadAsStringAsync().ConfigureAwait( false );
+         var serverTimeResponse = JsonSerializer.Deserialize<ServerTimeResponse>( serverTimeRawResponse );
+
+         var rtd = clientReceiveTime - clientSendTime;
+         var clientReceiveServerTime = serverTimeResponse.ServerTime + ( rtd / 2 ).TotalMilliseconds;
+
+         calculatedOffsets.Add( clientReceiveServerTime - clientReceiveTime.ToUnixTimeMilliseconds() );
       }
 
       var mean = calculatedOffsets.Average();
@@ -173,24 +172,19 @@ internal sealed class HandyApi : IDisposable
    {
       var estimatedServerTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + _estimatedClientServerOffset;
       var content = new StringContent( $"{{ \"estimatedServerTime\": {estimatedServerTime}, \"startTime\": {startTime} }}", Encoding.UTF8, "application/json" );
-      using var _ = await _client.PutAsync( Endpoints.PlayEndpoint, content ).ConfigureAwait( false );
+      using var _ = await SafeMethod.InvokeSafelyAsync( _client.PutAsync( Endpoints.PlayEndpoint, content ) ).ConfigureAwait( false );
    }
 
    public async Task StopScriptAsync()
    {
-      using var _ = await _client.PutAsync( Endpoints.StopEndpoint, null ).ConfigureAwait( false );
+      using var _ = await SafeMethod.InvokeSafelyAsync( _client.PutAsync( Endpoints.StopEndpoint, null ) ).ConfigureAwait( false );
    }
 
    private static async Task<HttpResponseMessage> DoRequest( Task<HttpResponseMessage> request )
    {
-      HttpResponseMessage response;
-      try
+      var response = await SafeMethod.InvokeSafelyAsync( request, ex => HandyLogger.Log( $"Exception during request: {ex.Message}" ) ).ConfigureAwait( false );
+      if ( response is null )
       {
-         response = await request.ConfigureAwait( false );
-      }
-      catch ( Exception ex )
-      {
-         HandyLogger.Log( $"Exception during request: {ex.Message}" );
          return null;
       }
 
