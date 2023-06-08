@@ -25,11 +25,17 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
    private readonly VlcMarquee _marquee;
    private readonly Equalizer _equalizer;
 
+   private readonly float _originalBassValue;
+   private readonly float _originalPreampValue;
+
    public VlcFilter( MediaPlayer player, VlcMarquee marquee )
    {
       _player = player;
       _marquee = marquee;
-      _equalizer = new Equalizer( 0 );
+      _equalizer = new Equalizer( 7 /*Headphones*/ );
+
+      _originalBassValue = _equalizer.Amp( 0 );
+      _originalPreampValue = _equalizer.Preamp;
    }
 
    public void Dispose() => _equalizer.Dispose();
@@ -56,12 +62,11 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
    {
       if ( updateType.HasFlag( EqualizerUpdateType.Volume ) )
       {
-         _equalizer.SetPreamp( _volumeAmpEnabled ? 20 : 12 );
+         _equalizer.SetPreamp( _volumeAmpEnabled ? 20f : _originalPreampValue );
       }
       if ( updateType.HasFlag( EqualizerUpdateType.Bass ) )
       {
-         _equalizer.SetAmp( _bassBoostEnabled ? 15f : 0f, 0 );
-         _equalizer.SetAmp( _bassBoostEnabled ? 7.5f : 0f, 1 );
+         _equalizer.SetAmp( _bassBoostEnabled ? 20f : _originalBassValue, 0 );
       }
 
       _player.SetEqualizer( _equalizer );
