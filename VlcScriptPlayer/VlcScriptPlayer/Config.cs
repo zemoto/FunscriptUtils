@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using ZemotoCommon.UI;
@@ -29,6 +28,11 @@ internal abstract class Config : ViewModelBase
       if ( !File.Exists( config._scriptFilePath ) )
       {
          config._scriptFilePath = string.Empty;
+      }
+
+      if ( !Directory.Exists( config._scriptFolder ) )
+      {
+         config._scriptFolder = string.Empty;
       }
 
       return config;
@@ -82,5 +86,10 @@ internal abstract class Config : ViewModelBase
       set => SetProperty( ref _scriptFilePath, value );
    }
 
-   public ObservableCollection<string> ScriptFolders { get; set; } = new();
+   private string _scriptFolder;
+   public string ScriptFolder
+   {
+      get => _scriptFolder;
+      set => SetProperty( ref _scriptFolder, value );
+   }
 }

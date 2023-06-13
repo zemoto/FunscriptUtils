@@ -28,8 +28,7 @@ internal sealed class Main : IDisposable
       _model.SetOffsetCommand = new RelayCommand( () => _ = SetHandyOffsetAsync( _model.DesiredOffset ) );
       _model.SelectVideoCommand = new RelayCommand( SelectVideo );
       _model.SelectScriptCommand = new RelayCommand( SelectScript );
-      _model.AddScriptFolderCommand = new RelayCommand( AddScriptFolder );
-      _model.RemoveScriptFolderCommand = new RelayCommand( RemoveScriptFolder );
+      _model.SelectScriptFolderCommand = new RelayCommand( SelectScriptFolder );
       _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync().ConfigureAwait( false ) );
 
       _window = new MainWindow( _model );
@@ -98,15 +97,14 @@ internal sealed class Main : IDisposable
       _model.VideoFilePath = dlg.FileName;
 
       var videoFolderPath = Path.GetDirectoryName( dlg.FileName );
-      var folders = _model.ScriptFolders.ToList();
-      if ( !folders.Contains( videoFolderPath ) )
-      {
-         folders.Insert( 0, videoFolderPath );
-      }
-
       var fileName = Path.GetFileNameWithoutExtension( dlg.FileName );
-      foreach ( var folder in folders )
+      foreach ( var folder in new string[2] { videoFolderPath, _model.ScriptFolder } )
       {
+         if ( string.IsNullOrEmpty( folder ) )
+         {
+            continue;
+         }
+
          HandyLogger.Log( $"Searching folder for script: {folder}" );
          var scripts = Directory.GetFiles( folder, "*.funscript" ).Concat( Directory.GetFiles( folder, "*.csv" ) ).ToArray();
          var matchingScript = Array.Find( scripts, x => Path.GetFileNameWithoutExtension( x ).Equals( fileName, StringComparison.Ordinal ) );
@@ -134,16 +132,14 @@ internal sealed class Main : IDisposable
       }
    }
 
-   private void AddScriptFolder()
+   private void SelectScriptFolder()
    {
-      var dlg = new VistaFolderBrowserDialog();
+      var dlg = new VistaFolderBrowserDialog() { Multiselect = false };
       if ( dlg.ShowDialog( _window ) == true )
       {
-         _model.ScriptFolders.Add( dlg.SelectedPath );
+         _model.ScriptFolder = dlg.SelectedPath;
       }
    }
-
-   private void RemoveScriptFolder() => _model.ScriptFolders.Remove( _model.SelectedScriptFilePath );
 
    private async Task UploadScriptAndLaunchPlayerAsync()
    {

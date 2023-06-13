@@ -33,18 +33,10 @@ internal sealed class MainWindowViewModel : Config, IFilterConfig
       set => SetProperty( ref _requestInProgress, value );
    }
 
-   private string _selectedScriptFilePath;
-   public string SelectedScriptFilePath
-   {
-      get => _selectedScriptFilePath;
-      set => SetProperty( ref _selectedScriptFilePath, value );
-   }
-
    public ICommand ConnectCommand { get; set; }
    public ICommand SetOffsetCommand { get; set; }
    public ICommand SelectVideoCommand { get; set; }
    public ICommand SelectScriptCommand { get; set; }
-   public ICommand AddScriptFolderCommand { get; set; }
-   public ICommand RemoveScriptFolderCommand { get; set; }
+   public ICommand SelectScriptFolderCommand { get; set; }
    public ICommand UploadScriptAndLaunchPlayerCommand { get; set; }
 }

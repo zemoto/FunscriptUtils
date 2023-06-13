@@ -119,67 +119,76 @@
          <Grid Margin="4">
             <Grid.RowDefinitions>
                <RowDefinition Height="Auto" />
-               <RowDefinition Height="4" />
-               <RowDefinition Height="Auto" />
-               <RowDefinition Height="8" />
                <RowDefinition Height="Auto" />
                <RowDefinition Height="4" />
-               <RowDefinition Height="*" />
+               <RowDefinition Height="Auto" />
+               <RowDefinition Height="Auto" />
+               <RowDefinition Height="4" />
+               <RowDefinition Height="Auto" />
+               <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                <ColumnDefinition Width="*"
-                                 MinWidth="400" />
+                                 MinWidth="200" />
                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Row="0"
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       HorizontalAlignment="Left"
+                       Text="Video"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,2" />
+
+            <TextBox Grid.Row="1"
                      Grid.Column="0"
                      IsReadOnly="True"
                      Text="{Binding VideoFilePath, Mode=OneWay}"
                      VerticalContentAlignment="Center" />
 
-            <Button Grid.Row="0"
+            <Button Grid.Row="1"
                     Grid.Column="1"
                     Margin="4,0,0,0"
                     Content="Select"
                     Command="{Binding SelectVideoCommand, Mode=OneTime}" />
 
-            <TextBox Grid.Row="2"
+            <TextBlock Grid.Row="3"
+                       Grid.Column="0"
+                       HorizontalAlignment="Left"
+                       Text="Script"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,2" />
+
+            <TextBox Grid.Row="4"
                      Grid.Column="0"
                      IsReadOnly="True"
                      Text="{Binding ScriptFilePath, Mode=OneWay}"
                      VerticalContentAlignment="Center" />
 
-            <Button Grid.Row="2"
+            <Button Grid.Row="4"
                     Grid.Column="1"
                     Margin="4,0,0,0"
                     Content="Select"
                     Command="{Binding SelectScriptCommand, Mode=OneTime}" />
 
-            <TextBlock Grid.Row="4"
+            <TextBlock Grid.Row="6"
                        Grid.Column="0"
-                       Text="Script Folders"
-                       VerticalAlignment="Bottom" />
+                       HorizontalAlignment="Left"
+                       Text="Script Folder"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,2" />
 
-            <StackPanel Grid.Row="4"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="99"
-                        HorizontalAlignment="Right"
-                        Orientation="Horizontal">
-               <Button Content="Add"
-                       Command="{Binding AddScriptFolderCommand, Mode=OneTime}" />
-               <Button Margin="4,0,0,0"
-                       Content="Remove"
-                       Command="{Binding RemoveScriptFolderCommand, Mode=OneTime}" />
-            </StackPanel>
-
-            <ListBox Grid.Row="6"
+            <TextBox Grid.Row="7"
                      Grid.Column="0"
-                     Grid.ColumnSpan="99"
-                     Height="70"
-                     SelectedItem="{Binding SelectedScriptFilePath, Mode=OneWayToSource}"
-                     SelectionMode="Single"
-                     ItemsSource="{Binding ScriptFolders, Mode=OneWay}" />
+                     IsReadOnly="True"
+                     Text="{Binding ScriptFolder, Mode=OneWay}"
+                     VerticalContentAlignment="Center" />
+
+            <Button Grid.Row="7"
+                    Grid.Column="1"
+                    Margin="4,0,0,0"
+                    Content="Select"
+                    Command="{Binding SelectScriptFolderCommand, Mode=OneTime}" />
          </Grid>
 
       </GroupBox>
