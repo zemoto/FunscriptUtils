@@ -11,6 +11,7 @@ internal sealed class VlcManager : IDisposable
    private readonly VlcMarquee _marquee;
    public VlcFilter Filter { get; }
    public MediaPlayer Player { get; }
+   public VlcTimeProvider TimeProvider { get; }
 
    public event EventHandler MediaSetupComplete;
 
@@ -24,6 +25,7 @@ internal sealed class VlcManager : IDisposable
 
       _marquee = new VlcMarquee( Player );
       Filter = new VlcFilter( Player, _marquee );
+      TimeProvider = new VlcTimeProvider( Player );
 
       Player.Paused += OnPlayerPaused;
    }
@@ -66,6 +68,7 @@ internal sealed class VlcManager : IDisposable
          Player.Buffering -= OnPlayerFirstTimeBuffering;
          Player.SetPause( true );
          Player.Time = 0;
+         TimeProvider.Duration = TimeSpan.FromMilliseconds( Player.Media.Duration );
 
          Thread.Sleep( 500 ); // Give VLC time to process
          Application.Current.Dispatcher.BeginInvoke( () => MediaSetupComplete?.Invoke( this, EventArgs.Empty ) );

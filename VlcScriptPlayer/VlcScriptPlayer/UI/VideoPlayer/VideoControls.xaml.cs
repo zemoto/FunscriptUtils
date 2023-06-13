@@ -1,6 +1,5 @@
 using LibVLCSharp.Shared;
 using System;
-using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,7 +17,7 @@ internal sealed partial class VideoControls
 
    private MediaPlayer _player;
    private VlcFilter _filter;
-   private TimeSpan _videoDuration;
+   private VlcTimeProvider _timeProvider;
 
    public VideoControls()
    {
@@ -33,15 +32,16 @@ internal sealed partial class VideoControls
    {
       _player = vlc.Player;
       _player.Playing += OnPlayerPlaying;
-      _player.Paused += OnPlayerPaused;
-      _player.Stopped += OnPlayerStopped;
+      _player.Paused += OnPlayerPausedOrStopped;
+      _player.Stopped += OnPlayerPausedOrStopped;
 
       _filter = vlc.Filter;
       _filter.PropertyChanged += OnFilterPropertyChanged;
 
-      _videoDuration = TimeSpan.FromMilliseconds( _player.Media.Duration );
-      DurationLabel.Text = TimeSpanToString( _videoDuration );
-      CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.Zero );
+      _timeProvider = vlc.TimeProvider;
+
+      DurationLabel.Text = _timeProvider.GetDurationString();
+      CurrentTimeLabel.Text = _timeProvider.GetTimeStringAtPosition( 0 );
       UpdateFilterState();
    }
 
@@ -50,8 +50,8 @@ internal sealed partial class VideoControls
       if ( _player is not null )
       {
          _player.Playing -= OnPlayerPlaying;
-         _player.Paused -= OnPlayerPaused;
-         _player.Stopped -= OnPlayerStopped;
+         _player.Paused -= OnPlayerPausedOrStopped;
+         _player.Stopped -= OnPlayerPausedOrStopped;
       }
 
       if ( _filter is not null )
@@ -62,23 +62,13 @@ internal sealed partial class VideoControls
 
    private void OnPlaybackTimerTick( object sender, EventArgs e )
    {
-      UpdateCurrentTimeLabel();
-      SetTrackProgress( _player.Position );
+      CurrentTimeLabel.Text = _timeProvider.GetCurrentTimeString();
+      SetTrackProgress( _timeProvider.GetCurrentPlaybackPosition() );
    }
 
    private void OnPlayerPlaying( object sender, EventArgs e ) => _playbackTimer.Start();
 
-   private void OnPlayerPaused( object sender, EventArgs e ) => _playbackTimer.Stop();
-
-   private void OnPlayerStopped( object sender, EventArgs e )
-   {
-      _playbackTimer.Stop();
-      Dispatcher.BeginInvoke( () =>
-      {
-         CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.Zero );
-         SetTrackProgress( 0 );
-      } );
-   }
+   private void OnPlayerPausedOrStopped( object sender, EventArgs e ) => _playbackTimer.Stop();
 
    private void OnFilterPropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e ) => UpdateFilterState();
 
@@ -100,15 +90,11 @@ internal sealed partial class VideoControls
       FilterIndicator.Text = filterString.ToString();
    }
 
-   private string TimeSpanToString( TimeSpan time ) => time.ToString( _videoDuration.TotalHours >= 1 ? @"h\:mm\:ss" : @"m\:ss", CultureInfo.InvariantCulture );
-
-   private void SetTrackProgress( float value )
+   private void SetTrackProgress( double value )
    {
       value = Math.Clamp( value, 0f, 1f );
       TrackIndicator.Width = value * PositionTrack.ActualWidth;
    }
-
-   private void UpdateCurrentTimeLabel() => CurrentTimeLabel.Text = TimeSpanToString( TimeSpan.FromMilliseconds( _player.Time ) );
 
    private void OnScrubberMouseEnter( object sender, MouseEventArgs e )
    {
@@ -130,13 +116,13 @@ internal sealed partial class VideoControls
    {
       TrackPreview.Width = Math.Clamp( Mouse.GetPosition( TrackContainer ).X, 0, TrackContainer.ActualWidth );
 
-      TimePreviewText.Text = TimeSpanToString( TrackPreview.Width / PositionTrack.ActualWidth * _videoDuration );
+      TimePreviewText.Text = _timeProvider.GetTimeStringAtPosition( TrackPreview.Width / PositionTrack.ActualWidth );
       Canvas.SetLeft( TimePreview, TrackPreview.Width - ( TimePreview.ActualWidth / 2 ) );
    }
 
    private async void OnTrackClicked( object sender, RoutedEventArgs e )
    {
-      var newPosition = (float)( TrackPreview.Width / PositionTrack.ActualWidth );
+      var newPosition = TrackPreview.Width / PositionTrack.ActualWidth;
 
       // Snap to the beginning if clicking early enough
       if ( newPosition < 0.03 )
@@ -150,9 +136,9 @@ internal sealed partial class VideoControls
          await Task.Delay( 200 ).ConfigureAwait( true );
       }
 
-      _player.Time = (long)( newPosition * _videoDuration.TotalMilliseconds );
+      _player.Time = (long)( newPosition * _timeProvider.Duration.TotalMilliseconds );
 
       SetTrackProgress( newPosition );
-      UpdateCurrentTimeLabel();
+      CurrentTimeLabel.Text = _timeProvider.GetCurrentTimeString();
    }
 }
