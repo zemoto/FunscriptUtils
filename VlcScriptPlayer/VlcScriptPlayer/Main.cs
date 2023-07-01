@@ -161,6 +161,9 @@ internal sealed class Main : IDisposable
       {
          videoPlayer.ShowDialog();
       }
+
+      await Task.Delay( 500 ).ConfigureAwait( true ); // Give time to cleanup
+
       _window.Show();
    }
 }

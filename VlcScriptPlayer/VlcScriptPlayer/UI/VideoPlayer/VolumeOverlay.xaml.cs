@@ -25,7 +25,13 @@ internal sealed partial class VolumeControl
       _vlc.Player.VolumeChanged += OnVolumeChanged;
    }
 
-   private void OnUnloaded( object sender, RoutedEventArgs e ) => _vlc.Player.VolumeChanged -= OnVolumeChanged;
+   private void OnUnloaded( object sender, RoutedEventArgs e )
+   {
+      if ( _vlc is not null )
+      {
+         _vlc.Player.VolumeChanged -= OnVolumeChanged;
+      }
+   }
 
    private void OnFadeOutTimerTick( object sender, EventArgs e )
    {
