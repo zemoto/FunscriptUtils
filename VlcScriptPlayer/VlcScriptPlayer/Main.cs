@@ -165,5 +165,6 @@ internal sealed class Main : IDisposable
       await Task.Delay( 500 ).ConfigureAwait( true ); // Give time to cleanup
 
       _window.Show();
+      _window.Activate();
    }
 }
