@@ -45,6 +45,10 @@ internal sealed class VlcMarquee
          lock ( _enabledLock )
          {
             enabled = value;
+            if ( !enabled )
+            {
+               _player.SetMarqueeInt( VideoMarqueeOption.Enable, 0 );
+            }
          }
       }
    }
