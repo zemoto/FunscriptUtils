@@ -111,17 +111,12 @@ internal sealed class HandyApi : IDisposable
 
    public async Task<bool> UploadScriptAsync( string scriptFilePath, bool forceUploadScript )
    {
-      string csv;
-      if ( Path.GetExtension( scriptFilePath ) == ".funscript" )
+      HandyLogger.Log( "Retrieving script CSV." );
+      string csv = CSVFactory.FromFile( scriptFilePath );
+      if ( string.IsNullOrEmpty( csv ) )
       {
-         HandyLogger.Log( "Converting script to CSV" );
-         var funscriptString = File.ReadAllText( scriptFilePath );
-         var funscript = JsonSerializer.Deserialize<Funscript>( funscriptString );
-         csv = funscript.GetCSVString();
-      }
-      else
-      {
-         csv = File.ReadAllText( scriptFilePath );
+         HandyLogger.Log( "Error: Invalid script." );
+         return true;
       }
 
       var csvSha256Hash = ComputeSha256Hash( csv );
