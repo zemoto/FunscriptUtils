@@ -12,6 +12,8 @@ internal sealed partial class VideoPlayerWindow
    private readonly DispatcherTimer _hideScrubberTimer;
    private readonly VlcManager _vlc;
 
+   private bool _mediaReady;
+
    private DateTime _lastPauseToggleTime = DateTime.MinValue;
 
    public VideoPlayerWindow( VlcManager vlc )
@@ -31,6 +33,7 @@ internal sealed partial class VideoPlayerWindow
 
    private void OnMediaSetupComplete( object sender, EventArgs e )
    {
+      _mediaReady = true;
       _vlc.MediaSetupComplete -= OnMediaSetupComplete;
 
       VolumeOverlay.SetVlc( _vlc );
@@ -64,7 +67,10 @@ internal sealed partial class VideoPlayerWindow
          }
          case Key.Escape:
          {
-            Close();
+            if ( _mediaReady )
+            {
+               Close();
+            }
             break;
          }
          case Key.B when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
