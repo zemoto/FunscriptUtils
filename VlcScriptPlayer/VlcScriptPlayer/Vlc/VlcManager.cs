@@ -54,7 +54,7 @@ internal sealed class VlcManager : IDisposable
       Player.Stop();
       Player.Media?.Dispose();
       Player.Media = null;
-      _marquee.Enabled = false;
+      _marquee.SetEnabled( false );
    }
 
    private void OnPlayerFirstTimeBuffering( object sender, MediaPlayerBufferingEventArgs e )
@@ -73,7 +73,7 @@ internal sealed class VlcManager : IDisposable
 
          Thread.Sleep( 500 ); // Give VLC time to process
          Application.Current.Dispatcher.BeginInvoke( () => MediaSetupComplete?.Invoke( this, EventArgs.Empty ) );
-         _marquee.Enabled = true;
+         _marquee.SetEnabled( true );
       } );
    }
 

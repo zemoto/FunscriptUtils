@@ -94,7 +94,7 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
          if ( SetProperty( ref _bassBoostEnabled, value ) )
          {
             SetEqualizer( EqualizerUpdateType.Bass );
-            _marquee.DisplayMarqueeText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
+            _marquee.DisplayText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
          }
       }
    }
@@ -108,7 +108,7 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
          if ( SetProperty( ref _saturationBoostEnabled, value ) )
          {
             _player.SetAdjustFloat( VideoAdjustOption.Saturation, value ? 1.5f : 1f );
-            _marquee.DisplayMarqueeText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
+            _marquee.DisplayText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
          }
       }
    }

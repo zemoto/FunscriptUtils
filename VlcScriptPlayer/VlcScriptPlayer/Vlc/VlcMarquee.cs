@@ -5,7 +5,6 @@ namespace VlcScriptPlayer.Vlc;
 internal sealed class VlcMarquee
 {
    private readonly MediaPlayer _player;
-   private readonly object _enabledLock = new();
 
    public VlcMarquee( MediaPlayer player )
    {
@@ -19,37 +18,15 @@ internal sealed class VlcMarquee
       _player.SetMarqueeInt( VideoMarqueeOption.Size, 110 );
    }
 
-   public void DisplayMarqueeText( string text )
+   public void DisplayText( string text ) => _player.SetMarqueeString( VideoMarqueeOption.Text, text );
+
+   public void SetEnabled( bool enabled )
    {
-      if ( !Enabled )
+      if ( !enabled )
       {
-         return;
+         _player.SetMarqueeString( VideoMarqueeOption.Text, string.Empty );
       }
 
-      _player.SetMarqueeString( VideoMarqueeOption.Text, text );
-      _player.SetMarqueeInt( VideoMarqueeOption.Enable, 1 );
-   }
-
-   private bool enabled;
-   public bool Enabled
-   {
-      get
-      {
-         lock ( _enabledLock )
-         {
-            return enabled;
-         }
-      }
-      set
-      {
-         lock ( _enabledLock )
-         {
-            enabled = value;
-            if ( !enabled )
-            {
-               _player.SetMarqueeInt( VideoMarqueeOption.Enable, 0 );
-            }
-         }
-      }
+      _player.SetMarqueeInt( VideoMarqueeOption.Enable, enabled ? 1 : 0 );
    }
 }
