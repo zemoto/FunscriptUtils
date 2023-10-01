@@ -48,13 +48,6 @@ internal sealed class AppConfig : ViewModelBase
 
    public HandyConfig Handy { get; set; } = new HandyConfig();
 
-   private bool _forceUploadScript;
-   public bool ForceUploadScript
-   {
-      get => _forceUploadScript;
-      set => SetProperty( ref _forceUploadScript, value );
-   }
-
    private string _videoFilePath;
    public string VideoFilePath
    {

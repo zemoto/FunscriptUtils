@@ -32,7 +32,7 @@ internal sealed class Main : IDisposable
          SelectVideoCommand = new RelayCommand( SelectVideo ),
          SelectScriptCommand = new RelayCommand( SelectScript ),
          SelectScriptFolderCommand = new RelayCommand( SelectScriptFolder ),
-         UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync().ConfigureAwait( false ) )
+         UploadScriptAndLaunchPlayerCommand = new RelayCommand<bool>( async forceUpload => await UploadScriptAndLaunchPlayerAsync( forceUpload).ConfigureAwait( false ) )
       };
 
       _window = new MainWindow( _model );
@@ -151,14 +151,14 @@ internal sealed class Main : IDisposable
       }
    }
 
-   private async Task UploadScriptAndLaunchPlayerAsync()
+   private async Task UploadScriptAndLaunchPlayerAsync( bool forceUpload )
    {
       _model.RequestInProgress = true;
 
 #if !TESTINGPLAYER
       using ( new ScopeGuard( () => _model.RequestInProgress = false ) )
       {
-         if ( !await _handyApi.UploadScriptAsync( _config.ScriptFilePath, _config.ForceUploadScript ).ConfigureAwait( true ) )
+         if ( !await _handyApi.UploadScriptAsync( _config.ScriptFilePath, forceUpload ).ConfigureAwait( true ) )
          {
             return;
          }

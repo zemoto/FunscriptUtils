@@ -25,5 +25,5 @@ internal sealed class MainWindowViewModel : ViewModelBase
    public ICommand SelectVideoCommand { get; set; }
    public ICommand SelectScriptCommand { get; set; }
    public ICommand SelectScriptFolderCommand { get; set; }
-   public ICommand UploadScriptAndLaunchPlayerCommand { get; set; }
+   public RelayCommand<bool> UploadScriptAndLaunchPlayerCommand { get; set; }
 }

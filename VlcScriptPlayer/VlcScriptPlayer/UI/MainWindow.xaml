@@ -31,8 +31,6 @@
       <Style TargetType="{x:Type TextBox}">
          <Setter Property="Height"
                  Value="24" />
-         <Setter Property="MinWidth"
-                 Value="100" />
       </Style>
 
    </Window.Resources>
@@ -49,9 +47,10 @@
 
       <!--Settings-->
       <GroupBox Header="Settings"
+                Width="250"
                 Grid.Row="0"
                 Grid.Column="0"
-                Margin="8,4,4,4"
+                Margin="8,4,2,4"
                 IsEnabled="{Binding RequestInProgress, Mode=OneWay, Converter={x:Static commonui:InvertBoolConverter.Instance}}">
          <StackPanel Margin="4">
             <TextBlock FontWeight="SemiBold"
@@ -111,9 +110,12 @@
                         Text="{commonui:DoubleMinMaxBinding Config.Handy.DesiredSlideMin, 0, 90, Mode=TwoWay, StringFormat=N2}"
                         VerticalContentAlignment="Center" />
 
-               <TextBlock Grid.Column="1"
+               <Rectangle Grid.Column="1"
+                          Fill="Gray"
                           Margin="4,0"
-                          Text="-"
+                          Height="1"
+                          Width="4"
+                          HorizontalAlignment="Center"
                           VerticalAlignment="Center" />
 
                <TextBox Grid.Column="2"
@@ -133,19 +135,15 @@
             <CheckBox Margin="0,8,0,0"
                       Content="Boost Saturation"
                       IsChecked="{Binding Config.Filters.BoostSaturation, Mode=TwoWay}" />
-
-            <CheckBox Margin="0,8,0,0"
-                      Content="Force upload script"
-                      IsChecked="{Binding Config.ForceUploadScript, Mode=TwoWay}"
-                      ToolTip="Force uploading the script even if it is identical to the one last uploaded." />
          </StackPanel>
       </GroupBox>
 
       <!--Video/Script-->
       <GroupBox Header="Video/Script"
+                Width="340"
                 Grid.Row="0"
                 Grid.Column="1"
-                Margin="4,4,8,4">
+                Margin="2,4,8,4">
          <Grid Margin="4">
             <Grid.RowDefinitions>
                <RowDefinition Height="Auto" />
@@ -158,8 +156,7 @@
                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-               <ColumnDefinition Width="*"
-                                 MinWidth="200" />
+               <ColumnDefinition Width="*" />
                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
@@ -223,13 +220,11 @@
 
       </GroupBox>
 
-      <Button Grid.Row="1"
-              Grid.Column="0"
-              Grid.ColumnSpan="99"
-              Margin="8,0"
-              Content="Upload Script and Launch Player"
-              Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}">
-         <Button.IsEnabled>
+      <Grid Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="99"
+            Margin="8,0">
+         <Grid.IsEnabled>
             <MultiBinding Converter="{x:Static commonui:MultiBoolToBoolAndConverter.Instance}">
                <MultiBinding.Bindings>
                   <Binding Path="Config.VideoFilePath.Length"
@@ -244,15 +239,29 @@
                            Mode="OneWay" />
                </MultiBinding.Bindings>
             </MultiBinding>
-         </Button.IsEnabled>
-      </Button>
+         </Grid.IsEnabled>
+         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="4" />
+            <ColumnDefinition Width="Auto" />
+         </Grid.ColumnDefinitions>
+         
+         <Button Grid.Column="0" 
+                 Content="Upload Script and Launch Player"
+                 Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}"
+                 CommandParameter="False" />
+
+         <Button Grid.Column="2"
+                 Content="Force Upload"
+                 Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}"
+                 CommandParameter="True"/>
+      </Grid>
 
       <TextBox x:Name="LogTextBox"
                Grid.Row="2"
                Grid.Column="0"
                Grid.ColumnSpan="99"
                Height="100"
-               Width="670"
                Padding="4"
                Margin="8,4,8,8"
                TextChanged="OnLogTextChanged"
