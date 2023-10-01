@@ -109,6 +109,36 @@ internal sealed class HandyApi : IDisposable
       return response?.IsSuccessStatusCode == true;
    }
 
+   public async Task<(double, double)> GetRangeAsync()
+   {
+      HandyLogger.LogRequest( "GetRange" );
+      using var response = await DoRequest( _client.GetAsync( Endpoints.SlideEndpoint ) ).ConfigureAwait( false );
+      if ( response?.IsSuccessStatusCode != true )
+      {
+         return (0, 0);
+      }
+
+      var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait( false );
+      var slideResponse = JsonSerializer.Deserialize<GetSlideResponse>( responseString );
+
+      return (slideResponse.Min, slideResponse.Max);
+   }
+
+   public async Task<bool> SetRangeAsync( double min, double max )
+   {
+      if ( min >= max - 10 )
+      {
+         HandyLogger.Log( "ERROR: Invalid slide min/max range" );
+         return false;
+      }
+
+      HandyLogger.LogRequest( "SetRange" );
+
+      var content = new StringContent( $"{{ \"min\": {min}, \"max\": {max} }}", Encoding.UTF8, "application/json" );
+      using var response = await DoRequest( _client.PutAsync( Endpoints.SlideEndpoint, content ) ).ConfigureAwait( false );
+      return response?.IsSuccessStatusCode == true;
+   }
+
    public async Task<bool> UploadScriptAsync( string scriptFilePath, bool forceUploadScript )
    {
       HandyLogger.Log( "Retrieving script CSV." );

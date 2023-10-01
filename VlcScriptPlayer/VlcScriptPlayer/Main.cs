@@ -27,7 +27,8 @@ internal sealed class Main : IDisposable
       _model = new MainWindowViewModel( _config )
       {
          ConnectCommand = new RelayCommand( () => _ = ConnectToHandyAsync() ),
-         SetOffsetCommand = new RelayCommand( () => _ = SetHandyOffsetAsync( _model.Config.Handy.DesiredOffset ) ),
+         SetOffsetCommand = new RelayCommand( () => _ = SetHandyOffsetAsync() ),
+         SetRangeCommand = new RelayCommand( () => _ = SetHandyRangeAsync() ),
          SelectVideoCommand = new RelayCommand( SelectVideo ),
          SelectScriptCommand = new RelayCommand( SelectScript ),
          SelectScriptFolderCommand = new RelayCommand( SelectScriptFolder ),
@@ -61,27 +62,33 @@ internal sealed class Main : IDisposable
          return;
       }
 
-      if ( _config.Handy.DesiredOffset != 0 )
-      {
-         await SetHandyOffsetAsync( _config.Handy.DesiredOffset ).ConfigureAwait( false );
-      }
-      else
-      {
-         _config.Handy.CurrentOffset = await _handyApi.GetOffsetAsync().ConfigureAwait( false );
-      }
-
+      await SetHandyOffsetAsync().ConfigureAwait( false );
+      await SetHandyRangeAsync().ConfigureAwait( false );
 #endif
+
       _config.Handy.IsConnected = true;
    }
 
-   private async Task SetHandyOffsetAsync( int desiredOffset )
+   private async Task SetHandyOffsetAsync()
    {
       _model.RequestInProgress = true;
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
 
-      if ( await _handyApi.SetOffsetAsync( desiredOffset ).ConfigureAwait( false ) )
+      if ( await _handyApi.SetOffsetAsync( _config.Handy.DesiredOffset ).ConfigureAwait( false ) )
       {
-         _config.Handy.CurrentOffset = desiredOffset;
+         _config.Handy.CurrentOffset = _config.Handy.DesiredOffset;
+      }
+   }
+
+   private async Task SetHandyRangeAsync()
+   {
+      _model.RequestInProgress = true;
+      using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
+
+      if ( await _handyApi.SetRangeAsync( _config.Handy.DesiredSlideMin, _config.Handy.DesiredSlideMax ).ConfigureAwait( false ) )
+      {
+         _config.Handy.CurrentSlideMin = _config.Handy.DesiredSlideMin;
+         _config.Handy.CurrentSlideMax = _config.Handy.DesiredSlideMax;
       }
    }
 
@@ -171,6 +178,8 @@ internal sealed class Main : IDisposable
       }
 
       await Task.Delay( 2000 ).ConfigureAwait( true ); // Give time to cleanup
+
+      (_config.Handy.CurrentSlideMin, _config.Handy.CurrentSlideMax) = await _handyApi.GetRangeAsync().ConfigureAwait( true );
 
       _window.Show();
       _window.Activate();

@@ -6,6 +6,8 @@ namespace VlcScriptPlayer.UI;
 
 internal sealed class MainWindowViewModel : ViewModelBase
 {
+   public MainWindowViewModel() => Config = new AppConfig(); // Design-time
+
    public MainWindowViewModel( AppConfig config ) => Config = config;
 
    public AppConfig Config { get; }
@@ -19,6 +21,7 @@ internal sealed class MainWindowViewModel : ViewModelBase
 
    public ICommand ConnectCommand { get; set; }
    public ICommand SetOffsetCommand { get; set; }
+   public ICommand SetRangeCommand { get; set; }
    public ICommand SelectVideoCommand { get; set; }
    public ICommand SelectScriptCommand { get; set; }
    public ICommand SelectScriptFolderCommand { get; set; }

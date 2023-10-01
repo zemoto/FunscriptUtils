@@ -11,6 +11,7 @@ internal static class Endpoints
 	public const string SetupEndpoint = $"{RootEndpoint}hssp/setup";
 	public const string PlayEndpoint = $"{RootEndpoint}hssp/play";
 	public const string StopEndpoint = $"{RootEndpoint}hssp/stop";
+	public const string SlideEndpoint = $"{RootEndpoint}slide";
 
 	public const string UploadCSVEndpoint = "https://www.handyfeeling.com/api/sync/upload?local=true";
 }

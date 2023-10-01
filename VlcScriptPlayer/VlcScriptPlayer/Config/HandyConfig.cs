@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Config;
@@ -33,5 +33,35 @@ internal sealed class HandyConfig : ViewModelBase
    {
       get => _currentOffset;
       set => SetProperty( ref _currentOffset, value );
+   }
+
+   private double _desiredSlideMin;
+   public double DesiredSlideMin
+   {
+      get => _desiredSlideMin;
+      set => SetProperty( ref _desiredSlideMin, value );
+   }
+
+   private double _desiredSlideMax = 100;
+   public double DesiredSlideMax
+   {
+      get => _desiredSlideMax;
+      set => SetProperty( ref _desiredSlideMax, value );
+   }
+
+   private double _currentSlideMin;
+   [JsonIgnore]
+   public double CurrentSlideMin
+   {
+      get => _currentSlideMin;
+      set => SetProperty( ref _currentSlideMin, value );
+   }
+
+   private double _currentSlideMax;
+   [JsonIgnore]
+   public double CurrentSlideMax
+   {
+      get => _currentSlideMax;
+      set => SetProperty( ref _currentSlideMax, value );
    }
 }

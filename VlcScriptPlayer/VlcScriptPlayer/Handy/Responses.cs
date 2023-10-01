@@ -20,6 +20,14 @@ internal sealed class GetOffsetResponse
 	public int Offset { get; set; }
 }
 
+internal sealed class GetSlideResponse
+{
+	[JsonPropertyName( "min" )]
+	public double Min { get; set; }
+	[JsonPropertyName( "max" )]
+   public double Max { get; set; }
+}
+
 internal sealed class UploadResponse
 {
 	[JsonPropertyName( "success" )]
