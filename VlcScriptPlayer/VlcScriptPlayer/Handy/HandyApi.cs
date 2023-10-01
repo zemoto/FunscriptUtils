@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using VlcScriptPlayer.Config;
 using ZemotoCommon;
 
 namespace VlcScriptPlayer.Handy;
@@ -19,13 +20,19 @@ internal sealed class HandyApi : IDisposable
 
    public void Dispose() => _client.Dispose();
 
-   public void SetConnectionId( string connectionId )
+   public async Task<bool> ConnectToAndSetupHandyAsync( HandyConfig config )
    {
       _client.DefaultRequestHeaders.Remove( "X-Connection-Key" );
-      _client.DefaultRequestHeaders.Add( "X-Connection-Key", connectionId );
+      _client.DefaultRequestHeaders.Add( "X-Connection-Key", config.ConnectionId );
+
+      return await ConnectAsync().ConfigureAwait( false ) &&
+             await SetupServerClockSyncAsync().ConfigureAwait( false ) &&
+             await EnsureModeAsync().ConfigureAwait( false ) &&
+             await SetOffsetAsync( config.DesiredOffset ).ConfigureAwait( false ) &&
+             await SetRangeAsync( config.DesiredSlideMin, config.DesiredSlideMax ).ConfigureAwait( false );
    }
 
-   public async Task<bool> ConnectAsync()
+   private async Task<bool> ConnectAsync()
    {
       HandyLogger.LogRequest( "Connect" );
       using var response = await DoRequest( _client.GetAsync( Endpoints.CheckConnectionEndpoint ) ).ConfigureAwait( false );
@@ -45,7 +52,7 @@ internal sealed class HandyApi : IDisposable
       return parsedResponse.IsConnected;
    }
 
-   public async Task<bool> SetupServerClockSyncAsync()
+   private async Task<bool> SetupServerClockSyncAsync()
    {
       HandyLogger.LogRequest( "ServerClock" );
       var calculatedOffsets = new List<double>();
@@ -77,7 +84,7 @@ internal sealed class HandyApi : IDisposable
       return true;
    }
 
-   public async Task<bool> EnsureModeAsync()
+   private async Task<bool> EnsureModeAsync()
    {
       HandyLogger.LogRequest( "SetMode" );
       var content = new StringContent( "{ \"mode\": 1 }", Encoding.UTF8, "application/json" );

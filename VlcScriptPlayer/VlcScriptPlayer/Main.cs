@@ -54,16 +54,14 @@ internal sealed class Main : IDisposable
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
 
       _config.Handy.IsConnected = false;
-      _handyApi.SetConnectionId( _config.Handy.ConnectionId );
-      if ( !await _handyApi.ConnectAsync().ConfigureAwait( false ) ||
-           !await _handyApi.SetupServerClockSyncAsync().ConfigureAwait( false ) ||
-           !await _handyApi.EnsureModeAsync().ConfigureAwait( false ) )
+      if ( !await _handyApi.ConnectToAndSetupHandyAsync( _config.Handy ).ConfigureAwait( false ) )
       {
          return;
       }
 
-      await SetHandyOffsetAsync().ConfigureAwait( false );
-      await SetHandyRangeAsync().ConfigureAwait( false );
+      _config.Handy.CurrentOffset = _config.Handy.DesiredOffset;
+      _config.Handy.CurrentSlideMin = _config.Handy.DesiredSlideMin;
+      _config.Handy.CurrentSlideMax = _config.Handy.DesiredSlideMax;
 #endif
 
       _config.Handy.IsConnected = true;
