@@ -24,6 +24,10 @@ internal sealed class VlcManager : IDisposable
          EnableHardwareDecoding = true
       };
 
+      // Weird hack that ensures first play is in a good initial state.
+      // For some reason without this the audio on first play is super quiet.
+      Player.Stop();
+
       _marquee = new VlcMarquee( Player );
       Filter = new VlcFilter( Player, _marquee );
       TimeProvider = new VlcTimeProvider( Player );
@@ -44,7 +48,6 @@ internal sealed class VlcManager : IDisposable
 
       Player.Buffering += OnPlayerFirstTimeBuffering;
       var media = new Media( _libvlc, new Uri( filePath ) );
-      media.Parse();
       Player.Play( media );
    }
 
