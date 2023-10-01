@@ -2,11 +2,11 @@
 using System.Net;
 using ZemotoCommon.UI;
 
-namespace VlcScriptPlayer.Handy;
+namespace VlcScriptPlayer;
 
-internal sealed class HandyLogger : ViewModelBase
+internal sealed class Logger : ViewModelBase
 {
-   public static readonly HandyLogger Instance = new();
+   public static readonly Logger Instance = new();
 
    public string LogData { get; private set; } = "Logging Initialized";
 

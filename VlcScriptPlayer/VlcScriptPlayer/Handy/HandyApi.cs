@@ -34,7 +34,7 @@ internal sealed class HandyApi : IDisposable
 
    private async Task<bool> ConnectAsync()
    {
-      HandyLogger.LogRequest( "Connect" );
+      Logger.LogRequest( "Connect" );
       using var response = await DoRequest( _client.GetAsync( Endpoints.CheckConnectionEndpoint ) ).ConfigureAwait( false );
       if ( response?.IsSuccessStatusCode != true )
       {
@@ -46,7 +46,7 @@ internal sealed class HandyApi : IDisposable
 
       if ( !parsedResponse.IsConnected )
       {
-         HandyLogger.Log( "Error: No Handy found to connect to" );
+         Logger.Log( "Error: No Handy found to connect to" );
       }
 
       return parsedResponse.IsConnected;
@@ -54,7 +54,7 @@ internal sealed class HandyApi : IDisposable
 
    private async Task<bool> SetupServerClockSyncAsync()
    {
-      HandyLogger.LogRequest( "ServerClock" );
+      Logger.LogRequest( "ServerClock" );
       var calculatedOffsets = new List<double>();
       for ( int i = 0; i < 30; i++ )
       {
@@ -63,7 +63,7 @@ internal sealed class HandyApi : IDisposable
          var clientReceiveTime = DateTimeOffset.Now;
          if ( response?.IsSuccessStatusCode != true )
          {
-            HandyLogger.LogRequestFail( response.StatusCode );
+            Logger.LogRequestFail( response.StatusCode );
             return false;
          }
 
@@ -79,14 +79,14 @@ internal sealed class HandyApi : IDisposable
       var mean = calculatedOffsets.Average();
       var sd = Math.Sqrt( calculatedOffsets.Select( offset => Math.Pow( offset - mean, 2 ) ).Average() );
       _estimatedClientServerOffset = (long)calculatedOffsets.Where( offset => Math.Abs( offset - mean ) < sd ).Average();
-      HandyLogger.Log( $"Server clock sync completed: {_estimatedClientServerOffset}ms offset" );
+      Logger.Log( $"Server clock sync completed: {_estimatedClientServerOffset}ms offset" );
 
       return true;
    }
 
    private async Task<bool> EnsureModeAsync()
    {
-      HandyLogger.LogRequest( "SetMode" );
+      Logger.LogRequest( "SetMode" );
       var content = new StringContent( "{ \"mode\": 1 }", Encoding.UTF8, "application/json" );
       using var response = await DoRequest( _client.PutAsync( Endpoints.ModeEndpoint, content ) ).ConfigureAwait( false );
       return response?.IsSuccessStatusCode == true;
@@ -94,7 +94,7 @@ internal sealed class HandyApi : IDisposable
 
    public async Task<int> GetOffsetAsync()
    {
-      HandyLogger.LogRequest( "GetOffset" );
+      Logger.LogRequest( "GetOffset" );
       using var response = await DoRequest( _client.GetAsync( Endpoints.OffsetEndpoint ) ).ConfigureAwait( false );
       if ( response?.IsSuccessStatusCode != true )
       {
@@ -109,7 +109,7 @@ internal sealed class HandyApi : IDisposable
 
    public async Task<bool> SetOffsetAsync( int offset )
    {
-      HandyLogger.LogRequest( "SetOffset" );
+      Logger.LogRequest( "SetOffset" );
 
       var content = new StringContent( $"{{ \"offset\": {offset} }}", Encoding.UTF8, "application/json" );
       using var response = await DoRequest( _client.PutAsync( Endpoints.OffsetEndpoint, content ) ).ConfigureAwait( false );
@@ -118,7 +118,7 @@ internal sealed class HandyApi : IDisposable
 
    public async Task<(double, double)> GetRangeAsync()
    {
-      HandyLogger.LogRequest( "GetRange" );
+      Logger.LogRequest( "GetRange" );
       using var response = await DoRequest( _client.GetAsync( Endpoints.SlideEndpoint ) ).ConfigureAwait( false );
       if ( response?.IsSuccessStatusCode != true )
       {
@@ -135,11 +135,11 @@ internal sealed class HandyApi : IDisposable
    {
       if ( min >= max - 10 )
       {
-         HandyLogger.Log( "ERROR: Invalid slide min/max range" );
+         Logger.Log( "ERROR: Invalid slide min/max range" );
          return false;
       }
 
-      HandyLogger.LogRequest( "SetRange" );
+      Logger.LogRequest( "SetRange" );
 
       var content = new StringContent( $"{{ \"min\": {min}, \"max\": {max} }}", Encoding.UTF8, "application/json" );
       using var response = await DoRequest( _client.PutAsync( Endpoints.SlideEndpoint, content ) ).ConfigureAwait( false );
@@ -148,24 +148,24 @@ internal sealed class HandyApi : IDisposable
 
    public async Task<bool> UploadScriptAsync( string scriptFilePath, bool forceUploadScript )
    {
-      HandyLogger.Log( "Retrieving script CSV." );
+      Logger.Log( "Retrieving script CSV." );
       string csv = CSVFactory.FromFile( scriptFilePath );
       if ( string.IsNullOrEmpty( csv ) )
       {
-         HandyLogger.Log( "Error: Invalid script." );
+         Logger.Log( "Error: Invalid script." );
          return true;
       }
 
       var csvSha256Hash = ComputeSha256Hash( csv );
       if ( !forceUploadScript && csvSha256Hash == _lastUploadedScriptSha256 )
       {
-         HandyLogger.Log( "Script is identical to last uploaded, skipping upload." );
+         Logger.Log( "Script is identical to last uploaded, skipping upload." );
          return true;
       }
 
       var formData = new MultipartFormDataContent { { new StringContent( csv ), "syncFile", $"{Path.GetFileNameWithoutExtension( scriptFilePath )}.csv" } };
 
-      HandyLogger.LogRequest( "UploadingScript" );
+      Logger.LogRequest( "UploadingScript" );
       using var uploadResponse = await DoRequest( _client.PostAsync( Endpoints.UploadCSVEndpoint, formData ) ).ConfigureAwait( false );
       if ( uploadResponse?.IsSuccessStatusCode != true )
       {
@@ -176,11 +176,11 @@ internal sealed class HandyApi : IDisposable
       var parsedUploadResponse = JsonSerializer.Deserialize<UploadResponse>( responseString );
       if ( !parsedUploadResponse.Success )
       {
-         HandyLogger.Log( $"Upload failed: {parsedUploadResponse.Info}" );
+         Logger.Log( $"Upload failed: {parsedUploadResponse.Info}" );
          return false;
       }
 
-      HandyLogger.LogRequest( "SyncSetup" );
+      Logger.LogRequest( "SyncSetup" );
       var setupContent = new StringContent( $"{{ \"url\": \"{parsedUploadResponse.Url}\" }}", Encoding.UTF8, "application/json" );
       using var setupResponse = await DoRequest( _client.PutAsync( Endpoints.SetupEndpoint, setupContent ) ).ConfigureAwait( false );
       if ( setupResponse?.IsSuccessStatusCode != true )
@@ -192,7 +192,7 @@ internal sealed class HandyApi : IDisposable
       var parsedSetupResponse = JsonSerializer.Deserialize<SetupResponse>( responseString );
       if ( parsedSetupResponse.Result == -1 )
       {
-         HandyLogger.Log( $"Setup failed: {parsedSetupResponse.Error.Message}" );
+         Logger.Log( $"Setup failed: {parsedSetupResponse.Error.Message}" );
          return false;
       }
 
@@ -214,7 +214,7 @@ internal sealed class HandyApi : IDisposable
 
    private static async Task<HttpResponseMessage> DoRequest( Task<HttpResponseMessage> request )
    {
-      var response = await SafeMethod.InvokeSafelyAsync( request, ex => HandyLogger.Log( $"Exception during request: {ex.Message}" ) ).ConfigureAwait( false );
+      var response = await SafeMethod.InvokeSafelyAsync( request, ex => Logger.Log( $"Exception during request: {ex.Message}" ) ).ConfigureAwait( false );
       if ( response is null )
       {
          return null;
@@ -222,11 +222,11 @@ internal sealed class HandyApi : IDisposable
 
       if ( response.IsSuccessStatusCode )
       {
-         HandyLogger.LogRequestSuccess();
+         Logger.LogRequestSuccess();
       }
       else
       {
-         HandyLogger.LogRequestFail( response.StatusCode );
+         Logger.LogRequestFail( response.StatusCode );
       }
 
       return response;

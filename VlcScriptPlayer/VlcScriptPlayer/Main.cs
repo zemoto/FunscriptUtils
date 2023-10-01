@@ -115,13 +115,13 @@ internal sealed class Main : IDisposable
             continue;
          }
 
-         HandyLogger.Log( $"Searching folder for script: {folder}" );
+         Logger.Log( $"Searching folder for script: {folder}" );
          var scripts = Directory.GetFiles( folder, "*.funscript" ).Concat( Directory.GetFiles( folder, "*.csv" ) ).ToArray();
          var matchingScript = Array.Find( scripts, x => Path.GetFileNameWithoutExtension( x ).Equals( fileName, StringComparison.Ordinal ) );
          if ( !string.IsNullOrWhiteSpace( matchingScript ) )
          {
             _config.ScriptFilePath = matchingScript;
-            HandyLogger.Log( $"Found script: {matchingScript}" );
+            Logger.Log( $"Found script: {matchingScript}" );
             return;
          }
       }
@@ -153,9 +153,14 @@ internal sealed class Main : IDisposable
 
    private async Task UploadScriptAndLaunchPlayerAsync( bool forceUpload )
    {
-      _model.RequestInProgress = true;
+      if ( !_config.VerifyPaths() )
+      {
+         Logger.Log( "Error: Could not find script or video file" );
+         return;
+      }
 
 #if !TESTINGPLAYER
+      _model.RequestInProgress = true;
       using ( new ScopeGuard( () => _model.RequestInProgress = false ) )
       {
          if ( !await _handyApi.UploadScriptAsync( _config.ScriptFilePath, forceUpload ).ConfigureAwait( true ) )

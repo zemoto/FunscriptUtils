@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using ZemotoCommon.UI;
@@ -19,21 +19,7 @@ internal sealed class AppConfig : ViewModelBase
 
       var configString = File.ReadAllText( _configFilePath );
       var config = JsonSerializer.Deserialize<AppConfig>( configString );
-
-      if ( !File.Exists( config._videoFilePath ) )
-      {
-         config._videoFilePath = string.Empty;
-      }
-
-      if ( !File.Exists( config._scriptFilePath ) )
-      {
-         config._scriptFilePath = string.Empty;
-      }
-
-      if ( !Directory.Exists( config._scriptFolder ) )
-      {
-         config._scriptFolder = string.Empty;
-      }
+      _ = config.VerifyPaths();
 
       return config;
    }
@@ -42,6 +28,30 @@ internal sealed class AppConfig : ViewModelBase
    {
       var configJson = JsonSerializer.Serialize( this );
       File.WriteAllText( _configFilePath, configJson );
+   }
+
+   public bool VerifyPaths()
+   {
+      bool pathsValid = true;
+      if ( !File.Exists( _videoFilePath ) )
+      {
+         VideoFilePath = string.Empty;
+         pathsValid = false;
+      }
+
+      if ( !File.Exists( _scriptFilePath ) )
+      {
+         ScriptFilePath = string.Empty;
+         pathsValid = false;
+      }
+
+      if ( !string.IsNullOrEmpty( _scriptFolder ) && !Directory.Exists( _scriptFolder ) )
+      {
+         ScriptFolder = string.Empty;
+         pathsValid = false;
+      }
+
+      return pathsValid;
    }
 
    public FilterConfig Filters { get; set; } = new FilterConfig();
