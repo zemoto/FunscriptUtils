@@ -16,7 +16,9 @@ internal sealed class VlcScriptSynchronizer : IDisposable
       _vlc = vlc;
       _api = api;
 
+#if !TESTINGPLAYER
       _vlc.MediaSetupComplete += OnMediaSetupComplete;
+#endif
    }
 
    public void Dispose()

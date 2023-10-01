@@ -48,6 +48,7 @@ internal sealed class Main : IDisposable
 
    private async Task ConnectToHandyAsync()
    {
+#if !TESTINGPLAYER
       _model.RequestInProgress = true;
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
 
@@ -69,6 +70,7 @@ internal sealed class Main : IDisposable
          _config.Handy.CurrentOffset = await _handyApi.GetOffsetAsync().ConfigureAwait( false );
       }
 
+#endif
       _config.Handy.IsConnected = true;
    }
 
@@ -147,6 +149,8 @@ internal sealed class Main : IDisposable
    private async Task UploadScriptAndLaunchPlayerAsync()
    {
       _model.RequestInProgress = true;
+
+#if !TESTINGPLAYER
       using ( new ScopeGuard( () => _model.RequestInProgress = false ) )
       {
          if ( !await _handyApi.UploadScriptAsync( _config.ScriptFilePath, _config.ForceUploadScript ).ConfigureAwait( true ) )
@@ -154,6 +158,7 @@ internal sealed class Main : IDisposable
             return;
          }
       }
+#endif
 
       _window.Hide();
       var videoPlayer = new VideoPlayerWindow( _vlc );
