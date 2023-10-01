@@ -33,7 +33,6 @@ internal sealed partial class VideoPlayerWindow
 
    private void OnMediaSetupComplete( object sender, EventArgs e )
    {
-      _mediaReady = true;
       _vlc.MediaSetupComplete -= OnMediaSetupComplete;
 
       VolumeOverlay.SetVlc( _vlc );
@@ -41,6 +40,7 @@ internal sealed partial class VideoPlayerWindow
       VideoControls.SetVlc( _vlc );
 
       _vlc.Player.EndReached += OnPlayerEndReached;
+      _mediaReady = true;
    }
 
    private void OnClosing( object sender, System.ComponentModel.CancelEventArgs e )
@@ -115,6 +115,11 @@ internal sealed partial class VideoPlayerWindow
 
    private void OnMouseWheel( object sender, MouseWheelEventArgs e )
    {
+      if ( !_mediaReady )
+      {
+         return;
+      }
+
       const int volumeIncrement = 5;
 
       var player = VideoPlayer.MediaPlayer;
@@ -151,7 +156,7 @@ internal sealed partial class VideoPlayerWindow
 
    private void ThrottledTogglePause()
    {
-      if ( DateTime.Now < _lastPauseToggleTime + TimeSpan.FromSeconds( 1 ) )
+      if ( !_mediaReady || DateTime.Now < _lastPauseToggleTime + TimeSpan.FromSeconds( 1 ) )
       {
          return;
       }
