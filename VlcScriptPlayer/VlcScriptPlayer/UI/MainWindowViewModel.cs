@@ -1,30 +1,14 @@
 using System.Windows.Input;
-using VlcScriptPlayer.Vlc;
+using VlcScriptPlayer.Config;
+using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI;
 
-internal sealed class MainWindowViewModel : Config, IFilterConfig
+internal sealed class MainWindowViewModel : ViewModelBase
 {
-   private bool _isConnected;
-   public bool IsConnected
-   {
-      get => _isConnected;
-      set => SetProperty( ref _isConnected, value );
-   }
+   public MainWindowViewModel( AppConfig config ) => Config = config;
 
-   private int _currentOffset;
-   public int CurrentOffset
-   {
-      get => _currentOffset;
-      set => SetProperty( ref _currentOffset, value );
-   }
-
-   private bool _forceUploadScript;
-   public bool ForceUploadScript
-   {
-      get => _forceUploadScript;
-      set => SetProperty( ref _forceUploadScript, value );
-   }
+   public AppConfig Config { get; }
 
    private bool _requestInProgress;
    public bool RequestInProgress

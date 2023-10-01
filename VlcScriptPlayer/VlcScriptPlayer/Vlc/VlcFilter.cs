@@ -1,14 +1,9 @@
 ﻿using LibVLCSharp.Shared;
 using System;
+using VlcScriptPlayer.Config;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc;
-
-internal interface IFilterConfig
-{
-   bool BoostBass { get; }
-   bool BoostSaturation { get; }
-}
 
 internal sealed class VlcFilter : ViewModelBase, IDisposable
 {
@@ -40,7 +35,7 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
 
    public void Dispose() => _equalizer.Dispose();
 
-   public void SetFilters( IFilterConfig filterConfig )
+   public void SetFilters( FilterConfig filterConfig )
    {
       _volumeAmpEnabled = false; // Always disable volume amp initially
       _bassBoostEnabled = filterConfig.BoostBass;

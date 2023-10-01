@@ -1,4 +1,4 @@
-﻿<Window x:Class="VlcScriptPlayer.UI.MainWindow"
+<Window x:Class="VlcScriptPlayer.UI.MainWindow"
         x:ClassModifier="internal"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -54,8 +54,8 @@
                 Margin="8,4,4,4">
          <StackPanel Margin="4">
             <TextBlock FontWeight="SemiBold"
-                       Text="{Binding IsConnected, Mode=OneWay, StringFormat={}Connected: {0}}"
-                       Foreground="{Binding IsConnected, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
+                       Text="{Binding Config.Handy.IsConnected, Mode=OneWay, StringFormat={}Connected: {0}}"
+                       Foreground="{Binding Config.Handy.IsConnected, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
 
             <Grid Margin="0,4,0,0"
                   IsEnabled="{Binding RequestInProgress, Mode=OneWay, Converter={x:Static commonui:InvertBoolConverter.Instance}}">
@@ -65,7 +65,7 @@
                </Grid.ColumnDefinitions>
 
                <TextBox Grid.Column="0"
-                        Text="{Binding ConnectionId, Mode=TwoWay}"
+                        Text="{Binding Config.Handy.ConnectionId, Mode=TwoWay}"
                         VerticalContentAlignment="Center" />
 
                <Button Grid.Column="1"
@@ -76,7 +76,7 @@
 
             <TextBlock Margin="0,4,0,0"
                        FontWeight="SemiBold"
-                       Text="{Binding CurrentOffset, Mode=OneWay, StringFormat={}Current Offset: {0}ms}" />
+                       Text="{Binding Config.Handy.CurrentOffset, Mode=OneWay, StringFormat={}Current Offset: {0}ms}" />
 
             <Grid Margin="0,4,0,0"
                   IsEnabled="{Binding RequestInProgress, Mode=OneWay, Converter={x:Static commonui:InvertBoolConverter.Instance}}">
@@ -85,28 +85,28 @@
                   <ColumnDefinition Width="Auto" />
                </Grid.ColumnDefinitions>
                <TextBox Grid.Column="0"
-                        Text="{Binding DesiredOffset, Mode=TwoWay}"
+                        Text="{Binding Config.Handy.DesiredOffset, Mode=TwoWay}"
                         VerticalContentAlignment="Center"
-                        IsEnabled="{Binding IsConnected, Mode=OneWay}" />
+                        IsEnabled="{Binding Config.Handy.IsConnected, Mode=OneWay}" />
 
                <Button Grid.Column="1"
                        Margin="4,0,0,0"
                        Content="Set Offset"
                        Command="{Binding SetOffsetCommand, Mode=OneTime}"
-                       IsEnabled="{Binding IsConnected, Mode=OneWay}" />
+                       IsEnabled="{Binding Config.Handy.IsConnected, Mode=OneWay}" />
             </Grid>
 
             <CheckBox Margin="0,8,0,0"
                       Content="Boost Bass"
-                      IsChecked="{Binding BoostBass, Mode=TwoWay}" />
+                      IsChecked="{Binding Config.Filters.BoostBass, Mode=TwoWay}" />
 
             <CheckBox Margin="0,8,0,0"
                       Content="Boost Saturation"
-                      IsChecked="{Binding BoostSaturation, Mode=TwoWay}" />
+                      IsChecked="{Binding Config.Filters.BoostSaturation, Mode=TwoWay}" />
 
             <CheckBox Margin="0,8,0,0"
                       Content="Force upload script"
-                      IsChecked="{Binding ForceUploadScript, Mode=TwoWay}"
+                      IsChecked="{Binding Config.ForceUploadScript, Mode=TwoWay}"
                       ToolTip="Force uploading the script even if it is identical to the one last uploaded." />
          </StackPanel>
       </GroupBox>
@@ -143,7 +143,7 @@
             <TextBox Grid.Row="1"
                      Grid.Column="0"
                      IsReadOnly="True"
-                     Text="{Binding VideoFilePath, Mode=OneWay}"
+                     Text="{Binding Config.VideoFilePath, Mode=OneWay}"
                      VerticalContentAlignment="Center" />
 
             <Button Grid.Row="1"
@@ -162,7 +162,7 @@
             <TextBox Grid.Row="4"
                      Grid.Column="0"
                      IsReadOnly="True"
-                     Text="{Binding ScriptFilePath, Mode=OneWay}"
+                     Text="{Binding Config.ScriptFilePath, Mode=OneWay}"
                      VerticalContentAlignment="Center" />
 
             <Button Grid.Row="4"
@@ -181,7 +181,7 @@
             <TextBox Grid.Row="7"
                      Grid.Column="0"
                      IsReadOnly="True"
-                     Text="{Binding ScriptFolder, Mode=OneWay}"
+                     Text="{Binding Config.ScriptFolder, Mode=OneWay}"
                      VerticalContentAlignment="Center" />
 
             <Button Grid.Row="7"
@@ -202,15 +202,15 @@
          <Button.IsEnabled>
             <MultiBinding Converter="{x:Static commonui:MultiBoolToBoolAndConverter.Instance}">
                <MultiBinding.Bindings>
-                  <Binding Path="VideoFilePath.Length"
+                  <Binding Path="Config.VideoFilePath.Length"
                            Converter="{StaticResource InequalityConverter}"
                            ConverterParameter="0"
                            Mode="OneWay" />
-                  <Binding Path="ScriptFilePath.Length"
+                  <Binding Path="Config.ScriptFilePath.Length"
                            Converter="{StaticResource InequalityConverter}"
                            ConverterParameter="0"
                            Mode="OneWay" />
-                  <Binding Path="IsConnected"
+                  <Binding Path="Config.Handy.IsConnected"
                            Mode="OneWay" />
                </MultiBinding.Bindings>
             </MultiBinding>

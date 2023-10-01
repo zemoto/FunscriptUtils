@@ -3,22 +3,22 @@ using System.Reflection;
 using System.Text.Json;
 using ZemotoCommon.UI;
 
-namespace VlcScriptPlayer;
+namespace VlcScriptPlayer.Config;
 
-internal abstract class Config : ViewModelBase
+internal sealed class AppConfig : ViewModelBase
 {
    private const string _configName = "config.json";
    private static readonly string _configFilePath = Path.Combine( Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location ), _configName );
 
-   public static T ReadFromFile<T>() where T : Config, new()
+   public static AppConfig ReadFromFile()
    {
       if ( !File.Exists( _configFilePath ) )
       {
-         return new T();
+         return new AppConfig();
       }
 
       var configString = File.ReadAllText( _configFilePath );
-      var config = JsonSerializer.Deserialize<T>( configString );
+      var config = JsonSerializer.Deserialize<AppConfig>( configString );
 
       if ( !File.Exists( config._videoFilePath ) )
       {
@@ -44,32 +44,15 @@ internal abstract class Config : ViewModelBase
       File.WriteAllText( _configFilePath, configJson );
    }
 
-   private string _connectionId;
-   public string ConnectionId
-   {
-      get => _connectionId;
-      set => SetProperty( ref _connectionId, value );
-   }
+   public FilterConfig Filters { get; set; } = new FilterConfig();
 
-   private int _desiredOffset;
-   public int DesiredOffset
-   {
-      get => _desiredOffset;
-      set => SetProperty( ref _desiredOffset, value );
-   }
+   public HandyConfig Handy { get; set; } = new HandyConfig();
 
-   private bool _boostBass;
-   public bool BoostBass
+   private bool _forceUploadScript;
+   public bool ForceUploadScript
    {
-      get => _boostBass;
-      set => SetProperty( ref _boostBass, value );
-   }
-
-   private bool _boostSaturation;
-   public bool BoostSaturation
-   {
-      get => _boostSaturation;
-      set => SetProperty( ref _boostSaturation, value );
+      get => _forceUploadScript;
+      set => SetProperty( ref _forceUploadScript, value );
    }
 
    private string _videoFilePath;
