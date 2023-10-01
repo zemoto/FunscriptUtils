@@ -140,7 +140,7 @@
 
       <!--Video/Script-->
       <GroupBox Header="Video/Script"
-                Width="340"
+                Width="360"
                 Grid.Row="0"
                 Grid.Column="1"
                 Margin="2,4,8,4">
@@ -170,7 +170,7 @@
             <TextBox Grid.Row="1"
                      Grid.Column="0"
                      IsReadOnly="True"
-                     Text="{Binding Config.VideoFilePath, Mode=OneWay}"
+                     Text="{Binding Config.DisplayedVideoFilePath, Mode=OneWay}"
                      VerticalContentAlignment="Center" />
 
             <Button Grid.Row="1"
@@ -189,7 +189,7 @@
             <TextBox Grid.Row="4"
                      Grid.Column="0"
                      IsReadOnly="True"
-                     Text="{Binding Config.ScriptFilePath, Mode=OneWay}"
+                     Text="{Binding Config.DisplayedScriptFilePath, Mode=OneWay}"
                      VerticalContentAlignment="Center" />
 
             <Button Grid.Row="4"

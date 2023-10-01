@@ -1,6 +1,7 @@
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using ZemotoCommon;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Config;
@@ -62,15 +63,31 @@ internal sealed class AppConfig : ViewModelBase
    public string VideoFilePath
    {
       get => _videoFilePath;
-      set => SetProperty( ref _videoFilePath, value );
+      set
+      {
+         if ( SetProperty( ref _videoFilePath, value ) )
+         {
+            OnPropertyChanged( nameof( DisplayedVideoFilePath ) );
+         }
+      }
    }
+
+   public string DisplayedVideoFilePath => FileUtils.AbbreviatePath( _videoFilePath );
 
    private string _scriptFilePath;
    public string ScriptFilePath
    {
       get => _scriptFilePath;
-      set => SetProperty( ref _scriptFilePath, value );
+      set
+      {
+         if ( SetProperty( ref _scriptFilePath, value ) )
+         {
+            OnPropertyChanged( nameof( DisplayedScriptFilePath ) );
+         }
+      }
    }
+
+   public string DisplayedScriptFilePath => FileUtils.AbbreviatePath( _scriptFilePath );
 
    private string _scriptFolder;
    public string ScriptFolder
