@@ -15,24 +15,6 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         d:DataContext="{d:DesignInstance Type={x:Type ui:MainWindowViewModel}, IsDesignTimeCreatable=True}">
-   <Window.Resources>
-      <commonui:EqualityConverter x:Key="InequalityConverter"
-                                  Invert="True" />
-
-      <Style TargetType="{x:Type Button}">
-         <Setter Property="Height"
-                 Value="24" />
-         <Setter Property="Padding"
-                 Value="6,0" />
-      </Style>
-
-      <Style TargetType="{x:Type TextBox}">
-         <Setter Property="Height"
-                 Value="24" />
-      </Style>
-
-   </Window.Resources>
-
    <Grid>
       <Grid.RowDefinitions>
          <RowDefinition Height="Auto" />
