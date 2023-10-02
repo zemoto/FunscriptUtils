@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using VlcScriptPlayer.Vlc;
+using VlcScriptPlayer.Vlc.Filter;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI.VideoPlayer;

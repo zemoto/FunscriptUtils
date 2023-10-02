@@ -1,29 +1,28 @@
-using System.Windows.Input;
-using VlcScriptPlayer.Config;
+using VlcScriptPlayer.Handy;
+using VlcScriptPlayer.Vlc.Filter;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI;
 
 internal sealed class MainWindowViewModel : ViewModelBase
 {
-   public MainWindowViewModel() => Config = new AppConfig(); // Design-time
-
-   public MainWindowViewModel( AppConfig config ) => Config = config;
-
-   public AppConfig Config { get; }
-
-   private bool _requestInProgress;
-   public bool RequestInProgress
+   public MainWindowViewModel() // Design-time
    {
-      get => _requestInProgress;
-      set => SetProperty( ref _requestInProgress, value );
+      HandyVm = new HandyViewModel();
+      FilterVm = new FilterViewModel();
+      ScriptVm = new ScriptViewModel();
    }
 
-   public ICommand ConnectCommand { get; set; }
-   public ICommand SetOffsetCommand { get; set; }
-   public ICommand SetRangeCommand { get; set; }
-   public ICommand SelectVideoCommand { get; set; }
-   public ICommand SelectScriptCommand { get; set; }
-   public ICommand SelectScriptFolderCommand { get; set; }
+   public MainWindowViewModel( HandyViewModel handyVm, FilterViewModel filterVm, ScriptViewModel scriptVm )
+   {
+      HandyVm = handyVm;
+      FilterVm = filterVm;
+      ScriptVm = scriptVm;
+   }
+
+   public HandyViewModel HandyVm { get; }
+   public FilterViewModel FilterVm { get; }
+   public ScriptViewModel ScriptVm { get; }
+
    public RelayCommand<bool> UploadScriptAndLaunchPlayerCommand { get; set; }
 }

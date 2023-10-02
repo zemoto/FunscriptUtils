@@ -1,10 +1,19 @@
 using System.Text.Json.Serialization;
+using System.Windows.Input;
 using ZemotoCommon.UI;
 
-namespace VlcScriptPlayer.Config;
+namespace VlcScriptPlayer.Handy;
 
-internal sealed class HandyConfig : ViewModelBase
+internal sealed class HandyViewModel : ViewModelBase
 {
+   private bool _requestInProgress;
+   [JsonIgnore]
+   public bool RequestInProgress
+   {
+      get => _requestInProgress;
+      set => SetProperty( ref _requestInProgress, value );
+   }
+
    private bool _isConnected;
    [JsonIgnore]
    public bool IsConnected
@@ -64,4 +73,13 @@ internal sealed class HandyConfig : ViewModelBase
       get => _currentSlideMax;
       set => SetProperty( ref _currentSlideMax, value );
    }
+
+   [JsonIgnore]
+   public ICommand ConnectCommand { get; set; }
+
+   [JsonIgnore]
+   public ICommand SetOffsetCommand { get; set; }
+
+   [JsonIgnore]
+   public ICommand SetRangeCommand { get; set; }
 }

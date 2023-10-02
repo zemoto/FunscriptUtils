@@ -9,12 +9,12 @@ namespace VlcScriptPlayer;
 internal sealed class VlcScriptSynchronizer : IDisposable
 {
    private readonly VlcManager _vlc;
-   private readonly HandyApi _api;
+   private readonly HandyManager _handy;
 
-   public VlcScriptSynchronizer( VlcManager vlc, HandyApi api )
+   public VlcScriptSynchronizer( VlcManager vlc, HandyManager handy )
    {
       _vlc = vlc;
-      _api = api;
+      _handy = handy;
 
 #if !TESTINGPLAYER
       _vlc.MediaSetupComplete += OnMediaSetupComplete;
@@ -28,7 +28,7 @@ internal sealed class VlcScriptSynchronizer : IDisposable
       player.Paused -= OnPlayStoppedOrPaused;
       player.Stopped -= OnPlayStoppedOrPaused;
 
-      _ = _api.StopScriptAsync();
+      _ = _handy.StopScriptAsync();
    }
 
    private void OnMediaSetupComplete( object sender, EventArgs e )
@@ -41,7 +41,7 @@ internal sealed class VlcScriptSynchronizer : IDisposable
       player.Stopped += OnPlayStoppedOrPaused;
    }
 
-   private void OnPlayerPlaying( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await _api.PlayScriptAsync( _vlc.Player.Time ), DispatcherPriority.Send );
+   private void OnPlayerPlaying( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await _handy.PlayScriptAsync( _vlc.Player.Time ), DispatcherPriority.Send );
 
-   private void OnPlayStoppedOrPaused( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await _api.StopScriptAsync(), DispatcherPriority.Send );
+   private void OnPlayStoppedOrPaused( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await _handy.StopScriptAsync(), DispatcherPriority.Send );
 }

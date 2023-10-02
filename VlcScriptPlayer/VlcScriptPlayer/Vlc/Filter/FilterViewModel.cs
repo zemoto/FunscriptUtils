@@ -1,8 +1,8 @@
 ﻿using ZemotoCommon.UI;
 
-namespace VlcScriptPlayer.Config;
+namespace VlcScriptPlayer.Vlc.Filter;
 
-internal sealed class FilterConfig : ViewModelBase
+internal sealed class FilterViewModel : ViewModelBase
 {
    private bool _boostBass;
    public bool BoostBass

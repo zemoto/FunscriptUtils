@@ -2,7 +2,7 @@ using LibVLCSharp.Shared;
 using System;
 using System.Threading;
 using System.Windows;
-using VlcScriptPlayer.Config;
+using VlcScriptPlayer.Vlc.Filter;
 
 namespace VlcScriptPlayer.Vlc;
 
@@ -42,7 +42,7 @@ internal sealed class VlcManager : IDisposable
       Player.Dispose();
    }
 
-   public void OpenVideo( string filePath, FilterConfig filterConfig )
+   public void OpenVideo( string filePath, FilterViewModel filterConfig )
    {
       Filter.SetFilters( filterConfig );
 

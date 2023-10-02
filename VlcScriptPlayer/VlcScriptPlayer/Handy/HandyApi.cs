@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using VlcScriptPlayer.Config;
 using ZemotoCommon;
 
 namespace VlcScriptPlayer.Handy;
@@ -20,7 +19,7 @@ internal sealed class HandyApi : IDisposable
 
    public void Dispose() => _client.Dispose();
 
-   public async Task<bool> ConnectToAndSetupHandyAsync( HandyConfig config )
+   public async Task<bool> ConnectToAndSetupHandyAsync( HandyViewModel config )
    {
       _client.DefaultRequestHeaders.Remove( "X-Connection-Key" );
       _client.DefaultRequestHeaders.Add( "X-Connection-Key", config.ConnectionId );

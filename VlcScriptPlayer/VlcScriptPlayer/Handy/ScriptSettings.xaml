@@ -1,0 +1,83 @@
+﻿<GroupBox x:Class="VlcScriptPlayer.Handy.ScriptSettings"
+          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+          xmlns:handy="clr-namespace:VlcScriptPlayer.Handy"
+          mc:Ignorable="d"
+          d:DataContext="{d:DesignInstance Type={x:Type handy:ScriptViewModel}, IsDesignTimeCreatable=True}"
+          Header="Video/Script">
+   <Grid Margin="4">
+      <Grid.RowDefinitions>
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="4" />
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="4" />
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+         <ColumnDefinition Width="*" />
+         <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <TextBlock Grid.Row="0"
+                 Grid.Column="0"
+                 HorizontalAlignment="Left"
+                 Text="Video"
+                 FontWeight="SemiBold"
+                 Margin="0,0,0,2" />
+
+      <TextBox Grid.Row="1"
+               Grid.Column="0"
+               IsReadOnly="True"
+               Text="{Binding DisplayedVideoFilePath, Mode=OneWay}"
+               VerticalContentAlignment="Center" />
+
+      <Button Grid.Row="1"
+              Grid.Column="1"
+              Margin="4,0,0,0"
+              Content="Select"
+              Command="{Binding SelectVideoCommand, Mode=OneTime}" />
+
+      <TextBlock Grid.Row="3"
+                 Grid.Column="0"
+                 HorizontalAlignment="Left"
+                 Text="Script"
+                 FontWeight="SemiBold"
+                 Margin="0,0,0,2" />
+
+      <TextBox Grid.Row="4"
+               Grid.Column="0"
+               IsReadOnly="True"
+               Text="{Binding DisplayedScriptFilePath, Mode=OneWay}"
+               VerticalContentAlignment="Center" />
+
+      <Button Grid.Row="4"
+              Grid.Column="1"
+              Margin="4,0,0,0"
+              Content="Select"
+              Command="{Binding SelectScriptCommand, Mode=OneTime}" />
+
+      <TextBlock Grid.Row="6"
+                 Grid.Column="0"
+                 HorizontalAlignment="Left"
+                 Text="Script Folder"
+                 FontWeight="SemiBold"
+                 Margin="0,0,0,2" />
+
+      <TextBox Grid.Row="7"
+               Grid.Column="0"
+               IsReadOnly="True"
+               Text="{Binding ScriptFolder, Mode=OneWay}"
+               VerticalContentAlignment="Center" />
+
+      <Button Grid.Row="7"
+              Grid.Column="1"
+              Margin="4,0,0,0"
+              Content="Select"
+              Command="{Binding SelectScriptFolderCommand, Mode=OneTime}" />
+   </Grid>
+</GroupBox>

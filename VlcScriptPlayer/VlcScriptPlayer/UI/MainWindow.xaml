@@ -7,6 +7,8 @@
         xmlns:root="clr-namespace:VlcScriptPlayer"
         xmlns:ui="clr-namespace:VlcScriptPlayer.UI"
         xmlns:commonui="clr-namespace:ZemotoCommon.UI"
+        xmlns:handy="clr-namespace:VlcScriptPlayer.Handy"
+        xmlns:filter="clr-namespace:VlcScriptPlayer.Vlc.Filter"
         mc:Ignorable="d"
         Title="VLC Script Player"
         SizeToContent="WidthAndHeight"
@@ -14,10 +16,6 @@
         ResizeMode="NoResize"
         d:DataContext="{d:DesignInstance Type={x:Type ui:MainWindowViewModel}, IsDesignTimeCreatable=True}">
    <Window.Resources>
-      <commonui:BoolToObjectConverter x:Key="ConnectedTextColorConverter"
-                                      TrueValue="Green"
-                                      FalseValue="Red" />
-
       <commonui:EqualityConverter x:Key="InequalityConverter"
                                   Invert="True" />
 
@@ -34,208 +32,51 @@
       </Style>
 
    </Window.Resources>
+
    <Grid>
       <Grid.RowDefinitions>
          <RowDefinition Height="Auto" />
          <RowDefinition Height="Auto" />
          <RowDefinition Height="Auto" />
+         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
-         <ColumnDefinition Width="Auto" />
-         <ColumnDefinition Width="Auto" />
+         <ColumnDefinition Width="260" />
+         <ColumnDefinition Width="350" />
       </Grid.ColumnDefinitions>
 
-      <!--Settings-->
-      <GroupBox Header="Settings"
-                Width="250"
-                Grid.Row="0"
-                Grid.Column="0"
-                Margin="8,4,2,4"
-                IsEnabled="{Binding RequestInProgress, Mode=OneWay, Converter={x:Static commonui:InvertBoolConverter.Instance}}">
-         <StackPanel Margin="4">
-            <TextBlock FontWeight="SemiBold"
-                       Text="{Binding Config.Handy.IsConnected, Mode=OneWay, StringFormat={}Connected: {0}}"
-                       Foreground="{Binding Config.Handy.IsConnected, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
+      <handy:HandySettings Grid.Row="0"
+                           Grid.Column="0"
+                           Margin="8,4,2,0"
+                           DataContext="{Binding HandyVm, Mode=OneTime}" />
 
-            <Grid Margin="0,4,0,0">
-               <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-               </Grid.ColumnDefinitions>
+      <filter:FilterSettings Grid.Row="1"
+                             Grid.Column="0"
+                             Margin="8,0,2,8"
+                             DataContext="{Binding FilterVm, Mode=OneTime}" />
 
-               <TextBox Grid.Column="0"
-                        Text="{Binding Config.Handy.ConnectionId, Mode=TwoWay}"
-                        VerticalContentAlignment="Center" />
+      <handy:ScriptSettings Grid.Row="0"
+                            Grid.RowSpan="2"
+                            Grid.Column="1"
+                            Margin="2,4,8,8"
+                            DataContext="{Binding ScriptVm, Mode=OneTime}" />
 
-               <Button Grid.Column="1"
-                       Margin="4,0,0,0"
-                       Content="Connect"
-                       Command="{Binding ConnectCommand, Mode=OneTime}" />
-            </Grid>
-
-            <TextBlock Margin="0,4,0,0"
-                       FontWeight="SemiBold"
-                       Text="{Binding Config.Handy.CurrentOffset, Mode=OneWay, StringFormat={}Current Offset: {0}ms}" />
-
-            <Grid Margin="0,4,0,0"
-                  IsEnabled="{Binding Config.Handy.IsConnected, Mode=OneWay}">
-               <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-               </Grid.ColumnDefinitions>
-               <TextBox Grid.Column="0"
-                        Text="{Binding Config.Handy.DesiredOffset, Mode=TwoWay}"
-                        VerticalContentAlignment="Center" />
-
-               <Button Grid.Column="1"
-                       Margin="4,0,0,0"
-                       Content="Set Offset"
-                       Command="{Binding SetOffsetCommand, Mode=OneTime}" />
-            </Grid>
-
-            <TextBlock Margin="0,4,0,0"
-                       FontWeight="SemiBold">
-               <Run Text="Current Slide Range:" /> <Run Text="{Binding Config.Handy.CurrentSlideMin, Mode=OneWay, StringFormat=N2}" />% - <Run Text="{Binding Config.Handy.CurrentSlideMax, Mode=OneWay, StringFormat=N2}" />%
-            </TextBlock>
-
-            <Grid Margin="0,4,0,0"
-                  IsEnabled="{Binding Config.Handy.IsConnected, Mode=OneWay}">
-               <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-               </Grid.ColumnDefinitions>
-               <TextBox Grid.Column="0"
-                        Text="{commonui:DoubleMinMaxBinding Config.Handy.DesiredSlideMin, 0, 90, Mode=TwoWay, StringFormat=N2}"
-                        VerticalContentAlignment="Center" />
-
-               <Rectangle Grid.Column="1"
-                          Fill="Gray"
-                          Margin="4,0"
-                          Height="1"
-                          Width="4"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center" />
-
-               <TextBox Grid.Column="2"
-                        Text="{commonui:DoubleMinMaxBinding Config.Handy.DesiredSlideMax, 10, 100, Mode=TwoWay, StringFormat=N2}"
-                        VerticalContentAlignment="Center" />
-
-               <Button Grid.Column="3"
-                       Margin="4,0,0,0"
-                       Content="Set Range"
-                       Command="{Binding SetRangeCommand, Mode=OneTime}" />
-            </Grid>
-
-            <CheckBox Margin="0,8,0,0"
-                      Content="Boost Bass"
-                      IsChecked="{Binding Config.Filters.BoostBass, Mode=TwoWay}" />
-
-            <CheckBox Margin="0,8,0,0"
-                      Content="Boost Saturation"
-                      IsChecked="{Binding Config.Filters.BoostSaturation, Mode=TwoWay}" />
-         </StackPanel>
-      </GroupBox>
-
-      <!--Video/Script-->
-      <GroupBox Header="Video/Script"
-                Width="360"
-                Grid.Row="0"
-                Grid.Column="1"
-                Margin="2,4,8,4">
-         <Grid Margin="4">
-            <Grid.RowDefinitions>
-               <RowDefinition Height="Auto" />
-               <RowDefinition Height="Auto" />
-               <RowDefinition Height="4" />
-               <RowDefinition Height="Auto" />
-               <RowDefinition Height="Auto" />
-               <RowDefinition Height="4" />
-               <RowDefinition Height="Auto" />
-               <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-               <ColumnDefinition Width="*" />
-               <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Grid.Row="0"
-                       Grid.Column="0"
-                       HorizontalAlignment="Left"
-                       Text="Video"
-                       FontWeight="SemiBold"
-                       Margin="0,0,0,2" />
-
-            <TextBox Grid.Row="1"
-                     Grid.Column="0"
-                     IsReadOnly="True"
-                     Text="{Binding Config.DisplayedVideoFilePath, Mode=OneWay}"
-                     VerticalContentAlignment="Center" />
-
-            <Button Grid.Row="1"
-                    Grid.Column="1"
-                    Margin="4,0,0,0"
-                    Content="Select"
-                    Command="{Binding SelectVideoCommand, Mode=OneTime}" />
-
-            <TextBlock Grid.Row="3"
-                       Grid.Column="0"
-                       HorizontalAlignment="Left"
-                       Text="Script"
-                       FontWeight="SemiBold"
-                       Margin="0,0,0,2" />
-
-            <TextBox Grid.Row="4"
-                     Grid.Column="0"
-                     IsReadOnly="True"
-                     Text="{Binding Config.DisplayedScriptFilePath, Mode=OneWay}"
-                     VerticalContentAlignment="Center" />
-
-            <Button Grid.Row="4"
-                    Grid.Column="1"
-                    Margin="4,0,0,0"
-                    Content="Select"
-                    Command="{Binding SelectScriptCommand, Mode=OneTime}" />
-
-            <TextBlock Grid.Row="6"
-                       Grid.Column="0"
-                       HorizontalAlignment="Left"
-                       Text="Script Folder"
-                       FontWeight="SemiBold"
-                       Margin="0,0,0,2" />
-
-            <TextBox Grid.Row="7"
-                     Grid.Column="0"
-                     IsReadOnly="True"
-                     Text="{Binding Config.ScriptFolder, Mode=OneWay}"
-                     VerticalContentAlignment="Center" />
-
-            <Button Grid.Row="7"
-                    Grid.Column="1"
-                    Margin="4,0,0,0"
-                    Content="Select"
-                    Command="{Binding SelectScriptFolderCommand, Mode=OneTime}" />
-         </Grid>
-
-      </GroupBox>
-
-      <Grid Grid.Row="1"
+      <Grid Grid.Row="2"
             Grid.Column="0"
             Grid.ColumnSpan="99"
             Margin="8,0">
          <Grid.IsEnabled>
             <MultiBinding Converter="{x:Static commonui:MultiBoolToBoolAndConverter.Instance}">
                <MultiBinding.Bindings>
-                  <Binding Path="Config.VideoFilePath.Length"
+                  <Binding Path="ScriptVm.VideoFilePath.Length"
                            Converter="{StaticResource InequalityConverter}"
                            ConverterParameter="0"
                            Mode="OneWay" />
-                  <Binding Path="Config.ScriptFilePath.Length"
+                  <Binding Path="ScriptVm.ScriptFilePath.Length"
                            Converter="{StaticResource InequalityConverter}"
                            ConverterParameter="0"
                            Mode="OneWay" />
-                  <Binding Path="Config.Handy.IsConnected"
+                  <Binding Path="HandyVm.IsConnected"
                            Mode="OneWay" />
                </MultiBinding.Bindings>
             </MultiBinding>
@@ -245,8 +86,8 @@
             <ColumnDefinition Width="4" />
             <ColumnDefinition Width="Auto" />
          </Grid.ColumnDefinitions>
-         
-         <Button Grid.Column="0" 
+
+         <Button Grid.Column="0"
                  Content="Upload Script and Launch Player"
                  Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}"
                  CommandParameter="False" />
@@ -254,11 +95,11 @@
          <Button Grid.Column="2"
                  Content="Force Upload"
                  Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}"
-                 CommandParameter="True"/>
+                 CommandParameter="True" />
       </Grid>
 
       <TextBox x:Name="LogTextBox"
-               Grid.Row="2"
+               Grid.Row="3"
                Grid.Column="0"
                Grid.ColumnSpan="99"
                Height="100"
