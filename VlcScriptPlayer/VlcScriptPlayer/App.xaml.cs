@@ -7,6 +7,7 @@ internal sealed partial class App : System.IDisposable
 
    public App()
    {
+      DispatcherUnhandledException += OnUnhandledException;
       if ( !_singleInstance.Claim() )
       {
          Shutdown();
@@ -28,4 +29,9 @@ internal sealed partial class App : System.IDisposable
    }
 
    protected override void OnExit( System.Windows.ExitEventArgs e ) => Dispose();
+
+   private void OnUnhandledException( object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e )
+   {
+      System.IO.File.WriteAllText( "crash.txt", e.Exception.ToString() );
+   }
 }
