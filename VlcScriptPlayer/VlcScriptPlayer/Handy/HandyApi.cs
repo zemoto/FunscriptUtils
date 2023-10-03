@@ -233,8 +233,7 @@ internal sealed class HandyApi : IDisposable
 
    private static string ComputeSha256Hash( string rawData )
    {
-      using var hasher = System.Security.Cryptography.SHA256.Create();
-      byte[] bytes = hasher.ComputeHash( Encoding.UTF8.GetBytes( rawData ) );
+      byte[] bytes = System.Security.Cryptography.SHA256.HashData( Encoding.UTF8.GetBytes( rawData ) );
 
       var sb = new StringBuilder();
       for ( int i = 0; i < bytes.Length; i++ )

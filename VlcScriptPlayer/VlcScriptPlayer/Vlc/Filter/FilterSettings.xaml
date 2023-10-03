@@ -7,9 +7,8 @@
           mc:Ignorable="d"
           d:DataContext="{d:DesignInstance Type={x:Type filter:FilterViewModel}, IsDesignTimeCreatable=True}"
           Header="Filters">
-   <StackPanel>
-      <CheckBox Margin="0,4,0,0"
-                Content="Boost Bass"
+   <StackPanel Margin="4">
+      <CheckBox Content="Boost Bass"
                 IsChecked="{Binding BoostBass, Mode=TwoWay}" />
 
       <CheckBox Margin="0,8,0,0"

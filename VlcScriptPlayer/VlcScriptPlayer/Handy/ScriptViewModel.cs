@@ -7,7 +7,7 @@ namespace VlcScriptPlayer.Handy;
 
 internal sealed class ScriptViewModel : ViewModelBase
 {
-   private string _videoFilePath;
+   private string _videoFilePath = string.Empty;
    public string VideoFilePath
    {
       get => _videoFilePath;
@@ -22,7 +22,7 @@ internal sealed class ScriptViewModel : ViewModelBase
 
    public string DisplayedVideoFilePath => FileUtils.AbbreviatePath( _videoFilePath );
 
-   private string _scriptFilePath;
+   private string _scriptFilePath = string.Empty;
    public string ScriptFilePath
    {
       get => _scriptFilePath;
@@ -37,7 +37,7 @@ internal sealed class ScriptViewModel : ViewModelBase
 
    public string DisplayedScriptFilePath => FileUtils.AbbreviatePath( _scriptFilePath );
 
-   private string _scriptFolder;
+   private string _scriptFolder = string.Empty;
    public string ScriptFolder
    {
       get => _scriptFolder;

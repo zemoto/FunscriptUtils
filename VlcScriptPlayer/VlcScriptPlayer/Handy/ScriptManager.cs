@@ -17,6 +17,7 @@ internal sealed class ScriptManager
       _model.SelectVideoCommand = new RelayCommand( SelectVideo );
       _model.SelectScriptCommand = new RelayCommand( SelectScript );
       _model.SelectScriptFolderCommand = new RelayCommand( SelectScriptFolder );
+      VerifyPaths();
    }
 
    public bool VerifyPaths()
