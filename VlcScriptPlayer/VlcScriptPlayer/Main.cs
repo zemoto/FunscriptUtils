@@ -31,7 +31,7 @@ internal sealed class Main : IDisposable
 
       _model = new MainWindowViewModel( handyVm, buttplugVm, filterVm, scriptVm )
       {
-         UploadScriptAndLaunchPlayerCommand = new RelayCommand<bool>( async forceUpload => await UploadScriptAndLaunchPlayerAsync( forceUpload ).ConfigureAwait( false ) ),
+         UploadScriptAndLaunchPlayerCommand = new RelayCommand<bool>( async forceUpload => await UploadScriptAndLaunchPlayerAsync( forceUpload ) ),
       };
 
       _window = new MainWindow( _model );
@@ -56,7 +56,7 @@ internal sealed class Main : IDisposable
       }
 
       var synchronizer = new VlcScriptSynchronizer( _vlc, _handy, _buttplug );
-      await using ( synchronizer.ConfigureAwait( false ) )
+      await using ( synchronizer.ConfigureAwait( true ) )
       {
          if ( !await synchronizer.SetupSyncAsync( _model.ScriptVm.ScriptFilePath, forceUpload ).ConfigureAwait( true ) )
          {

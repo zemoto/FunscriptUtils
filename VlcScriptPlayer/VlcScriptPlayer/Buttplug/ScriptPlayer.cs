@@ -29,7 +29,7 @@ internal sealed class ScriptPlayer : IAsyncDisposable
 
    public async Task StartAsync( long startTime )
    {
-      await StopAsync().ConfigureAwait( false );
+      await StopAsync();
       _cancelTokenSource = new CancellationTokenSource();
 
       _scriptTask = ScriptTask( startTime );
@@ -47,13 +47,13 @@ internal sealed class ScriptPlayer : IAsyncDisposable
 
          if ( _cancelTokenSource.IsCancellationRequested || nextAction is null )
          {
-            await _device.Stop().ConfigureAwait( false );
+            await _device.Stop();
             return;
          }
 
-         await Task.Delay( (int)( nextAction.Time - currentScriptTime ) ).ConfigureAwait( false );
+         await Task.Delay( (int)( nextAction.Time - currentScriptTime ) );
 
-         await _device.VibrateAsync( nextAction.Intensity ).ConfigureAwait( false );
+         await _device.VibrateAsync( nextAction.Intensity );
       }
    }
 
@@ -67,8 +67,8 @@ internal sealed class ScriptPlayer : IAsyncDisposable
       }
 
       _cancelTokenSource.Cancel();
-      await _device.Stop().ConfigureAwait( false );
-      await _scriptTask.ConfigureAwait( false );
+      await _device.Stop();
+      await _scriptTask;
 
       _cancelTokenSource?.Dispose();
       _cancelTokenSource = null;

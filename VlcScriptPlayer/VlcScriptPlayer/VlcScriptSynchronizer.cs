@@ -78,7 +78,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
    {
       foreach ( var syncTarget in _syncTargets )
       {
-         await syncTarget.StartSyncAsync( _vlc.Player.Time ).ConfigureAwait( false );
+         await syncTarget.StartSyncAsync( _vlc.Player.Time );
       }
    }
 
@@ -86,7 +86,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
    {
       foreach ( var syncTarget in _syncTargets )
       {
-         await syncTarget.StopSyncAsync().ConfigureAwait( false );
+         await syncTarget.StopSyncAsync();
       }
    }
 }

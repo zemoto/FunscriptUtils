@@ -26,7 +26,7 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
 
       _model.IsConnected = false;
-      if ( !await _handyApi.ConnectToAndSetupHandyAsync( _model ).ConfigureAwait( false ) )
+      if ( !await _handyApi.ConnectToAndSetupHandyAsync( _model ) )
       {
          return;
       }
@@ -42,7 +42,7 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
       _model.RequestInProgress = true;
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
 
-      if ( await _handyApi.SetOffsetAsync( _model.DesiredOffset ).ConfigureAwait( false ) )
+      if ( await _handyApi.SetOffsetAsync( _model.DesiredOffset ) )
       {
          _model.CurrentOffset = _model.DesiredOffset;
       }
@@ -53,14 +53,14 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
       _model.RequestInProgress = true;
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
 
-      if ( await _handyApi.SetRangeAsync( _model.DesiredSlideMin, _model.DesiredSlideMax ).ConfigureAwait( false ) )
+      if ( await _handyApi.SetRangeAsync( _model.DesiredSlideMin, _model.DesiredSlideMax ) )
       {
          _model.CurrentSlideMin = _model.DesiredSlideMin;
          _model.CurrentSlideMax = _model.DesiredSlideMax;
       }
    }
 
-   public async Task SyncLocalRangeWithDeviceRangeAsync() => (_model.CurrentSlideMin, _model.CurrentSlideMax) = await _handyApi.GetRangeAsync().ConfigureAwait( false );
+   public async Task SyncLocalRangeWithDeviceRangeAsync() => (_model.CurrentSlideMin, _model.CurrentSlideMax) = await _handyApi.GetRangeAsync();
 
    //ISyncTarget
    public bool CanSync => _model.IsConnected;
@@ -69,12 +69,12 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
    {
       _model.RequestInProgress = true;
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
-      return await _handyApi.UploadScriptAsync( scriptFilePath, forceUploadScript ).ConfigureAwait( true );
+      return await _handyApi.UploadScriptAsync( scriptFilePath, forceUploadScript );
    }
 
-   public async Task StartSyncAsync( long time ) => await _handyApi.PlayScriptAsync( time ).ConfigureAwait( false );
+   public async Task StartSyncAsync( long time ) => await _handyApi.PlayScriptAsync( time );
 
-   public async Task StopSyncAsync() => await _handyApi.StopScriptAsync().ConfigureAwait( false );
+   public async Task StopSyncAsync() => await _handyApi.StopScriptAsync();
 
-   public async Task CleanupAsync() => await StopSyncAsync().ConfigureAwait( false );
+   public async Task CleanupAsync() => await StopSyncAsync();
 }

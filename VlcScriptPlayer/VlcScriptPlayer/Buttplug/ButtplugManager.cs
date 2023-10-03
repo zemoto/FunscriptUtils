@@ -46,8 +46,8 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
          if ( !_model.IsConnectedToDevice )
          {
             Logger.Log( "Starting device scan" );
-            await _client.StopScanningAsync().ConfigureAwait( false );
-            await _client.StartScanningAsync().ConfigureAwait( false );
+            await _client.StopScanningAsync();
+            await _client.StartScanningAsync();
             _scanning = true;
          }
          else

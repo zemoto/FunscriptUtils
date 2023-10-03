@@ -24,23 +24,23 @@ internal sealed class HandyApi : IDisposable
       _client.DefaultRequestHeaders.Remove( "X-Connection-Key" );
       _client.DefaultRequestHeaders.Add( "X-Connection-Key", config.ConnectionId );
 
-      return await ConnectAsync().ConfigureAwait( false ) &&
-             await SetupServerClockSyncAsync().ConfigureAwait( false ) &&
-             await EnsureModeAsync().ConfigureAwait( false ) &&
-             await SetOffsetAsync( config.DesiredOffset ).ConfigureAwait( false ) &&
-             await SetRangeAsync( config.DesiredSlideMin, config.DesiredSlideMax ).ConfigureAwait( false );
+      return await ConnectAsync() &&
+             await SetupServerClockSyncAsync() &&
+             await EnsureModeAsync() &&
+             await SetOffsetAsync( config.DesiredOffset ) &&
+             await SetRangeAsync( config.DesiredSlideMin, config.DesiredSlideMax );
    }
 
    private async Task<bool> ConnectAsync()
    {
       Logger.LogRequest( "Connect" );
-      using var response = await DoRequest( _client.GetAsync( Endpoints.CheckConnectionEndpoint ) ).ConfigureAwait( false );
+      using var response = await DoRequest( _client.GetAsync( Endpoints.CheckConnectionEndpoint ) );
       if ( response?.IsSuccessStatusCode != true )
       {
          return false;
       }
 
-      var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait( false );
+      var responseString = await response.Content.ReadAsStringAsync();
       var parsedResponse = JsonSerializer.Deserialize<ConnectedResponse>( responseString );
 
       if ( !parsedResponse.IsConnected )
@@ -58,7 +58,7 @@ internal sealed class HandyApi : IDisposable
       for ( int i = 0; i < 30; i++ )
       {
          var clientSendTime = DateTimeOffset.Now;
-         using var response = await SafeMethod.InvokeSafelyAsync( _client.GetAsync( Endpoints.ServerClockEndpoint ) ).ConfigureAwait( false );
+         using var response = await SafeMethod.InvokeSafelyAsync( _client.GetAsync( Endpoints.ServerClockEndpoint ) );
          var clientReceiveTime = DateTimeOffset.Now;
          if ( response?.IsSuccessStatusCode != true )
          {
@@ -66,7 +66,7 @@ internal sealed class HandyApi : IDisposable
             return false;
          }
 
-         var serverTimeRawResponse = await response.Content.ReadAsStringAsync().ConfigureAwait( false );
+         var serverTimeRawResponse = await response.Content.ReadAsStringAsync();
          var serverTimeResponse = JsonSerializer.Deserialize<ServerTimeResponse>( serverTimeRawResponse );
 
          var rtd = clientReceiveTime - clientSendTime;
@@ -87,20 +87,20 @@ internal sealed class HandyApi : IDisposable
    {
       Logger.LogRequest( "SetMode" );
       var content = new StringContent( "{ \"mode\": 1 }", Encoding.UTF8, "application/json" );
-      using var response = await DoRequest( _client.PutAsync( Endpoints.ModeEndpoint, content ) ).ConfigureAwait( false );
+      using var response = await DoRequest( _client.PutAsync( Endpoints.ModeEndpoint, content ) );
       return response?.IsSuccessStatusCode == true;
    }
 
    public async Task<int> GetOffsetAsync()
    {
       Logger.LogRequest( "GetOffset" );
-      using var response = await DoRequest( _client.GetAsync( Endpoints.OffsetEndpoint ) ).ConfigureAwait( false );
+      using var response = await DoRequest( _client.GetAsync( Endpoints.OffsetEndpoint ) );
       if ( response?.IsSuccessStatusCode != true )
       {
          return 0;
       }
 
-      var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait( false );
+      var responseString = await response.Content.ReadAsStringAsync();
       var offsetResponse = JsonSerializer.Deserialize<GetOffsetResponse>( responseString );
 
       return offsetResponse.Offset;
@@ -111,20 +111,20 @@ internal sealed class HandyApi : IDisposable
       Logger.LogRequest( "SetOffset" );
 
       var content = new StringContent( $"{{ \"offset\": {offset} }}", Encoding.UTF8, "application/json" );
-      using var response = await DoRequest( _client.PutAsync( Endpoints.OffsetEndpoint, content ) ).ConfigureAwait( false );
+      using var response = await DoRequest( _client.PutAsync( Endpoints.OffsetEndpoint, content ) );
       return response?.IsSuccessStatusCode == true;
    }
 
    public async Task<(double, double)> GetRangeAsync()
    {
       Logger.LogRequest( "GetRange" );
-      using var response = await DoRequest( _client.GetAsync( Endpoints.SlideEndpoint ) ).ConfigureAwait( false );
+      using var response = await DoRequest( _client.GetAsync( Endpoints.SlideEndpoint ) );
       if ( response?.IsSuccessStatusCode != true )
       {
          return (0, 0);
       }
 
-      var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait( false );
+      var responseString = await response.Content.ReadAsStringAsync();
       var slideResponse = JsonSerializer.Deserialize<GetSlideResponse>( responseString );
 
       return (slideResponse.Min, slideResponse.Max);
@@ -141,7 +141,7 @@ internal sealed class HandyApi : IDisposable
       Logger.LogRequest( "SetRange" );
 
       var content = new StringContent( $"{{ \"min\": {min}, \"max\": {max} }}", Encoding.UTF8, "application/json" );
-      using var response = await DoRequest( _client.PutAsync( Endpoints.SlideEndpoint, content ) ).ConfigureAwait( false );
+      using var response = await DoRequest( _client.PutAsync( Endpoints.SlideEndpoint, content ) );
       return response?.IsSuccessStatusCode == true;
    }
 
@@ -165,13 +165,13 @@ internal sealed class HandyApi : IDisposable
       var formData = new MultipartFormDataContent { { new StringContent( csv ), "syncFile", $"{Path.GetFileNameWithoutExtension( scriptFilePath )}.csv" } };
 
       Logger.LogRequest( "UploadingScript" );
-      using var uploadResponse = await DoRequest( _client.PostAsync( Endpoints.UploadCSVEndpoint, formData ) ).ConfigureAwait( false );
+      using var uploadResponse = await DoRequest( _client.PostAsync( Endpoints.UploadCSVEndpoint, formData ) );
       if ( uploadResponse?.IsSuccessStatusCode != true )
       {
          return false;
       }
 
-      var responseString = await uploadResponse.Content.ReadAsStringAsync().ConfigureAwait( false );
+      var responseString = await uploadResponse.Content.ReadAsStringAsync();
       var parsedUploadResponse = JsonSerializer.Deserialize<UploadResponse>( responseString );
       if ( !parsedUploadResponse.Success )
       {
@@ -181,13 +181,13 @@ internal sealed class HandyApi : IDisposable
 
       Logger.LogRequest( "SyncSetup" );
       var setupContent = new StringContent( $"{{ \"url\": \"{parsedUploadResponse.Url}\" }}", Encoding.UTF8, "application/json" );
-      using var setupResponse = await DoRequest( _client.PutAsync( Endpoints.SetupEndpoint, setupContent ) ).ConfigureAwait( false );
+      using var setupResponse = await DoRequest( _client.PutAsync( Endpoints.SetupEndpoint, setupContent ) );
       if ( setupResponse?.IsSuccessStatusCode != true )
       {
          return false;
       }
 
-      responseString = await setupResponse.Content.ReadAsStringAsync().ConfigureAwait( false );
+      responseString = await setupResponse.Content.ReadAsStringAsync();
       var parsedSetupResponse = JsonSerializer.Deserialize<SetupResponse>( responseString );
       if ( parsedSetupResponse.Result == -1 )
       {
@@ -203,17 +203,17 @@ internal sealed class HandyApi : IDisposable
    {
       var estimatedServerTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + _estimatedClientServerOffset;
       var content = new StringContent( $"{{ \"estimatedServerTime\": {estimatedServerTime}, \"startTime\": {startTime} }}", Encoding.UTF8, "application/json" );
-      using var _ = await SafeMethod.InvokeSafelyAsync( _client.PutAsync( Endpoints.PlayEndpoint, content ) ).ConfigureAwait( false );
+      using var _ = await SafeMethod.InvokeSafelyAsync( _client.PutAsync( Endpoints.PlayEndpoint, content ) );
    }
 
    public async Task StopScriptAsync()
    {
-      using var _ = await SafeMethod.InvokeSafelyAsync( _client.PutAsync( Endpoints.StopEndpoint, null ) ).ConfigureAwait( false );
+      using var _ = await SafeMethod.InvokeSafelyAsync( _client.PutAsync( Endpoints.StopEndpoint, null ) );
    }
 
    private static async Task<HttpResponseMessage> DoRequest( Task<HttpResponseMessage> request )
    {
-      var response = await SafeMethod.InvokeSafelyAsync( request, ex => Logger.Log( $"Exception during request: {ex.Message}" ) ).ConfigureAwait( false );
+      var response = await SafeMethod.InvokeSafelyAsync( request, ex => Logger.Log( $"Exception during request: {ex.Message}" ) );
       if ( response is null )
       {
          return null;
