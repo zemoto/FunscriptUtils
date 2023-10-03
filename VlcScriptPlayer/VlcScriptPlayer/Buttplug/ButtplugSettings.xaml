@@ -1,0 +1,26 @@
+﻿<GroupBox x:Class="VlcScriptPlayer.Buttplug.ButtplugSettings"
+          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+          xmlns:commonui="clr-namespace:ZemotoCommon.UI"
+          xmlns:buttplug="clr-namespace:VlcScriptPlayer.Buttplug"
+          mc:Ignorable="d"
+          d:DataContext="{d:DesignInstance Type={x:Type buttplug:ButtplugViewModel}, IsDesignTimeCreatable=True}"
+          Header="Buttplug">
+   <StackPanel Margin="4">
+      <TextBlock FontWeight="SemiBold"
+                 Text="{Binding IsConnectedToServer, Mode=OneWay, StringFormat={}Connected to Server: {0}}"
+                 Foreground="{Binding IsConnectedToServer, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
+
+      <Button Margin="0,4,0,0"
+              Content="Connect to Server"
+              Command="{Binding ConnectToServerCommand, Mode=OneTime}"
+              IsEnabled="{Binding IsConnectedToServer, Converter={x:Static commonui:InvertBoolConverter.Instance}, Mode=OneWay}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 FontWeight="SemiBold"
+                 Text="{Binding DeviceName, Mode=OneWay, StringFormat={}Device: {0}}"
+                 Foreground="{Binding IsConnectedToDevice, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
+   </StackPanel>
+</GroupBox>

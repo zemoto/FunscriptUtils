@@ -8,11 +8,6 @@
           mc:Ignorable="d"
           d:DataContext="{d:DesignInstance Type={x:Type handy:HandyViewModel}, IsDesignTimeCreatable=True}"
           Header="Handy">
-   <GroupBox.Resources>
-      <commonui:BoolToObjectConverter x:Key="ConnectedTextColorConverter"
-                                      TrueValue="Green"
-                                      FalseValue="Red" />
-   </GroupBox.Resources>
    <GroupBox.IsEnabled>
       <Binding Path="RequestInProgress"
                Converter="{x:Static commonui:InvertBoolConverter.Instance}" />

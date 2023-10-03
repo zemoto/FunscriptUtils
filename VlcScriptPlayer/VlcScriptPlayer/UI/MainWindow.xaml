@@ -9,6 +9,7 @@
         xmlns:commonui="clr-namespace:ZemotoCommon.UI"
         xmlns:handy="clr-namespace:VlcScriptPlayer.Handy"
         xmlns:filter="clr-namespace:VlcScriptPlayer.Vlc.Filter"
+        xmlns:buttplug="clr-namespace:VlcScriptPlayer.Buttplug"
         mc:Ignorable="d"
         Title="VLC Script Player"
         SizeToContent="WidthAndHeight"
@@ -27,10 +28,19 @@
          <ColumnDefinition Width="350" />
       </Grid.ColumnDefinitions>
 
-      <handy:HandySettings Grid.Row="0"
-                           Grid.Column="0"
-                           Margin="8,4,2,0"
-                           DataContext="{Binding HandyVm, Mode=OneTime}" />
+      <TabControl Grid.Row="0"
+                  Grid.Column="0"
+                  Margin="8,4,2,0">
+
+         <TabItem Header="Handy">
+            <handy:HandySettings DataContext="{Binding HandyVm, Mode=OneTime}" />
+         </TabItem>
+
+         <TabItem Header="Buttplug">
+            <buttplug:ButtplugSettings DataContext="{Binding ButtplugVm, Mode=OneTime}" />
+         </TabItem>
+      </TabControl>
+      
 
       <filter:FilterSettings Grid.Row="1"
                              Grid.Column="0"
@@ -58,8 +68,6 @@
                            Converter="{StaticResource InequalityConverter}"
                            ConverterParameter="0"
                            Mode="OneWay" />
-                  <Binding Path="HandyVm.IsConnected"
-                           Mode="OneWay" />
                </MultiBinding.Bindings>
             </MultiBinding>
          </Grid.IsEnabled>
@@ -70,12 +78,12 @@
          </Grid.ColumnDefinitions>
 
          <Button Grid.Column="0"
-                 Content="Upload Script and Launch Player"
+                 Content="Sync Script and Launch Player"
                  Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}"
                  CommandParameter="False" />
 
          <Button Grid.Column="2"
-                 Content="Force Upload"
+                 Content="Force Sync"
                  Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}"
                  CommandParameter="True" />
       </Grid>

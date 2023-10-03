@@ -8,6 +8,10 @@
       <commonui:EqualityConverter x:Key="InequalityConverter"
                                   Invert="True" />
 
+      <commonui:BoolToObjectConverter x:Key="ConnectedTextColorConverter"
+                                      TrueValue="Green"
+                                      FalseValue="Red" />
+
       <Style TargetType="{x:Type Button}">
          <Setter Property="Height"
                  Value="24" />

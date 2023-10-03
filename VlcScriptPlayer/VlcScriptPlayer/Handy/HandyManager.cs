@@ -5,7 +5,7 @@ using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Handy;
 
-internal sealed class HandyManager : IDisposable
+internal sealed class HandyManager : ISyncTarget, IDisposable
 {
    private readonly HandyApi _handyApi = new();
    private readonly HandyViewModel _model;
@@ -22,7 +22,6 @@ internal sealed class HandyManager : IDisposable
 
    private async Task ConnectToHandyAsync()
    {
-#if !TESTINGPLAYER
       _model.RequestInProgress = true;
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
 
@@ -35,8 +34,6 @@ internal sealed class HandyManager : IDisposable
       _model.CurrentOffset = _model.DesiredOffset;
       _model.CurrentSlideMin = _model.DesiredSlideMin;
       _model.CurrentSlideMax = _model.DesiredSlideMax;
-#endif
-
       _model.IsConnected = true;
    }
 
@@ -65,14 +62,19 @@ internal sealed class HandyManager : IDisposable
 
    public async Task SyncLocalRangeWithDeviceRangeAsync() => (_model.CurrentSlideMin, _model.CurrentSlideMax) = await _handyApi.GetRangeAsync().ConfigureAwait( false );
 
-   public async Task<bool> UploadScriptAsync( string scriptFilePath, bool forceUploadScript )
+   //ISyncTarget
+   public bool CanSync => _model.IsConnected;
+
+   public async Task<bool> SetupSyncAsync( string scriptFilePath, bool forceUploadScript )
    {
       _model.RequestInProgress = true;
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
       return await _handyApi.UploadScriptAsync( scriptFilePath, forceUploadScript ).ConfigureAwait( true );
    }
 
-   public async Task PlayScriptAsync( long time ) => await _handyApi.PlayScriptAsync( time ).ConfigureAwait( false );
+   public async Task StartSyncAsync( long time ) => await _handyApi.PlayScriptAsync( time ).ConfigureAwait( false );
 
-   public async Task StopScriptAsync() => await _handyApi.StopScriptAsync().ConfigureAwait( false );
+   public async Task StopSyncAsync() => await _handyApi.StopScriptAsync().ConfigureAwait( false );
+
+   public async Task CleanupAsync() => await StopSyncAsync().ConfigureAwait( false );
 }

@@ -14,6 +14,8 @@ internal sealed class Logger : ViewModelBase
 
    public static void LogRequestFail( HttpStatusCode statusCode ) => Instance.LogEvent( $"   Request Failed. Code: {statusCode}" );
 
+   public static void LogRequestFail() => Instance.LogEvent( "   Request Failed." );
+
    public static void LogRequestSuccess() => Instance.LogEvent( "   Request Success!" );
 
    public static void Log( string message ) => Instance.LogEvent( message );

@@ -27,6 +27,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Buttplug" Version="3.0.1" />
+		<PackageReference Include="Buttplug.Client.Connectors.WebsocketConnector" Version="3.0.1" />
 		<PackageReference Include="LibVLCSharp" Version="3.8.0" />
 		<PackageReference Include="LibVLCSharp.WPF" Version="3.8.0" />
 		<PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />

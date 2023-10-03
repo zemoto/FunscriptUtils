@@ -1,3 +1,4 @@
+using VlcScriptPlayer.Buttplug;
 using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.Vlc.Filter;
 using ZemotoCommon.UI;
@@ -13,14 +14,16 @@ internal sealed class MainWindowViewModel : ViewModelBase
       ScriptVm = new ScriptViewModel();
    }
 
-   public MainWindowViewModel( HandyViewModel handyVm, FilterViewModel filterVm, ScriptViewModel scriptVm )
+   public MainWindowViewModel( HandyViewModel handyVm, ButtplugViewModel buttplugVm, FilterViewModel filterVm, ScriptViewModel scriptVm )
    {
       HandyVm = handyVm;
+      ButtplugVm = buttplugVm;
       FilterVm = filterVm;
       ScriptVm = scriptVm;
    }
 
    public HandyViewModel HandyVm { get; }
+   public ButtplugViewModel ButtplugVm { get; }
    public FilterViewModel FilterVm { get; }
    public ScriptViewModel ScriptVm { get; }
 
