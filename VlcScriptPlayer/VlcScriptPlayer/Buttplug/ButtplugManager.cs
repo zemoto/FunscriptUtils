@@ -6,13 +6,12 @@ using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Buttplug;
 
-internal sealed class ButtplugManager : ISyncTarget, IDisposable
+internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
 {
    private readonly ButtplugViewModel _model;
    private readonly ButtplugClient _client;
 
-   private ButtplugClientDevice _device;
-   private ScriptPlayer _scriptPlayer;
+   private readonly ScriptPlayer _scriptPlayer = new();
 
    private bool _scanning;
 
@@ -27,7 +26,16 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
       _client.ServerDisconnect += OnServerDisconnect;
    }
 
-   public void Dispose() => _ = Task.Run( _client.Dispose );
+   public async ValueTask DisposeAsync()
+   {
+      if ( _client.Connected )
+      {
+         await _client.DisconnectAsync();
+      }
+
+      _client.Dispose();
+      await _scriptPlayer.DisposeAsync();
+   }
 
    private async Task ConnectToServerAsync()
    {
@@ -66,7 +74,7 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
    private async void OnDeviceAdded( object sender, DeviceAddedEventArgs e )
    {
       _model.DeviceName = e.Device.Name;
-      _device = e.Device;
+      _scriptPlayer.SetDevice( e.Device );
 
       if ( _scanning )
       {
@@ -79,7 +87,7 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
    private async void OnDeviceRemoved( object sender, DeviceRemovedEventArgs e )
    {
       _model.DeviceName = string.Empty;
-      _device = null;
+      _scriptPlayer.SetDevice( null );
 
       if ( !_scanning && _client.Connected )
       {
@@ -89,11 +97,11 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
    }
 
    //ISyncTarget
-   public bool CanSync => _client.Connected && _device is not null;
+   public bool CanSync => _client.Connected && _model.IsConnectedToDevice;
 
    public Task<bool> SetupSyncAsync( string scriptFilePath, bool forceUpload )
    {
-      _scriptPlayer = new ScriptPlayer( _device, Funscript.Load( scriptFilePath, _model.Offset, _model.Intensity / 100.0 ) );
+      _scriptPlayer.SetScript( Funscript.Load( scriptFilePath, _model.Offset, _model.Intensity / 100.0 ) );
       return Task.FromResult( true );
    }
 
@@ -103,7 +111,7 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
 
    public async Task CleanupAsync()
    {
-      await _scriptPlayer.DisposeAsync();
-      _scriptPlayer = null;
+      await _scriptPlayer.StopAsync();
+      _scriptPlayer.SetScript( null );
    }
 }

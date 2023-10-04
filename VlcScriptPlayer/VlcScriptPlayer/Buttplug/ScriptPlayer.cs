@@ -8,18 +8,16 @@ namespace VlcScriptPlayer.Buttplug;
 
 internal sealed class ScriptPlayer : IAsyncDisposable
 {
-   private readonly Funscript _script;
-   private readonly ButtplugClientDevice _device;
    private readonly SemaphoreSlim _stopSemaphore = new( 1, 1 );
 
+   private Funscript _script;
+   private ButtplugClientDevice _device;
    private CancellationTokenSource _cancelTokenSource;
    private Task _scriptTask;
 
-   public ScriptPlayer( ButtplugClientDevice device, Funscript script )
-   {
-      _device = device;
-      _script = script;
-   }
+   public void SetScript( Funscript script ) => _script = script;
+
+   public void SetDevice( ButtplugClientDevice device ) => _device  = device;
 
    public async ValueTask DisposeAsync()
    {
@@ -79,6 +77,11 @@ internal sealed class ScriptPlayer : IAsyncDisposable
 
    private async Task<bool> StopDeviceAsync()
    {
+      if ( _device is null )
+      {
+         return false;
+      }
+
       try
       {
          await _device.Stop();
@@ -86,12 +89,18 @@ internal sealed class ScriptPlayer : IAsyncDisposable
       }
       catch
       {
+         _device = null;
          return false;
       }
    }
 
    private async Task<bool> VibrateDeviceAsync( double intensity )
    {
+      if ( _device is null )
+      {
+         return false;
+      }
+
       try
       {
          await _device.VibrateAsync( intensity );
@@ -99,6 +108,7 @@ internal sealed class ScriptPlayer : IAsyncDisposable
       }
       catch
       {
+         _device = null;
          return false;
       }
    }

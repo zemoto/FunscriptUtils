@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using VlcScriptPlayer.Buttplug;
 using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.UI;
@@ -10,7 +11,7 @@ using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer;
 
-internal sealed class Main : IDisposable
+internal sealed class Main : IAsyncDisposable
 {
    private readonly MainWindow _window;
    private readonly MainViewModel _model;
@@ -28,14 +29,21 @@ internal sealed class Main : IDisposable
       _script = new ScriptManager( _model.ScriptVm);
       _buttplug = new ButtplugManager( _model.ButtplugVm );
       _window = new MainWindow( _model );
+      _window.Closed += OnMainWindowClosed;
    }
 
-   public void Dispose()
+   private async void OnMainWindowClosed( object sender, EventArgs e )
+   {
+      await DisposeAsync().ConfigureAwait( true );
+      Application.Current.Shutdown();
+   }
+
+   public async ValueTask DisposeAsync()
    {
       ConfigSerializer.SaveToFile( _model );
       _handy.Dispose();
       _vlc.Dispose();
-      _buttplug.Dispose();
+      await _buttplug.DisposeAsync();
    }
 
    public void Start() => _window.Show();
