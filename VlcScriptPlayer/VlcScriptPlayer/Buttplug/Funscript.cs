@@ -2,21 +2,17 @@
 using System.Collections.Generic;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace VlcScriptPlayer.Buttplug;
 
 public sealed class FunscriptAction
 {
-   private int _position;
    [JsonProperty( PropertyName = "pos" )]
-   public int Position
-   {
-      get => _position;
-      set => _position = Math.Clamp( value, 0, 100 );
-   }
+   public int Position { get; init; }
 
    [JsonProperty( PropertyName = "at" )]
-   public long Time { get; set; }
+   public long Time { get; init; }
 }
 
 internal sealed class VibrationAction
@@ -25,14 +21,18 @@ internal sealed class VibrationAction
    public double Intensity
    {
       get => _intensity;
-      set => _intensity = Math.Clamp( value, 0.0, 1.0 );
+      init => _intensity = Math.Round( Math.Clamp( value, 0.0, 1.0 ), 2 );
    }
 
-   public long Time { get; set; }
+   public long Time { get; init; }
 }
 
 internal sealed class Funscript
 {
+   private const int _actionsPerSecond = 6;
+   private const int _blockInterval = 1000 / _actionsPerSecond;
+   private const int _longHoldThreshold = 2000;
+
    public static Funscript Load( string filePath, int offsetMs, double intensityScale )
    {
       var funscript = JsonConvert.DeserializeObject<Funscript>( File.ReadAllText( filePath ) );
@@ -42,16 +42,10 @@ internal sealed class Funscript
 
    private void GenerateVibrationActions( int offsetMs, double intensityScale )
    {
-      const int blockInterval = 166;
-
       for ( int i = 0; ; i++ )
       {
          var action = OriginalActions[i];
-         VibrationActions.Add( new VibrationAction
-         {
-            Time = action.Time + offsetMs,
-            Intensity = PositionToIntensity( action.Position ) * intensityScale
-         } );
+         AddVibrationAction( action.Time + offsetMs, PositionToIntensity( action.Position ) * intensityScale );
 
          if ( i == OriginalActions.Count - 1 )
          {
@@ -59,22 +53,38 @@ internal sealed class Funscript
          }
 
          var nextAction = OriginalActions[i + 1];
-         if ( nextAction.Time - action.Time < blockInterval * 2 )
+         var gap = nextAction.Time - action.Time;
+         if ( gap < _blockInterval * 2 )
          {
             continue;
          }
 
-         long currentTime = action.Time + blockInterval;
-         while ( currentTime < nextAction.Time - ( blockInterval / 2 ) )
+         if ( gap > _longHoldThreshold )
          {
-            VibrationActions.Add( new VibrationAction
-            {
-               Time = currentTime + offsetMs,
-               Intensity = GetIntensityAtTime( currentTime ) * intensityScale
-            } );
-
-            currentTime += blockInterval;
+            AddTaperOffVibrations( offsetMs );
+            continue;
          }
+
+         long currentTime = action.Time + _blockInterval;
+         while ( currentTime < nextAction.Time - ( _blockInterval / 2 ) )
+         {
+            AddVibrationAction( currentTime + offsetMs, GetIntensityAtTime( currentTime ) * intensityScale );
+            currentTime += _blockInterval;
+         }
+      }
+   }
+
+   private void AddTaperOffVibrations( int offsetMs )
+   {
+      var lastAction = VibrationActions.Last();
+      var intensityStep = lastAction.Intensity / _actionsPerSecond;
+      var currentIntensity = lastAction.Intensity - intensityStep;
+      var currentTime = lastAction.Time + _blockInterval;
+      while ( currentTime < lastAction.Time + 1000 )
+      {
+         AddVibrationAction( currentTime + offsetMs, currentIntensity );
+         currentTime += _blockInterval;
+         currentIntensity -= intensityStep;
       }
    }
 
@@ -90,15 +100,15 @@ internal sealed class Funscript
       var slope = ( nextAction.Position - firstAction.Position ) / (double)( nextAction.Time - firstAction.Time );
       var intercept = firstAction.Position - ( slope * firstAction.Time );
       var positionAtTime = (int)( ( slope * time ) + intercept );
-
       return PositionToIntensity( positionAtTime );
    }
 
    private static double PositionToIntensity( int position ) => 1.0 - ( position / 100.0 );
 
-   [JsonProperty( PropertyName = "actions" )]
-   public List<FunscriptAction> OriginalActions { get; set; }
+   private void AddVibrationAction( long time, double intensity ) => VibrationActions.Add( new VibrationAction { Time = time, Intensity = intensity } );
 
-   [JsonIgnore]
+   [JsonProperty( PropertyName = "actions" )]
+   public List<FunscriptAction> OriginalActions { get; init; }
+
    public List<VibrationAction> VibrationActions { get; } = new();
 }
