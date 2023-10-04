@@ -15,7 +15,7 @@
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        d:DataContext="{d:DesignInstance Type={x:Type ui:MainWindowViewModel}, IsDesignTimeCreatable=True}">
+        d:DataContext="{d:DesignInstance Type={x:Type ui:MainViewModel}, IsDesignTimeCreatable=True}">
    <Grid>
       <Grid.RowDefinitions>
          <RowDefinition Height="Auto" />

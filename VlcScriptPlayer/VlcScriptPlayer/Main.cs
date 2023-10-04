@@ -13,7 +13,7 @@ namespace VlcScriptPlayer;
 internal sealed class Main : IDisposable
 {
    private readonly MainWindow _window;
-   private readonly MainWindowViewModel _model;
+   private readonly MainViewModel _model;
    private readonly VlcManager _vlc = new();
    private readonly HandyManager _handy;
    private readonly ButtplugManager _buttplug;
@@ -21,25 +21,18 @@ internal sealed class Main : IDisposable
 
    public Main()
    {
-      var (handyVm, filterVm, scriptVm) = ConfigSerializer.ReadFromFile();
+      _model = ConfigSerializer.ReadFromFile();
+      _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand<bool>( async forceUpload => await UploadScriptAndLaunchPlayerAsync( forceUpload ) );
 
-      _handy = new HandyManager( handyVm );
-      _script = new ScriptManager( scriptVm );
-
-      var buttplugVm = new ButtplugViewModel();
-      _buttplug = new ButtplugManager( buttplugVm );
-
-      _model = new MainWindowViewModel( handyVm, buttplugVm, filterVm, scriptVm )
-      {
-         UploadScriptAndLaunchPlayerCommand = new RelayCommand<bool>( async forceUpload => await UploadScriptAndLaunchPlayerAsync( forceUpload ) ),
-      };
-
+      _handy = new HandyManager( _model.HandyVm );
+      _script = new ScriptManager( _model.ScriptVm);
+      _buttplug = new ButtplugManager( _model.ButtplugVm );
       _window = new MainWindow( _model );
    }
 
    public void Dispose()
    {
-      ConfigSerializer.SaveToFile( _model.HandyVm, _model.FilterVm, _model.ScriptVm );
+      ConfigSerializer.SaveToFile( _model );
       _handy.Dispose();
       _vlc.Dispose();
       _buttplug.Dispose();

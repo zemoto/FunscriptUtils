@@ -2,7 +2,7 @@
 
 internal sealed partial class MainWindow
 {
-   public MainWindow( MainWindowViewModel model )
+   public MainWindow( MainViewModel model )
    {
       DataContext = model;
       InitializeComponent();
