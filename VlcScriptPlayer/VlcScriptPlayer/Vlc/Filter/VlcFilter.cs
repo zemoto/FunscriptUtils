@@ -17,25 +17,27 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
 
    private readonly MediaPlayer _player;
    private readonly VlcMarquee _marquee;
-   private readonly Equalizer _equalizer;
 
-   private readonly float _originalBassValue;
-   private readonly float _originalPreampValue;
+   private Equalizer _equalizer;
+   private float _defaultBassValue;
+   private float _defaultPreampValue;
 
    public VlcFilter( MediaPlayer player, VlcMarquee marquee )
    {
       _player = player;
       _marquee = marquee;
-      _equalizer = new Equalizer( 7 /*Headphones*/ );
-
-      _originalBassValue = _equalizer.Amp( 0 );
-      _originalPreampValue = _equalizer.Preamp;
    }
 
-   public void Dispose() => _equalizer.Dispose();
+   public void Dispose() => _equalizer?.Dispose();
 
    public void SetFilters( FilterViewModel filterConfig )
    {
+      _equalizer?.Dispose();
+      _equalizer = new Equalizer( (uint)filterConfig.EqualizerPreset );
+
+      _defaultBassValue = _equalizer.Amp( 0 );
+      _defaultPreampValue = _equalizer.Preamp;
+
       _volumeAmpEnabled = false; // Always disable volume amp initially
       _bassBoostEnabled = filterConfig.BoostBass;
       SetEqualizer( EqualizerUpdateType.All );
@@ -56,11 +58,11 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
    {
       if ( updateType.HasFlag( EqualizerUpdateType.Volume ) )
       {
-         _equalizer.SetPreamp( _volumeAmpEnabled ? 20f : _originalPreampValue );
+         _equalizer.SetPreamp( _volumeAmpEnabled ? 20f : _defaultPreampValue );
       }
       if ( updateType.HasFlag( EqualizerUpdateType.Bass ) )
       {
-         _equalizer.SetAmp( _bassBoostEnabled ? 20f : _originalBassValue, 0 );
+         _equalizer.SetAmp( _bassBoostEnabled ? 20f : _defaultBassValue, 0 );
       }
 
       _player.SetEqualizer( _equalizer );

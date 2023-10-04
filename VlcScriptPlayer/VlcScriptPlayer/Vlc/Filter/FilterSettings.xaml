@@ -3,16 +3,42 @@
           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+          xmlns:commonui="clr-namespace:ZemotoCommon.UI"
           xmlns:filter="clr-namespace:VlcScriptPlayer.Vlc.Filter"
           mc:Ignorable="d"
           d:DataContext="{d:DesignInstance Type={x:Type filter:FilterViewModel}, IsDesignTimeCreatable=True}"
           Header="Filters">
-   <StackPanel Margin="4">
-      <CheckBox Content="Boost Bass"
+   <Grid Margin="4,2,4,4">
+      <Grid.RowDefinitions>
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="10" />
+         <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+         <ColumnDefinition Width="Auto" />
+         <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+
+      <TextBlock Grid.Row="0"
+                 Grid.Column="0"
+                 Text="Audio Equalizer:"
+                 Margin="0,0,8,0"
+                 VerticalAlignment="Center" />
+
+      <ComboBox Grid.Row="0"
+                Grid.Column="1"
+                ItemsSource="{commonui:GetEnumValues filter:EqualizerPresets}"
+                SelectedValue="{Binding EqualizerPreset, Mode=TwoWay}" />
+
+      <CheckBox Grid.Row="2"
+                Grid.Column="0"
+                Margin="0,0,8,0"
+                Content="Boost Bass"
                 IsChecked="{Binding BoostBass, Mode=TwoWay}" />
 
-      <CheckBox Margin="0,8,0,0"
+      <CheckBox Grid.Row="2"
+                Grid.Column="1"
                 Content="Boost Saturation"
                 IsChecked="{Binding BoostSaturation, Mode=TwoWay}" />
-   </StackPanel>
+   </Grid>
 </GroupBox>
