@@ -13,7 +13,8 @@
                Converter="{x:Static commonui:InvertBoolConverter.Instance}" />
    </GroupBox.IsEnabled>
 
-   <StackPanel Margin="4">
+   <StackPanel Margin="4"
+               Grid.IsSharedSizeScope="True">
       <TextBlock FontWeight="SemiBold"
                  Text="{Binding IsConnected, Mode=OneWay, StringFormat={}Connected: {0}}"
                  Foreground="{Binding IsConnected, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
@@ -21,7 +22,8 @@
       <Grid Margin="0,4,0,0">
          <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto"
+                              SharedSizeGroup="Button" />
          </Grid.ColumnDefinitions>
 
          <TextBox Grid.Column="0"
@@ -42,7 +44,8 @@
             IsEnabled="{Binding IsConnected, Mode=OneWay}">
          <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto"
+                              SharedSizeGroup="Button" />
          </Grid.ColumnDefinitions>
          <TextBox Grid.Column="0"
                   Text="{Binding DesiredOffset, Mode=TwoWay}"
@@ -65,7 +68,8 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto"
+                              SharedSizeGroup="Button" />
          </Grid.ColumnDefinitions>
          <TextBox Grid.Column="0"
                   Text="{commonui:DoubleMinMaxBinding DesiredSlideMin, 0, 90, Mode=TwoWay, StringFormat=N2}"
