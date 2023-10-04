@@ -105,7 +105,11 @@ internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
       return Task.FromResult( true );
    }
 
-   public async Task StartSyncAsync( long time ) => await _scriptPlayer.StartAsync( time );
+   public Task StartSyncAsync( long time )
+   {
+      _scriptPlayer.Start( time );
+      return Task.CompletedTask;
+   }
 
    public async Task StopSyncAsync() => await _scriptPlayer.StopAsync();
 

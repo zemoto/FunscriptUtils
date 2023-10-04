@@ -115,6 +115,11 @@ internal sealed partial class VideoControls
 
    private void OnScrubberMouseMove( object sender, MouseEventArgs e )
    {
+      if ( _timeProvider is null )
+      {
+         return;
+      }
+
       TrackPreview.Width = Math.Clamp( Mouse.GetPosition( TrackContainer ).X, 0, TrackContainer.ActualWidth );
 
       TimePreviewText.Text = _timeProvider.GetTimeStringAtPosition( TrackPreview.Width / PositionTrack.ActualWidth );
@@ -123,10 +128,15 @@ internal sealed partial class VideoControls
 
    private async void OnTrackClicked( object sender, RoutedEventArgs e )
    {
+      if ( _timeProvider is null )
+      {
+         return;
+      }
+
       var newPosition = TrackPreview.Width / PositionTrack.ActualWidth;
 
       // Snap to the beginning if clicking early enough
-      if ( newPosition < 0.03 )
+      if ( newPosition < 0.02 )
       {
          newPosition = 0;
       }

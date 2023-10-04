@@ -25,35 +25,40 @@ internal sealed class ScriptPlayer : IAsyncDisposable
       _stopSemaphore.Dispose();
    }
 
-   public async Task StartAsync( long startTime )
-   {
-      await StopAsync();
-      _cancelTokenSource = new CancellationTokenSource();
-
-      _scriptTask = ScriptTask( startTime );
-   }
+   public void Start( long startTime ) => _scriptTask ??= ScriptTask( startTime );
 
    private async Task ScriptTask( long timeOffset )
    {
+      _cancelTokenSource = new CancellationTokenSource();
       var startDateTime = DateTime.Now;
-      while ( true )
+      try
       {
-         var currentDateTime = DateTime.Now;
-         var currentScriptTime = (long)( currentDateTime - startDateTime ).TotalMilliseconds + timeOffset;
-         var nextAction = _script.VibrationActions.Find( x => x.Time >= currentScriptTime );
-
-         if ( _cancelTokenSource.IsCancellationRequested || nextAction is null )
+         while ( true )
          {
-            await StopDeviceAsync();
-            return;
-         }
+            var currentDateTime = DateTime.Now;
+            var currentScriptTime = (long)( currentDateTime - startDateTime ).TotalMilliseconds + timeOffset;
+            var nextAction = _script.VibrationActions.Find( x => x.Time >= currentScriptTime );
 
-         await Task.Delay( (int)( nextAction.Time - currentScriptTime ) );
+            if ( _cancelTokenSource.IsCancellationRequested || nextAction is null )
+            {
+               return;
+            }
 
-         if ( !await VibrateDeviceAsync( nextAction.Intensity ) )
-         {
-            return;
+            await Task.Delay( (int)( nextAction.Time - currentScriptTime ), _cancelTokenSource.Token );
+
+            if ( !await VibrateDeviceAsync( nextAction.Intensity ) )
+            {
+               return;
+            }
          }
+      }
+      catch { }
+      finally
+      {
+         _cancelTokenSource?.Dispose();
+         _cancelTokenSource = null;
+         _scriptTask = null;
+         await StopDeviceAsync();
       }
    }
 
@@ -67,12 +72,7 @@ internal sealed class ScriptPlayer : IAsyncDisposable
       }
 
       _cancelTokenSource.Cancel();
-      await StopDeviceAsync();
       await _scriptTask;
-
-      _cancelTokenSource?.Dispose();
-      _cancelTokenSource = null;
-      _scriptTask = null;
    }
 
    private async Task<bool> StopDeviceAsync()
