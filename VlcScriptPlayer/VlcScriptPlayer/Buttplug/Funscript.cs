@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System;
 using System.IO;
-using System.Linq;
 
 namespace VlcScriptPlayer.Buttplug;
 
@@ -34,14 +33,14 @@ internal sealed class VibrationAction
 
 internal sealed class Funscript
 {
-   public static Funscript Load( string filePath )
+   public static Funscript Load( string filePath, int offsetMs, double intensityScale )
    {
       var funscript = JsonConvert.DeserializeObject<Funscript>( File.ReadAllText( filePath ) );
-      funscript.GenerateVibrationActions();
+      funscript.GenerateVibrationActions( offsetMs, intensityScale );
       return funscript;
    }
 
-   private void GenerateVibrationActions()
+   private void GenerateVibrationActions( int offsetMs, double intensityScale )
    {
       const int blockInterval = 166;
 
@@ -50,8 +49,8 @@ internal sealed class Funscript
          var action = OriginalActions[i];
          VibrationActions.Add( new VibrationAction
          {
-            Time = action.Time,
-            Intensity = PositionToIntensity( action.Position )
+            Time = action.Time + offsetMs,
+            Intensity = PositionToIntensity( action.Position ) * intensityScale
          } );
 
          if ( i == OriginalActions.Count - 1 )
@@ -70,8 +69,8 @@ internal sealed class Funscript
          {
             VibrationActions.Add( new VibrationAction
             {
-               Time = currentTime,
-               Intensity = GetIntensityAtTime( currentTime )
+               Time = currentTime + offsetMs,
+               Intensity = GetIntensityAtTime( currentTime ) * intensityScale
             } );
 
             currentTime += blockInterval;

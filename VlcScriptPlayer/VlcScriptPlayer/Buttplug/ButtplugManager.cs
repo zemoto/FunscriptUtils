@@ -32,7 +32,7 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
    private async Task ConnectToServerAsync()
    {
       _model.IsConnectedToServer = false;
-      _model.IsConnectedToDevice = false;
+      _model.DeviceName = string.Empty;
 
       const string serverUri = "ws://localhost:12345";
       var connector = new ButtplugWebsocketConnector( new Uri( serverUri ) );
@@ -66,7 +66,6 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
    private async void OnDeviceAdded( object sender, DeviceAddedEventArgs e )
    {
       _model.DeviceName = e.Device.Name;
-      _model.IsConnectedToDevice = true;
       _device = e.Device;
 
       if ( _scanning )
@@ -80,7 +79,6 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
    private async void OnDeviceRemoved( object sender, DeviceRemovedEventArgs e )
    {
       _model.DeviceName = string.Empty;
-      _model.IsConnectedToDevice = false;
       _device = null;
 
       if ( !_scanning && _client.Connected )
@@ -91,16 +89,11 @@ internal sealed class ButtplugManager : ISyncTarget, IDisposable
    }
 
    //ISyncTarget
-   public bool CanSync => _model.IsConnectedToDevice;
+   public bool CanSync => _client.Connected && _device is not null;
 
    public Task<bool> SetupSyncAsync( string scriptFilePath, bool forceUpload )
    {
-      if ( _device is null )
-      {
-         return Task.FromResult( false );
-      }
-
-      _scriptPlayer = new ScriptPlayer( _device, Funscript.Load( scriptFilePath ) );
+      _scriptPlayer = new ScriptPlayer( _device, Funscript.Load( scriptFilePath, _model.Offset, _model.Intensity / 100.0 ) );
       return Task.FromResult( true );
    }
 

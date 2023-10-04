@@ -35,9 +35,8 @@ internal sealed class ScriptPlayer : IAsyncDisposable
       _scriptTask = ScriptTask( startTime );
    }
 
-   private async Task ScriptTask( object timeOffsetObj )
+   private async Task ScriptTask( long timeOffset )
    {
-      long timeOffset = (long)timeOffsetObj;
       var startDateTime = DateTime.Now;
       while ( true )
       {
@@ -47,13 +46,16 @@ internal sealed class ScriptPlayer : IAsyncDisposable
 
          if ( _cancelTokenSource.IsCancellationRequested || nextAction is null )
          {
-            await _device.Stop();
+            await StopDeviceAsync();
             return;
          }
 
          await Task.Delay( (int)( nextAction.Time - currentScriptTime ) );
 
-         await _device.VibrateAsync( nextAction.Intensity );
+         if ( !await VibrateDeviceAsync( nextAction.Intensity ) )
+         {
+            return;
+         }
       }
    }
 
@@ -67,11 +69,37 @@ internal sealed class ScriptPlayer : IAsyncDisposable
       }
 
       _cancelTokenSource.Cancel();
-      await _device.Stop();
+      await StopDeviceAsync();
       await _scriptTask;
 
       _cancelTokenSource?.Dispose();
       _cancelTokenSource = null;
       _scriptTask = null;
+   }
+
+   private async Task<bool> StopDeviceAsync()
+   {
+      try
+      {
+         await _device.Stop();
+         return true;
+      }
+      catch
+      {
+         return false;
+      }
+   }
+
+   private async Task<bool> VibrateDeviceAsync( double intensity )
+   {
+      try
+      {
+         await _device.VibrateAsync( intensity );
+         return true;
+      }
+      catch
+      {
+         return false;
+      }
    }
 }

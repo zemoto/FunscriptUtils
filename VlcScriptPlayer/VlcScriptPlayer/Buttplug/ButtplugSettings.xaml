@@ -8,19 +8,61 @@
           mc:Ignorable="d"
           d:DataContext="{d:DesignInstance Type={x:Type buttplug:ButtplugViewModel}, IsDesignTimeCreatable=True}"
           Header="Buttplug">
-   <StackPanel Margin="4">
+   <StackPanel Margin="4"
+               Grid.IsSharedSizeScope="True">
       <TextBlock FontWeight="SemiBold"
                  Text="{Binding IsConnectedToServer, Mode=OneWay, StringFormat={}Connected to Server: {0}}"
                  Foreground="{Binding IsConnectedToServer, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
+
+      <TextBlock Margin="0,4,0,0"
+                 FontWeight="SemiBold"
+                 Text="{Binding DeviceName, Mode=OneWay, StringFormat={}Device: {0}}"
+                 Foreground="{Binding IsConnectedToDevice, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
 
       <Button Margin="0,4,0,0"
               Content="Connect to Server"
               Command="{Binding ConnectToServerCommand, Mode=OneTime}"
               IsEnabled="{Binding IsConnectedToServer, Converter={x:Static commonui:InvertBoolConverter.Instance}, Mode=OneWay}" />
 
-      <TextBlock Margin="0,4,0,0"
-                 FontWeight="SemiBold"
-                 Text="{Binding DeviceName, Mode=OneWay, StringFormat={}Device: {0}}"
-                 Foreground="{Binding IsConnectedToDevice, Mode=OneWay, Converter={StaticResource ConnectedTextColorConverter}}" />
+      <Grid Margin="0,8,0,0">
+         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"
+                              SharedSizeGroup="Label" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+         </Grid.ColumnDefinitions>
+         
+         <TextBlock Grid.Column="0"
+                    Margin="0,0,8,0"
+                    Text="Intensity:" />
+
+         <Slider Grid.Column="1"
+                 Margin="0,1,4,0"
+                 Minimum="10"
+                 Maximum="100"
+                 IsSnapToTickEnabled="True"
+                 TickFrequency="5"
+                 IsMoveToPointEnabled="True"
+                 Value="{Binding Intensity, Mode=TwoWay}" />
+         
+         <TextBlock Grid.Column="2"
+                    Text="{Binding Intensity, Mode=OneWay, StringFormat={}{0}%}" />
+      </Grid>
+
+      <Grid Margin="0,8,0,0">
+         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"
+                              SharedSizeGroup="Label" />
+            <ColumnDefinition Width="*" />
+         </Grid.ColumnDefinitions>
+         <TextBlock Grid.Column="0"
+                    Margin="0,0,8,0"
+                    Text="Offset (ms):"
+                    VerticalAlignment="Center" />
+
+         <TextBox Grid.Column="1"
+                  Text="{Binding Offset, Mode=TwoWay}"
+                  VerticalContentAlignment="Center" />
+      </Grid>
    </StackPanel>
 </GroupBox>
