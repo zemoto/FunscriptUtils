@@ -120,35 +120,13 @@ internal sealed partial class VideoPlayerWindow
          return;
       }
 
-      const int volumeIncrement = 5;
-
-      var player = VideoPlayer.MediaPlayer;
-      var volume = player.Volume;
       if ( e.Delta > 0 )
       {
-         if ( volume == 100 )
-         {
-            _vlc.Filter.VolumeAmpEnabled = true;
-         }
-         else
-         {
-            volume += volumeIncrement;
-         }
-
-         player.Volume = volume;
+         _vlc.VolumeManager.IncrementVolume();
       }
       else if ( e.Delta < 0 )
       {
-         if ( _vlc.Filter.VolumeAmpEnabled )
-         {
-            _vlc.Filter.VolumeAmpEnabled = false;
-         }
-         else
-         {
-            volume -= volumeIncrement;
-         }
-
-         player.Volume = volume;
+         _vlc.VolumeManager.DecrementVolume();
       }
    }
 

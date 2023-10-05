@@ -22,14 +22,14 @@ internal sealed partial class VolumeControl
    public void SetVlc( VlcManager vlc )
    {
       _vlc = vlc;
-      _vlc.Player.VolumeChanged += OnVolumeChanged;
+      _vlc.VolumeManager.VolumeChanged += OnVolumeChanged;
    }
 
    private void OnUnloaded( object sender, RoutedEventArgs e )
    {
       if ( _vlc is not null )
       {
-         _vlc.Player.VolumeChanged -= OnVolumeChanged;
+         _vlc.VolumeManager.VolumeChanged -= OnVolumeChanged;
       }
    }
 
@@ -39,26 +39,22 @@ internal sealed partial class VolumeControl
       BeginAnimation( OpacityProperty, _fadeOutAnimation );
    }
 
-   private void OnVolumeChanged( object sender, MediaPlayerVolumeChangedEventArgs e )
+   private void OnVolumeChanged( object sender, EventArgs e )
    {
-      if ( e.Volume < 0 )
-      {
-         return;
-      }
-
       Dispatcher.BeginInvoke( () =>
       {
          _fadeOutTimer.Stop();
 
          if ( _vlc.Filter.VolumeAmpEnabled )
          {
-            VolumeTextBlock.Text = "Volume 200%";
+            VolumeTextBlock.Text = "Volume Amped";
             VolumeIndicator.Height = VolumeTrack.ActualHeight;
          }
          else
          {
-            VolumeTextBlock.Text = $"Volume {Math.Round( e.Volume * 100.0 )}%";
-            VolumeIndicator.Height = e.Volume * VolumeTrack.ActualHeight;
+            var volume = _vlc.VolumeManager.Volume;
+            VolumeTextBlock.Text = $"Volume {volume}%";
+            VolumeIndicator.Height = ( volume / 100.0 ) * VolumeTrack.ActualHeight;
          }
 
          BeginAnimation( OpacityProperty, null );
