@@ -65,11 +65,11 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
    //ISyncTarget
    public bool CanSync => _model.IsConnected;
 
-   public async Task<bool> SetupSyncAsync( string scriptFilePath, bool forceUploadScript )
+   public async Task<bool> SetupSyncAsync( string scriptFilePath )
    {
       _model.RequestInProgress = true;
       using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
-      return await _handyApi.UploadScriptAsync( scriptFilePath, forceUploadScript );
+      return await _handyApi.UploadScriptAsync( scriptFilePath );
    }
 
    public async Task StartSyncAsync( long time ) => await _handyApi.PlayScriptAsync( time );

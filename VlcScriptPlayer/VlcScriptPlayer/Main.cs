@@ -23,7 +23,7 @@ internal sealed class Main : IAsyncDisposable
    public Main()
    {
       _model = ConfigSerializer.ReadFromFile();
-      _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand<bool>( async forceUpload => await UploadScriptAndLaunchPlayerAsync( forceUpload ) );
+      _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync() );
 
       _handy = new HandyManager( _model.HandyVm );
       _script = new ScriptManager( _model.ScriptVm);
@@ -48,7 +48,7 @@ internal sealed class Main : IAsyncDisposable
 
    public void Start() => _window.Show();
 
-   private async Task UploadScriptAndLaunchPlayerAsync( bool forceUpload )
+   private async Task UploadScriptAndLaunchPlayerAsync()
    {
       if ( !_script.VerifyPaths() )
       {
@@ -59,7 +59,7 @@ internal sealed class Main : IAsyncDisposable
       var synchronizer = new VlcScriptSynchronizer( _vlc, _handy, _buttplug );
       await using ( synchronizer.ConfigureAwait( true ) )
       {
-         if ( !await synchronizer.SetupSyncAsync( _model.ScriptVm.ScriptFilePath, forceUpload ).ConfigureAwait( true ) )
+         if ( !await synchronizer.SetupSyncAsync( _model.ScriptVm.ScriptFilePath ).ConfigureAwait( true ) )
          {
             return;
          }

@@ -40,7 +40,7 @@
             <buttplug:ButtplugSettings DataContext="{Binding ButtplugVm, Mode=OneTime}" />
          </TabItem>
       </TabControl>
-      
+
 
       <filter:FilterSettings Grid.Row="1"
                              Grid.Column="0"
@@ -53,11 +53,13 @@
                             Margin="2,4,8,8"
                             DataContext="{Binding ScriptVm, Mode=OneTime}" />
 
-      <Grid Grid.Row="2"
-            Grid.Column="0"
-            Grid.ColumnSpan="99"
-            Margin="8,0">
-         <Grid.IsEnabled>
+      <Button Grid.Row="2"
+              Grid.Column="0"
+              Grid.ColumnSpan="99"
+              Margin="8,0"
+              Content="Sync Script and Launch Player"
+              Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}">
+         <Button.IsEnabled>
             <MultiBinding Converter="{x:Static commonui:MultiBoolToBoolAndConverter.Instance}">
                <Binding Path="ScriptVm.VideoFilePath.Length"
                         Converter="{StaticResource InequalityConverter}"
@@ -68,23 +70,8 @@
                         ConverterParameter="0"
                         Mode="OneWay" />
             </MultiBinding>
-         </Grid.IsEnabled>
-         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="4" />
-            <ColumnDefinition Width="Auto" />
-         </Grid.ColumnDefinitions>
-
-         <Button Grid.Column="0"
-                 Content="Sync Script and Launch Player"
-                 Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}"
-                 CommandParameter="False" />
-
-         <Button Grid.Column="2"
-                 Content="Force Sync"
-                 Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}"
-                 CommandParameter="True" />
-      </Grid>
+         </Button.IsEnabled>
+      </Button>
 
       <TextBox x:Name="LogTextBox"
                Grid.Row="3"

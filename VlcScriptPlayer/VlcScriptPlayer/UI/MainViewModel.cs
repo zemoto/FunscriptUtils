@@ -14,5 +14,5 @@ internal sealed class MainViewModel : ViewModelBase
    public ScriptViewModel ScriptVm { get; init; } = new();
 
    [JsonIgnore]
-   public RelayCommand<bool> UploadScriptAndLaunchPlayerCommand { get; set; }
+   public RelayCommand UploadScriptAndLaunchPlayerCommand { get; set; }
 }

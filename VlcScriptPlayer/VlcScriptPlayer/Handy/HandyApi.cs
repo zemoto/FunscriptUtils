@@ -145,7 +145,7 @@ internal sealed class HandyApi : IDisposable
       return response?.IsSuccessStatusCode == true;
    }
 
-   public async Task<bool> UploadScriptAsync( string scriptFilePath, bool forceUploadScript )
+   public async Task<bool> UploadScriptAsync( string scriptFilePath )
    {
       Logger.Log( "Retrieving script CSV." );
       string csv = CSVFactory.FromFile( scriptFilePath );
@@ -156,7 +156,7 @@ internal sealed class HandyApi : IDisposable
       }
 
       var csvSha256Hash = ComputeSha256Hash( csv );
-      if ( !forceUploadScript && csvSha256Hash == _lastUploadedScriptSha256 )
+      if ( csvSha256Hash == _lastUploadedScriptSha256 )
       {
          Logger.Log( "Script is identical to last uploaded, skipping upload." );
          return true;

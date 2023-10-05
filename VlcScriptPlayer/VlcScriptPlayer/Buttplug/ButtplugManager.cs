@@ -99,7 +99,7 @@ internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
    //ISyncTarget
    public bool CanSync => _client.Connected && _model.IsConnectedToDevice;
 
-   public Task<bool> SetupSyncAsync( string scriptFilePath, bool forceUpload )
+   public Task<bool> SetupSyncAsync( string scriptFilePath )
    {
       _scriptPlayer.SetScript( Funscript.Load( scriptFilePath, _model.Offset, _model.Intensity / 100.0 ) );
       return Task.FromResult( true );

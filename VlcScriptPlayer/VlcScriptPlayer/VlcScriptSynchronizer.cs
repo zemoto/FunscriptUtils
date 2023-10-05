@@ -12,7 +12,7 @@ internal interface ISyncTarget
 {
    bool CanSync { get; }
 
-   Task<bool> SetupSyncAsync( string scriptFilePath, bool forceUpload );
+   Task<bool> SetupSyncAsync( string scriptFilePath );
    Task StartSyncAsync( long time );
    Task StopSyncAsync();
    Task CleanupAsync();
@@ -61,11 +61,11 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 
    private void OnPlayStoppedOrPaused( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await StopSyncAsync(), DispatcherPriority.Send );
 
-   public async Task<bool> SetupSyncAsync( string scriptFilePath, bool forceUpload )
+   public async Task<bool> SetupSyncAsync( string scriptFilePath )
    {
       foreach ( var syncTarget in _syncTargets )
       {
-         if ( !await syncTarget.SetupSyncAsync( scriptFilePath, forceUpload ) )
+         if ( !await syncTarget.SetupSyncAsync( scriptFilePath ) )
          {
             return false;
          }
