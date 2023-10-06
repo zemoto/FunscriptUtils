@@ -60,8 +60,6 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
       }
    }
 
-   public async Task SyncLocalRangeWithDeviceRangeAsync() => (_model.CurrentSlideMin, _model.CurrentSlideMax) = await _handyApi.GetRangeAsync();
-
    //ISyncTarget
    public bool CanSync => _model.IsConnected;
 
@@ -76,5 +74,9 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
 
    public async Task StopSyncAsync() => await _handyApi.StopScriptAsync();
 
-   public async Task CleanupAsync() => await StopSyncAsync();
+   public async Task CleanupAsync()
+   {
+      await StopSyncAsync();
+      (_model.CurrentSlideMin, _model.CurrentSlideMax) = await _handyApi.GetRangeAsync();
+   }
 }

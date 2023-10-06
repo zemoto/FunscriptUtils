@@ -72,10 +72,6 @@ internal sealed class Main : IAsyncDisposable
          videoPlayer.ShowDialog();
       }
 
-      await Task.Delay( 500 ).ConfigureAwait( true ); // Give time to cleanup
-
-      await _handy.SyncLocalRangeWithDeviceRangeAsync().ConfigureAwait( true );
-
       _window.Show();
       _window.Activate();
    }
