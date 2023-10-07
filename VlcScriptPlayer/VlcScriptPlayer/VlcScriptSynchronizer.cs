@@ -12,7 +12,7 @@ internal interface ISyncTarget
 {
    bool CanSync { get; }
 
-   Task<bool> SetupSyncAsync( string scriptFilePath );
+   Task<bool> SetupSyncAsync( Funscript script );
    Task StartSyncAsync( long time );
    Task StopSyncAsync();
    Task CleanupAsync();
@@ -63,9 +63,10 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 
    public async Task<bool> SetupSyncAsync( string scriptFilePath )
    {
+      var script = Funscript.Load( scriptFilePath );
       foreach ( var syncTarget in _syncTargets )
       {
-         if ( !await syncTarget.SetupSyncAsync( scriptFilePath ) )
+         if ( !await syncTarget.SetupSyncAsync( script ) )
          {
             return false;
          }

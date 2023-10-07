@@ -99,9 +99,10 @@ internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
    //ISyncTarget
    public bool CanSync => _client.Connected && _model.IsConnectedToDevice;
 
-   public Task<bool> SetupSyncAsync( string scriptFilePath )
+   public Task<bool> SetupSyncAsync( Funscript script )
    {
-      _scriptPlayer.SetScript( Funscript.Load( scriptFilePath, _model.Offset, _model.Intensity / 100.0 ) );
+      var actions = ScriptVibrationConverter.GenerateVibrationActions( script, _model.Offset, _model.Intensity / 100.0 );
+      _scriptPlayer.SetActions( actions );
       return Task.FromResult( true );
    }
 
@@ -116,6 +117,6 @@ internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
    public async Task CleanupAsync()
    {
       await _scriptPlayer.StopAsync();
-      _scriptPlayer.SetScript( null );
+      _scriptPlayer.SetActions( null );
    }
 }

@@ -82,7 +82,7 @@ internal sealed class ScriptManager
 
    private void SelectScript()
    {
-      const string filter = "Script Files (*.funscript;*.csv)|*.funscript;*.csv|All files (*.*)|*.*";
+      const string filter = "Script Files (*.funscript)|*.funscript|All files (*.*)|*.*";
       var dlg = new VistaOpenFileDialog
       {
          Filter = filter,

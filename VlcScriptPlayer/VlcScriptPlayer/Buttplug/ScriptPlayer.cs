@@ -1,5 +1,6 @@
 using Buttplug.Client;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ZemotoCommon;
@@ -10,12 +11,12 @@ internal sealed class ScriptPlayer : IAsyncDisposable
 {
    private readonly SemaphoreSlim _stopSemaphore = new( 1, 1 );
 
-   private Funscript _script;
+   private List<VibrationAction> _actions;
    private ButtplugClientDevice _device;
    private CancellationTokenSource _cancelTokenSource;
    private Task _scriptTask;
 
-   public void SetScript( Funscript script ) => _script = script;
+   public void SetActions( List<VibrationAction> actions ) => _actions = actions;
 
    public void SetDevice( ButtplugClientDevice device ) => _device  = device;
 
@@ -37,7 +38,7 @@ internal sealed class ScriptPlayer : IAsyncDisposable
          {
             var currentDateTime = DateTime.Now;
             var currentScriptTime = (long)( currentDateTime - startDateTime ).TotalMilliseconds + timeOffset;
-            var nextAction = _script.VibrationActions.Find( x => x.Time >= currentScriptTime );
+            var nextAction = _actions.Find( x => x.Time >= currentScriptTime );
 
             if ( _cancelTokenSource.IsCancellationRequested || nextAction is null )
             {

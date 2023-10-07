@@ -145,10 +145,10 @@ internal sealed class HandyApi : IDisposable
       return response?.IsSuccessStatusCode == true;
    }
 
-   public async Task<bool> UploadScriptAsync( string scriptFilePath )
+   public async Task<bool> UploadScriptAsync( Funscript script )
    {
       Logger.Log( "Retrieving script CSV." );
-      string csv = CSVFactory.FromFile( scriptFilePath );
+      var csv = script.GetCSV();
       if ( string.IsNullOrEmpty( csv ) )
       {
          Logger.Log( "Error: Invalid script." );
@@ -162,7 +162,7 @@ internal sealed class HandyApi : IDisposable
          return true;
       }
 
-      var formData = new MultipartFormDataContent { { new StringContent( csv ), "syncFile", $"{Path.GetFileNameWithoutExtension( scriptFilePath )}.csv" } };
+      var formData = new MultipartFormDataContent { { new StringContent( csv ), "syncFile", "VlcScriptPlayer.csv" } };
 
       Logger.LogRequest( "UploadingScript" );
       using var uploadResponse = await DoRequest( _client.PostAsync( Endpoints.UploadCSVEndpoint, formData ) );
