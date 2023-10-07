@@ -23,13 +23,10 @@ internal sealed partial class VideoControls
    public VideoControls()
    {
       _playbackTimer = new DispatcherTimer( TimeSpan.FromMilliseconds( 500 ), DispatcherPriority.Normal, OnPlaybackTimerTick, Dispatcher ) { IsEnabled = false };
-
       InitializeComponent();
-
-      UniversalClick.AddClickHandler( PositionTrack, OnTrackClicked );
    }
 
-   public void SetVlc( VlcManager vlc )
+   public void Init( VlcManager vlc )
    {
       _player = vlc.Player;
       _player.Playing += OnPlayerPlaying;
@@ -43,7 +40,13 @@ internal sealed partial class VideoControls
 
       DurationLabel.Text = _timeProvider.GetDurationString();
       CurrentTimeLabel.Text = _timeProvider.GetTimeStringAtPosition( 0 );
+      TimeLabelContainer.Visibility = Visibility.Visible;
       UpdateFilterState();
+
+      PositionTrack.MouseEnter += OnScrubberMouseEnter;
+      PositionTrack.MouseLeave += OnScrubberMouseLeave;
+      PositionTrack.MouseMove += OnScrubberMouseMove;
+      UniversalClick.AddClickHandler( PositionTrack, OnTrackClicked );
    }
 
    private void OnUnloaded( object sender, RoutedEventArgs e )
@@ -115,11 +118,6 @@ internal sealed partial class VideoControls
 
    private void OnScrubberMouseMove( object sender, MouseEventArgs e )
    {
-      if ( _timeProvider is null )
-      {
-         return;
-      }
-
       TrackPreview.Width = Math.Clamp( Mouse.GetPosition( TrackContainer ).X, 0, TrackContainer.ActualWidth );
 
       TimePreviewText.Text = _timeProvider.GetTimeStringAtPosition( TrackPreview.Width / PositionTrack.ActualWidth );
@@ -128,11 +126,6 @@ internal sealed partial class VideoControls
 
    private async void OnTrackClicked( object sender, RoutedEventArgs e )
    {
-      if ( _timeProvider is null )
-      {
-         return;
-      }
-
       var newPosition = TrackPreview.Width / PositionTrack.ActualWidth;
 
       // Snap to the beginning if clicking early enough

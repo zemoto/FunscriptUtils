@@ -21,7 +21,7 @@ internal sealed partial class PlayPauseIndicator
       LayoutTransform = _scaleTransform;
    }
 
-   public void SetPlayer( MediaPlayer player )
+   public void Init( MediaPlayer player )
    {
       _player = player;
       _player.Playing += OnMediaPlaying;

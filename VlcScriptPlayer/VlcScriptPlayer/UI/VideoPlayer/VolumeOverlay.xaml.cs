@@ -18,7 +18,7 @@ internal sealed partial class VolumeControl
       InitializeComponent();
    }
 
-   public void SetVlc( VlcManager vlc )
+   public void Init( VlcManager vlc )
    {
       _vlc = vlc;
       _vlc.VolumeManager.VolumeChanged += OnVolumeChanged;

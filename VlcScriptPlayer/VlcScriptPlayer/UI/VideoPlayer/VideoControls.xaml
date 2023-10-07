@@ -45,10 +45,7 @@
                Grid.Row="0"
                Cursor="Hand"
                Height="16"
-               Background="Transparent"
-               MouseEnter="OnScrubberMouseEnter"
-               MouseLeave="OnScrubberMouseLeave"
-               MouseMove="OnScrubberMouseMove">
+               Background="Transparent">
             <Grid x:Name="TrackContainer"
                   Opacity="0.72"
                   VerticalAlignment="Center"
@@ -73,7 +70,9 @@
             </Grid>
          </Grid>
 
-         <TextBlock Grid.Row="1"
+         <TextBlock x:Name="TimeLabelContainer"
+                    Grid.Row="1"
+                    Visibility="Collapsed"
                     FontSize="14"
                     FontWeight="SemiBold"
                     Foreground="White"
