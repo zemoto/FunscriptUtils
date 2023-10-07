@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,19 +16,20 @@ internal sealed class VibrationAction
    }
 }
 
-internal sealed class ScriptVibrationConverter
+internal sealed class VibrationActionGenerator
 {
-   private const int _actionsPerSecond = 6;
-   private const int _blockInterval = 1000 / _actionsPerSecond;
-   private const int _longHoldThreshold = 2000;
+   private const uint _actionsPerSecond = 6;
+   private const uint _blockInterval = 1000 / _actionsPerSecond;
+   private const uint _longHoldThreshold = 2000;
+   private const uint _peakValleyRange = _blockInterval * 2;
 
    private readonly List<FunscriptAction> _originalActions;
    private readonly int _offsetMs;
    private readonly double _intensityScale;
 
-   public ScriptVibrationConverter( Funscript script, int offsetMs, double intensityScale )
+   public VibrationActionGenerator( Funscript script, int offsetMs, double intensityScale )
    {
-      _originalActions = script.Actions;
+      _originalActions = GetPeaksAndValleys( script.Actions );
       _offsetMs = offsetMs;
       _intensityScale = intensityScale;
    }
@@ -101,4 +102,30 @@ internal sealed class ScriptVibrationConverter
    }
 
    private static double PositionToIntensity( int position ) => 1.0 - ( position / 100.0 );
+
+   private static List<FunscriptAction> GetPeaksAndValleys( List<FunscriptAction> actions )
+   {
+      if ( actions.Count <= 2 )
+      {
+         return actions;
+      }
+
+      var peaksAndValleys = new List<FunscriptAction> { actions[0] };
+      for ( int i = 1; i < actions.Count - 1; i++ )
+      {
+         var action = actions[i];
+         var previousAction = actions[i - 1];
+         var nextAction = actions[i + 1];
+         var sortedSurrounding = actions.Where( x => x.Time >= action.Time - _peakValleyRange && x.Time <= action.Time + _peakValleyRange ).OrderBy( x => x.Position ).ToList();
+
+         if ( ( action.Position == sortedSurrounding[0].Position && action.Position <= nextAction.Position && action.Position <= previousAction.Position ) ||
+              ( action.Position == sortedSurrounding.Last().Position && action.Position >= nextAction.Position && action.Position >= previousAction.Position ) )
+         {
+            peaksAndValleys.Add( action );
+         }
+      }
+
+      peaksAndValleys.Add( actions.Last() );
+      return peaksAndValleys;
+   }
 }

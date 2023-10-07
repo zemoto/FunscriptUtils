@@ -101,7 +101,7 @@ internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
 
    public Task<bool> SetupSyncAsync( Funscript script )
    {
-      var actions = new ScriptVibrationConverter( script, _model.Offset, _model.Intensity / 100.0 ).VibrationActions;
+      var actions = new VibrationActionGenerator( script, _model.Offset, _model.Intensity / 100.0 ).VibrationActions;
       _scriptPlayer.SetActions( actions );
       return Task.FromResult( true );
    }
