@@ -3,62 +3,65 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace VlcScriptPlayer.Vlc
+namespace VlcScriptPlayer.Vlc;
+
+internal sealed class VlcTimeProvider
 {
-   internal sealed class VlcTimeProvider
+   private readonly MediaPlayer _player;
+   private readonly Stopwatch _playbackStopwatch = new();
+   private TimeSpan _stopwatchOffset = TimeSpan.Zero;
+
+   public TimeSpan Duration { get; set; }
+
+   public VlcTimeProvider( MediaPlayer player )
    {
-      private readonly MediaPlayer _player;
-      private readonly Stopwatch _playbackStopwatch = new();
-      private TimeSpan _stopwatchOffset = TimeSpan.Zero;
+      _player = player;
+      _player.Playing += OnPlaying;
+      _player.Paused += OnPausedOrStopped;
+      _player.Stopped += OnPausedOrStopped;
+   }
 
-      public TimeSpan Duration { get; set; }
+   private void OnPlaying( object sender, EventArgs e )
+   {
+      _stopwatchOffset = TimeSpan.FromMilliseconds( _player.Time );
+      _playbackStopwatch.Restart();
+   }
 
-      public VlcTimeProvider( MediaPlayer player )
+   private void OnPausedOrStopped( object sender, EventArgs e ) => _playbackStopwatch.Stop();
+
+   public TimeSpan GetCurrentPlaybackTime() => _playbackStopwatch.IsRunning ? _playbackStopwatch.Elapsed + _stopwatchOffset : GetPlayerTime();
+
+   public double GetCurrentPlaybackPosition() => _playbackStopwatch.IsRunning ? ( _playbackStopwatch.Elapsed + _stopwatchOffset ) / Duration : GetPlayerPlaybackPosition();
+
+   public string GetCurrentTimeString() => TimeSpanToString( GetCurrentPlaybackTime() );
+
+   public string GetDurationString() => TimeSpanToString( Duration );
+
+   public string GetTimeStringAtPosition( double position ) => TimeSpanToString( position * Duration );
+
+   private string TimeSpanToString( TimeSpan time ) => time.ToString( Duration.TotalHours >= 1 ? @"h\:mm\:ss" : @"m\:ss", CultureInfo.InvariantCulture );
+
+   private TimeSpan GetPlayerTime()
+   {
+      try
       {
-         _player = player;
-         _player.Playing += OnPlaying;
-         _player.Paused += OnPausedOrStopped;
-         _player.Stopped += OnPausedOrStopped;
+         return TimeSpan.FromMilliseconds( _player.Time );
       }
-
-      private void OnPlaying( object sender, EventArgs e )
+      catch
       {
-         _stopwatchOffset = TimeSpan.FromMilliseconds( _player.Time );
-         _playbackStopwatch.Restart();
+         return TimeSpan.Zero;
       }
+   }
 
-      private void OnPausedOrStopped( object sender, EventArgs e ) => _playbackStopwatch.Stop();
-
-      public TimeSpan GetCurrentPlaybackTime()
+   private double GetPlayerPlaybackPosition()
+   {
+      try
       {
-         if ( _playbackStopwatch.IsRunning )
-         {
-            return _playbackStopwatch.Elapsed + _stopwatchOffset;
-         }
-         else
-         {
-            return TimeSpan.FromMilliseconds( _player.Time );
-         }
+         return _player.Position;
       }
-
-      public double GetCurrentPlaybackPosition()
+      catch
       {
-         if ( _playbackStopwatch.IsRunning )
-         {
-            return ( _playbackStopwatch.Elapsed + _stopwatchOffset ) / Duration;
-         }
-         else
-         {
-            return _player.Position;
-         }
+         return 0;
       }
-
-      public string GetCurrentTimeString() => TimeSpanToString( GetCurrentPlaybackTime() );
-
-      public string GetDurationString() => TimeSpanToString( Duration );
-
-      public string GetTimeStringAtPosition( double position ) => TimeSpanToString( position * Duration );
-
-      private string TimeSpanToString( TimeSpan time ) => time.ToString( Duration.TotalHours >= 1 ? @"h\:mm\:ss" : @"m\:ss", CultureInfo.InvariantCulture );
    }
 }
