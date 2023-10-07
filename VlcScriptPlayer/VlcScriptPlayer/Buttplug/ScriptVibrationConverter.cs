@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,72 +16,88 @@ internal sealed class VibrationAction
    }
 }
 
-internal static class ScriptVibrationConverter
+internal sealed class ScriptVibrationConverter
 {
    private const int _actionsPerSecond = 6;
    private const int _blockInterval = 1000 / _actionsPerSecond;
    private const int _longHoldThreshold = 2000;
 
-   public static List<VibrationAction> GenerateVibrationActions( Funscript script, int offsetMs, double intensityScale )
+   private readonly List<FunscriptAction> _originalActions;
+   private readonly int _offsetMs;
+   private readonly double _intensityScale;
+
+   public ScriptVibrationConverter( Funscript script, int offsetMs, double intensityScale )
    {
-      var vibrationActions = new List<VibrationAction>();
+      _originalActions = script.Actions;
+      _offsetMs = offsetMs;
+      _intensityScale = intensityScale;
+   }
+
+   private List<VibrationAction> _vibrationActions;
+   public List<VibrationAction> VibrationActions
+   {
+      get
+      {
+         if ( _vibrationActions is null )
+         {
+            GenerateVibrationActions();
+         }
+
+         return _vibrationActions;
+      }
+   }
+
+   private void GenerateVibrationActions()
+   {
+      _vibrationActions = new List<VibrationAction>();
       for ( int i = 0; ; i++ )
       {
-         var action = script.Actions[i];
-         vibrationActions.Add( new VibrationAction( action.Time + offsetMs, PositionToIntensity( action.Position ) * intensityScale ) );
-
-         if ( i == script.Actions.Count - 1 )
+         var action = _originalActions[i];
+         _vibrationActions.Add( new VibrationAction( action.Time + _offsetMs, PositionToIntensity( action.Position ) * _intensityScale ) );
+         if ( i == _originalActions.Count - 1 )
          {
             break;
          }
 
-         var nextAction = script.Actions[i + 1];
+         var nextAction = _originalActions[i + 1];
          var gap = nextAction.Time - action.Time;
-         if ( gap < _blockInterval * 2 )
-         {
-            continue;
-         }
-
-         long currentTime;
          if ( gap > _longHoldThreshold )
          {
-            var lastAction = vibrationActions.Last();
-            var intensityStep = lastAction.Intensity / _actionsPerSecond;
-            var currentIntensity = lastAction.Intensity - intensityStep;
-            currentTime = lastAction.Time + _blockInterval;
-            while ( currentTime < lastAction.Time + 1000 )
-            {
-               vibrationActions.Add( new VibrationAction( currentTime + offsetMs, currentIntensity ) );
-               currentTime += _blockInterval;
-               currentIntensity -= intensityStep;
-            }
-            continue;
+            GenerateTaperOffActions();
          }
-
-         currentTime = action.Time + _blockInterval;
-         while ( currentTime < nextAction.Time - ( _blockInterval / 2 ) )
+         else if ( gap >= _blockInterval * 2 )
          {
-            vibrationActions.Add( new VibrationAction( currentTime + offsetMs, GetIntensityAtTime( script, currentTime ) * intensityScale ) );
-            currentTime += _blockInterval;
+            GenerateIntermediateActions( action, nextAction );
          }
       }
-
-      return vibrationActions;
    }
 
-   private static double GetIntensityAtTime( Funscript script, long time )
+   private void GenerateTaperOffActions()
    {
-      var firstAction = script.Actions.Find( x => x.Time <= time );
-      var nextAction = script.Actions.Find( x => x.Time > time );
-      if ( firstAction is null || nextAction is null )
+      var lastAction = _vibrationActions.Last();
+      var intensityStep = lastAction.Intensity / _actionsPerSecond;
+      var currentIntensity = lastAction.Intensity - intensityStep;
+      long currentTime = lastAction.Time + _blockInterval;
+      while ( currentTime < lastAction.Time + 1000 )
       {
-         return 0.0;
+         _vibrationActions.Add( new VibrationAction( currentTime + _offsetMs, currentIntensity ) );
+         currentTime += _blockInterval;
+         currentIntensity -= intensityStep;
       }
+   }
 
+   private void GenerateIntermediateActions( FunscriptAction firstAction, FunscriptAction nextAction )
+   {
       var slope = ( nextAction.Position - firstAction.Position ) / (double)( nextAction.Time - firstAction.Time );
       var intercept = firstAction.Position - ( slope * firstAction.Time );
-      var positionAtTime = (int)( ( slope * time ) + intercept );
-      return PositionToIntensity( positionAtTime );
+
+      long currentTime = firstAction.Time + _blockInterval;
+      while ( currentTime < nextAction.Time - ( _blockInterval / 2 ) )
+      {
+         var positionAtTime = (int)( ( slope * currentTime ) + intercept );
+         _vibrationActions.Add( new VibrationAction( currentTime + _offsetMs, PositionToIntensity( positionAtTime ) * _intensityScale ) );
+         currentTime += _blockInterval;
+      }
    }
 
    private static double PositionToIntensity( int position ) => 1.0 - ( position / 100.0 );
