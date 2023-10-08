@@ -76,7 +76,7 @@ internal sealed class VlcManager : IDisposable
          Player.SetPause( true );
          Player.Time = 0;
          TimeProvider.Duration = TimeSpan.FromMilliseconds( Player.Media.Duration );
-         VolumeManager.Volume = Player.Volume;
+         VolumeManager.Volume = 100;
 
          Thread.Sleep( 500 ); // Give VLC time to process
          Application.Current.Dispatcher.BeginInvoke( () => MediaSetupComplete?.Invoke( this, EventArgs.Empty ) );

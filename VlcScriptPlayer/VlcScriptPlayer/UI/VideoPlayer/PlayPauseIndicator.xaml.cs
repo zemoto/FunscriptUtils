@@ -30,6 +30,8 @@ internal sealed partial class PlayPauseIndicator
 
    private void OnUnloaded( object sender, RoutedEventArgs e )
    {
+      _animation.Completed -= OnAnimationCompleted;
+
       if ( _player is null )
       {
          return;

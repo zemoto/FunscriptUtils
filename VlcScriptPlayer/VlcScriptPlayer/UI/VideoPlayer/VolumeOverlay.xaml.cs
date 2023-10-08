@@ -1,64 +1,62 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
 using VlcScriptPlayer.Vlc;
+using VlcScriptPlayer.Vlc.Filter;
 
 namespace VlcScriptPlayer.UI.VideoPlayer;
 
 internal sealed partial class VolumeControl
 {
-   private readonly DispatcherTimer _fadeOutTimer;
-   private static readonly DoubleAnimation _fadeOutAnimation = new( 1.0, 0.0, TimeSpan.FromMilliseconds( 250 ) );
-   private VlcManager _vlc;
-
-   public VolumeControl()
+   private static readonly DoubleAnimationUsingKeyFrames _fadeOutAnimation = new()
    {
-      _fadeOutTimer = new DispatcherTimer( TimeSpan.FromSeconds( 1 ), DispatcherPriority.Normal, OnFadeOutTimerTick, Dispatcher ) { IsEnabled = false };
-      InitializeComponent();
-   }
+      Duration = TimeSpan.FromMilliseconds( 1250 ),
+      KeyFrames = new DoubleKeyFrameCollection
+      {
+         new DiscreteDoubleKeyFrame( 1.0, TimeSpan.Zero ),
+         new DiscreteDoubleKeyFrame( 1.0, TimeSpan.FromSeconds( 1 ) ),
+         new LinearDoubleKeyFrame( 0.0 )
+      }
+   };
+
+   private VlcFilter _filter;
+   private VlcVolumeWrapper _volumeManager;
+
+   public VolumeControl() => InitializeComponent();
 
    public void Init( VlcManager vlc )
    {
-      _vlc = vlc;
-      _vlc.VolumeManager.VolumeChanged += OnVolumeChanged;
+      _filter = vlc.Filter;
+      _volumeManager = vlc.VolumeManager;
+      _volumeManager.VolumeChanged += OnVolumeChanged;
    }
 
    private void OnUnloaded( object sender, RoutedEventArgs e )
    {
-      if ( _vlc is not null )
+      if ( _volumeManager is not null )
       {
-         _vlc.VolumeManager.VolumeChanged -= OnVolumeChanged;
+         _volumeManager.VolumeChanged -= OnVolumeChanged;
       }
-   }
-
-   private void OnFadeOutTimerTick( object sender, EventArgs e )
-   {
-      _fadeOutTimer.Stop();
-      BeginAnimation( OpacityProperty, _fadeOutAnimation );
    }
 
    private void OnVolumeChanged( object sender, EventArgs e )
    {
       Dispatcher.BeginInvoke( () =>
       {
-         _fadeOutTimer.Stop();
-
-         if ( _vlc.Filter.VolumeAmpEnabled )
+         if ( _filter.VolumeAmpEnabled )
          {
             VolumeTextBlock.Text = "Volume Amped";
-            VolumeIndicator.Height = VolumeTrack.ActualHeight;
+            VolumeIndicatorTransform.ScaleY = 1.0;
          }
          else
          {
-            var volume = _vlc.VolumeManager.Volume;
+            var volume = _volumeManager.Volume;
             VolumeTextBlock.Text = $"Volume {volume}%";
-            VolumeIndicator.Height = ( volume / 100.0 ) * VolumeTrack.ActualHeight;
+            VolumeIndicatorTransform.ScaleY = volume / 100.0;
          }
 
          BeginAnimation( OpacityProperty, null );
-         Opacity = 1;
-         _fadeOutTimer.Start();
+         BeginAnimation( OpacityProperty, _fadeOutAnimation );
       } );
    }
 }

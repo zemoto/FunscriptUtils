@@ -35,11 +35,14 @@
                     Grid.Row="1"
                     Fill="#FC8C00"
                     Opacity="0.2" />
-         <Rectangle x:Name="VolumeIndicator"
-                    Grid.Row="1"
-                    VerticalAlignment="Bottom"
+         <Rectangle Grid.Row="1"
+                    RenderTransformOrigin="0.5,1"
                     Fill="#FC8C00"
-                    Opacity="0.5" />
+                    Opacity="0.5">
+            <Rectangle.RenderTransform>
+               <ScaleTransform x:Name="VolumeIndicatorTransform" />
+            </Rectangle.RenderTransform>
+         </Rectangle>
       </Grid>
    </Grid>
 </UserControl>
