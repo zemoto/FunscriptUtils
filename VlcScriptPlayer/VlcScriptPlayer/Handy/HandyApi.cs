@@ -152,7 +152,7 @@ internal sealed class HandyApi : IDisposable
       if ( string.IsNullOrEmpty( csv ) )
       {
          Logger.Log( "Error: Invalid script." );
-         return true;
+         return false;
       }
 
       var csvSha256Hash = ComputeSha256Hash( csv );
