@@ -30,7 +30,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 
       if ( _syncTargets.Any() )
       {
-         _vlc.MediaSetupComplete += OnMediaSetupComplete;
+         _vlc.MediaOpened += OnMediaOpened;
       }
    }
 
@@ -47,9 +47,9 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       }
    }
 
-   private void OnMediaSetupComplete( object sender, EventArgs e )
+   private void OnMediaOpened( object sender, EventArgs e )
    {
-      _vlc.MediaSetupComplete -= OnMediaSetupComplete;
+      _vlc.MediaOpened -= OnMediaOpened;
 
       var player = _vlc.Player;
       player.Playing += OnPlayerPlaying;

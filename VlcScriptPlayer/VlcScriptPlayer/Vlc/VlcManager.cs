@@ -15,7 +15,10 @@ internal sealed class VlcManager : IDisposable
    public VlcTimeProvider TimeProvider { get; }
    public VlcVolumeWrapper VolumeManager { get; }
 
-   public event EventHandler MediaSetupComplete;
+   public event EventHandler MediaOpened;
+   public event EventHandler MediaClosed;
+
+   private DateTime _lastPauseToggleTime = DateTime.MinValue;
 
    public VlcManager()
    {
@@ -61,6 +64,27 @@ internal sealed class VlcManager : IDisposable
       Player.Media?.Dispose();
       Player.Media = null;
       _marquee.SetEnabled( false );
+
+      Application.Current.Dispatcher.BeginInvoke( () => MediaClosed?.Invoke( this, EventArgs.Empty ) );
+   }
+
+   public void TogglePlayPause()
+   {
+      if ( DateTime.Now < _lastPauseToggleTime + TimeSpan.FromSeconds( 1 ) )
+      {
+         return;
+      }
+
+      if ( Player.CanPause )
+      {
+         Player.Pause();
+      }
+      else
+      {
+         Player.Play();
+      }
+
+      _lastPauseToggleTime = DateTime.Now;
    }
 
    private void OnPlayerFirstTimeBuffering( object sender, MediaPlayerBufferingEventArgs e )
@@ -79,7 +103,7 @@ internal sealed class VlcManager : IDisposable
          VolumeManager.Volume = 100;
 
          Thread.Sleep( 500 ); // Give VLC time to process
-         Application.Current.Dispatcher.BeginInvoke( () => MediaSetupComplete?.Invoke( this, EventArgs.Empty ) );
+         Application.Current.Dispatcher.BeginInvoke( () => MediaOpened?.Invoke( this, EventArgs.Empty ) );
          _marquee.SetEnabled( true );
       } );
    }

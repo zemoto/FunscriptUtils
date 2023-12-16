@@ -18,9 +18,9 @@
         Cursor="Arrow">
    <wpf:VideoView x:Name="VideoPlayer"
                   Background="Black">
-      <Grid MouseLeave="OnMouseLeavingVideo"
-            MouseMove="OnMouseMoveOverVideo"
-            MouseWheel="OnMouseWheel">
+      <Grid x:Name="MouseEventGrid" 
+            MouseLeave="OnMouseLeavingVideo"
+            MouseMove="OnMouseMoveOverVideo">
          <Rectangle x:Name="VideoClickHandler"
                     Fill="#01FFFFFF" />
 

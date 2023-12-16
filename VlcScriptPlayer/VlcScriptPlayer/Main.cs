@@ -19,6 +19,7 @@ internal sealed class Main : IAsyncDisposable
    private readonly HandyManager _handy;
    private readonly ButtplugManager _buttplug;
    private readonly ScriptManager _script;
+   private readonly HotkeyManager _hotkeyManager;
 
    public Main()
    {
@@ -28,6 +29,8 @@ internal sealed class Main : IAsyncDisposable
       _handy = new HandyManager( _model.HandyVm );
       _script = new ScriptManager( _model.ScriptVm);
       _buttplug = new ButtplugManager( _model.ButtplugVm );
+      _hotkeyManager = new HotkeyManager( _vlc );
+
       _window = new MainWindow( _model );
       _window.Closed += OnMainWindowClosed;
    }
@@ -43,6 +46,7 @@ internal sealed class Main : IAsyncDisposable
       ConfigSerializer.SaveToFile( _model );
       _handy.Dispose();
       _vlc.Dispose();
+      _hotkeyManager.Dispose();
       await _buttplug.DisposeAsync();
    }
 
