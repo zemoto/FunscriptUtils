@@ -74,9 +74,12 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
 
    public async Task StopSyncAsync() => await _handyApi.StopScriptAsync();
 
-   public async Task CleanupAsync()
+   public async Task CleanupAsync( bool syncSetupSuccessful )
    {
-      await StopSyncAsync();
-      (_model.CurrentSlideMin, _model.CurrentSlideMax) = await _handyApi.GetRangeAsync();
+      if ( syncSetupSuccessful )
+      {
+         await StopSyncAsync();
+         (_model.CurrentSlideMin, _model.CurrentSlideMax) = await _handyApi.GetRangeAsync();
+      }
    }
 }

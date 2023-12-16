@@ -114,9 +114,13 @@ internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
 
    public async Task StopSyncAsync() => await _scriptPlayer.StopAsync();
 
-   public async Task CleanupAsync()
+   public async Task CleanupAsync( bool syncSetupSuccessful )
    {
-      await _scriptPlayer.StopAsync();
+      if ( syncSetupSuccessful )
+      {
+         await _scriptPlayer.StopAsync();
+      }
+
       _scriptPlayer.SetActions( null );
    }
 }

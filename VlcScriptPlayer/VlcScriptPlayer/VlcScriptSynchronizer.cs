@@ -15,13 +15,15 @@ internal interface ISyncTarget
    Task<bool> SetupSyncAsync( Funscript script );
    Task StartSyncAsync( long time );
    Task StopSyncAsync();
-   Task CleanupAsync();
+   Task CleanupAsync( bool syncSetupSuccessful );
 }
 
 internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 {
    private readonly VlcManager _vlc;
    private readonly List<ISyncTarget> _syncTargets;
+
+   private bool _syncSetupSuccessful;
 
    public VlcScriptSynchronizer( VlcManager vlc, params ISyncTarget[] syncTargets )
    {
@@ -43,7 +45,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 
       foreach ( var syncTarget in _syncTargets )
       {
-         await syncTarget.CleanupAsync();
+         await syncTarget.CleanupAsync( _syncSetupSuccessful );
       }
    }
 
@@ -72,6 +74,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
          }
       }
 
+      _syncSetupSuccessful = true;
       return true;
    }
 
