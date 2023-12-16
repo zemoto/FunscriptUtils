@@ -20,6 +20,8 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
 
    public void Dispose() => _handyApi.Dispose();
 
+   public async Task<(double, double)> GetHandyRangeAsync() => await _handyApi.GetRangeAsync();
+
    private async Task ConnectToHandyAsync()
    {
       _model.RequestInProgress = true;
@@ -79,7 +81,7 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
       if ( syncSetupSuccessful )
       {
          await StopSyncAsync();
-         (_model.CurrentSlideMin, _model.CurrentSlideMax) = await _handyApi.GetRangeAsync();
+         (_model.CurrentSlideMin, _model.CurrentSlideMax) = await GetHandyRangeAsync();
       }
    }
 }

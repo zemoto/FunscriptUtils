@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.UI.VideoPlayer;
 using VlcScriptPlayer.Vlc;
 
@@ -10,10 +11,13 @@ namespace VlcScriptPlayer;
 internal sealed class HotkeyManager : IDisposable
 {
    private readonly VlcManager _vlc;
+   private readonly HandyManager _handy;
 
-   public HotkeyManager( VlcManager vlc )
+   public HotkeyManager( VlcManager vlc, HandyManager handy )
    {
       _vlc = vlc;
+      _handy = handy;
+
       _vlc.MediaOpened += OnMediaOpened;
       _vlc.MediaClosed += OnMediaClosed;
    }
@@ -33,7 +37,7 @@ internal sealed class HotkeyManager : IDisposable
 
    private void OnMediaClosed( object sender, EventArgs e ) => InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput;
 
-   private void OnInputManagerPreProcessInput( object sender, PreProcessInputEventArgs e )
+   private async void OnInputManagerPreProcessInput( object sender, PreProcessInputEventArgs e )
    {
       if ( e?.StagingItem?.Input is not KeyEventArgs keyEvent || keyEvent.RoutedEvent != Keyboard.KeyDownEvent )
       {
@@ -54,6 +58,10 @@ internal sealed class HotkeyManager : IDisposable
             break;
          case Key.S when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
             _vlc.Filter.SaturationBoostEnabled = !_vlc.Filter.SaturationBoostEnabled;
+            break;
+         case Key.R when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
+            var (handyMin, handyMax) = await _handy.GetHandyRangeAsync();
+            _vlc.Marquee.DisplayText( $"{handyMin} - {handyMax}" );
             break;
       }
    }

@@ -9,7 +9,7 @@ namespace VlcScriptPlayer.Vlc;
 internal sealed class VlcManager : IDisposable
 {
    private readonly LibVLC _libvlc = new();
-   private readonly VlcMarquee _marquee;
+   public VlcMarquee Marquee { get; }
    public VlcFilter Filter { get; }
    public MediaPlayer Player { get; }
    public VlcTimeProvider TimeProvider { get; }
@@ -32,8 +32,8 @@ internal sealed class VlcManager : IDisposable
       // For some reason without this the audio on first play is super quiet.
       Player.Stop();
 
-      _marquee = new VlcMarquee( Player );
-      Filter = new VlcFilter( Player, _marquee );
+      Marquee = new VlcMarquee( Player );
+      Filter = new VlcFilter( Player, Marquee );
       TimeProvider = new VlcTimeProvider( Player );
       VolumeManager = new VlcVolumeWrapper( Player, Filter );
 
@@ -63,7 +63,7 @@ internal sealed class VlcManager : IDisposable
       Player.Stop();
       Player.Media?.Dispose();
       Player.Media = null;
-      _marquee.SetEnabled( false );
+      Marquee.SetEnabled( false );
 
       Application.Current.Dispatcher.BeginInvoke( () => MediaClosed?.Invoke( this, EventArgs.Empty ) );
    }
@@ -104,7 +104,7 @@ internal sealed class VlcManager : IDisposable
 
          Thread.Sleep( 500 ); // Give VLC time to process
          Application.Current.Dispatcher.BeginInvoke( () => MediaOpened?.Invoke( this, EventArgs.Empty ) );
-         _marquee.SetEnabled( true );
+         Marquee.SetEnabled( true );
       } );
    }
 
