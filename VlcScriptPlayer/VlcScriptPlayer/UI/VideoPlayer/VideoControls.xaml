@@ -48,7 +48,8 @@
                Background="Transparent">
             <Grid x:Name="TrackContainer"
                   Opacity="0.72"
-                  VerticalAlignment="Center"
+                  VerticalAlignment="Bottom"
+                  Margin="0,0,0,6"
                   Height="3">
                <Rectangle x:Name="TrackBackground"
                           Fill="#9C9C9C"
@@ -68,6 +69,13 @@
                           RadiusX="2"
                           RadiusY="2" />
             </Grid>
+            
+            <Rectangle x:Name="Heatmap"
+                       Opacity="0.5"
+                       VerticalAlignment="Bottom"
+                       Fill="Transparent"
+                       Height="4"
+                       Margin="0,0,0,-1" />
          </Grid>
 
          <TextBlock x:Name="TimeLabelContainer"

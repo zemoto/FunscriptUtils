@@ -26,7 +26,7 @@ internal sealed partial class VideoControls
       InitializeComponent();
    }
 
-   public void Init( VlcManager vlc )
+   public void Init( VlcManager vlc, Funscript script )
    {
       _player = vlc.Player;
       _player.Playing += OnPlayerPlaying;
@@ -38,6 +38,7 @@ internal sealed partial class VideoControls
 
       _timeProvider = vlc.TimeProvider;
 
+      Heatmap.Fill = HeatmapGenerator.GetHeatmapBrush( script, vlc.Player.Length );
       DurationLabel.Text = _timeProvider.GetDurationString();
       CurrentTimeLabel.Text = _timeProvider.GetTimeStringAtPosition( 0 );
       TimeLabelContainer.Visibility = Visibility.Visible;

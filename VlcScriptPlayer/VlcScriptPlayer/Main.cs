@@ -63,13 +63,14 @@ internal sealed class Main : IAsyncDisposable
       var synchronizer = new VlcScriptSynchronizer( _vlc, _handy, _buttplug );
       await using ( synchronizer.ConfigureAwait( true ) )
       {
-         if ( !await synchronizer.SetupSyncAsync( _model.ScriptVm.ScriptFilePath ).ConfigureAwait( true ) )
+         var script = Funscript.Load( _model.ScriptVm.ScriptFilePath );
+         if ( !await synchronizer.SetupSyncAsync( script ).ConfigureAwait( true ) )
          {
             return;
          }
 
          _window.Hide();
-         var videoPlayer = new VideoPlayerWindow( _vlc );
+         var videoPlayer = new VideoPlayerWindow( _vlc, script );
          videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFilePath, _model.FilterVm );
          videoPlayer.Closing += ( _, _ ) => _ = ThreadPool.QueueUserWorkItem( _ => _vlc.CloseVideo() );
 

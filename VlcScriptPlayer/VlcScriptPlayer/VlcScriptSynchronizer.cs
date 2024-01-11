@@ -63,9 +63,8 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 
    private void OnPlayStoppedOrPaused( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await StopSyncAsync(), DispatcherPriority.Send );
 
-   public async Task<bool> SetupSyncAsync( string scriptFilePath )
+   public async Task<bool> SetupSyncAsync( Funscript script )
    {
-      var script = Funscript.Load( scriptFilePath );
       foreach ( var syncTarget in _syncTargets )
       {
          if ( !await syncTarget.SetupSyncAsync( script ) )

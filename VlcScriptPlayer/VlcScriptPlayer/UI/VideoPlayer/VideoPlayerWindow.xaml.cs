@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -11,11 +11,13 @@ internal sealed partial class VideoPlayerWindow
 {
    private readonly DispatcherTimer _hideScrubberTimer;
    private readonly VlcManager _vlc;
+   private readonly Funscript _script;
 
-   public VideoPlayerWindow( VlcManager vlc )
+   public VideoPlayerWindow( VlcManager vlc, Funscript script )
    {
       _hideScrubberTimer = new DispatcherTimer( TimeSpan.FromSeconds( 3 ), DispatcherPriority.Normal, OnHideScrubberTimerTick, Dispatcher ) { IsEnabled = false };
       _vlc = vlc;
+      _script = script;
 
       InitializeComponent();
 
@@ -31,7 +33,7 @@ internal sealed partial class VideoPlayerWindow
 
       VolumeOverlay.Init( _vlc );
       PlayPauseindicator.Init( _vlc.Player );
-      VideoControls.Init( _vlc );
+      VideoControls.Init( _vlc, _script );
 
       _vlc.Player.EndReached += OnPlayerEndReached;
       MouseEventGrid.MouseWheel += OnMouseWheel;
