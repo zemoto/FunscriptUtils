@@ -130,7 +130,7 @@ internal sealed partial class VideoControls
       var newPosition = TrackPreview.Width / PositionTrack.ActualWidth;
 
       // Snap to the beginning if clicking early enough
-      if ( newPosition < 0.02 )
+      if ( newPosition < 0.01 )
       {
          newPosition = 0;
       }
