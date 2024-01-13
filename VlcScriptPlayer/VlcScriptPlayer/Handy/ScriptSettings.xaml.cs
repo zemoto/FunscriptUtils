@@ -2,8 +2,5 @@
 
 public partial class ScriptSettings
 {
-   public ScriptSettings()
-   {
-      InitializeComponent();
-   }
+   public ScriptSettings() => InitializeComponent();
 }

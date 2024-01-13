@@ -27,7 +27,7 @@ internal sealed class Main : IAsyncDisposable
       _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync() );
 
       _handy = new HandyManager( _model.HandyVm );
-      _script = new ScriptManager( _model.ScriptVm);
+      _script = new ScriptManager( _model.ScriptVm );
       _buttplug = new ButtplugManager( _model.ButtplugVm );
       _hotkeyManager = new HotkeyManager( _vlc, _handy );
 

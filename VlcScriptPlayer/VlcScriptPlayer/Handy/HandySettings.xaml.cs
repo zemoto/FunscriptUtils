@@ -2,8 +2,5 @@
 
 public partial class HandySettings
 {
-   public HandySettings()
-   {
-      InitializeComponent();
-   }
+   public HandySettings() => InitializeComponent();
 }

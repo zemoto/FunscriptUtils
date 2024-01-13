@@ -69,7 +69,7 @@ internal static class HeatmapGenerator
 
    private static Color GetColorForSpeed( double speed )
    {
-      var colorIndex = Math.Min( UtilityMethods.MapNumberToRange( speed, 0, 400, 0, _maxIndex ), _maxIndex );
+      var colorIndex = Math.Min( speed.MapNumberToRange( 0, 400, 0, _maxIndex ), _maxIndex );
       var lowerIndex = (int)colorIndex;
       if ( colorIndex == lowerIndex )
       {

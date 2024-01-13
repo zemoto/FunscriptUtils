@@ -30,7 +30,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       _vlc = vlc;
       _syncTargets = syncTargets.Where( x => x.CanSync ).ToList();
 
-      if ( _syncTargets.Any() )
+      if ( _syncTargets.Count > 0 )
       {
          _vlc.MediaOpened += OnMediaOpened;
       }

@@ -4,7 +4,7 @@ using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc.Filter;
 
-internal sealed class VlcFilter : ViewModelBase, IDisposable
+internal sealed class VlcFilter( MediaPlayer player, VlcMarquee marquee ) : ViewModelBase, IDisposable
 {
    [Flags]
    private enum EqualizerUpdateType
@@ -15,18 +15,9 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
       All = Volume | Bass
    }
 
-   private readonly MediaPlayer _player;
-   private readonly VlcMarquee _marquee;
-
    private Equalizer _equalizer;
    private float _defaultBassValue;
    private float _defaultPreampValue;
-
-   public VlcFilter( MediaPlayer player, VlcMarquee marquee )
-   {
-      _player = player;
-      _marquee = marquee;
-   }
 
    public void Dispose() => _equalizer?.Dispose();
 
@@ -43,15 +34,15 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
       SetEqualizer( EqualizerUpdateType.All );
 
       _saturationBoostEnabled = filterConfig.BoostSaturation;
-      _player.SetAdjustInt( VideoAdjustOption.Enable, 1 );
-      _player.SetAdjustFloat( VideoAdjustOption.Saturation, _saturationBoostEnabled ? 1.5f : 1f );
+      player.SetAdjustInt( VideoAdjustOption.Enable, 1 );
+      player.SetAdjustFloat( VideoAdjustOption.Saturation, _saturationBoostEnabled ? 1.5f : 1f );
    }
 
    // This must be called before MediaPlayer.Stop() or else an Access Violation will occur when libvlc unloads the filters module.
    // This also has to be done while the video window is still loaded or else the change won't be registered by the player.
    public void UnsetFilters()
    {
-      _player.SetAdjustInt( VideoAdjustOption.Enable, 0 );
+      player.SetAdjustInt( VideoAdjustOption.Enable, 0 );
    }
 
    private void SetEqualizer( EqualizerUpdateType updateType )
@@ -65,7 +56,7 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
          _equalizer.SetAmp( _bassBoostEnabled ? 20f : _defaultBassValue, 0 );
       }
 
-      _player.SetEqualizer( _equalizer );
+      player.SetEqualizer( _equalizer );
    }
 
    private bool _volumeAmpEnabled;
@@ -90,7 +81,7 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
          if ( SetProperty( ref _bassBoostEnabled, value ) )
          {
             SetEqualizer( EqualizerUpdateType.Bass );
-            _marquee.DisplayText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
+            marquee.DisplayText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
          }
       }
    }
@@ -103,8 +94,8 @@ internal sealed class VlcFilter : ViewModelBase, IDisposable
       {
          if ( SetProperty( ref _saturationBoostEnabled, value ) )
          {
-            _player.SetAdjustFloat( VideoAdjustOption.Saturation, value ? 1.5f : 1f );
-            _marquee.DisplayText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
+            player.SetAdjustFloat( VideoAdjustOption.Saturation, value ? 1.5f : 1f );
+            marquee.DisplayText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
          }
       }
    }

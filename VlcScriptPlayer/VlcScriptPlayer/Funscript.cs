@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Text;
+using System.Text.Json;
 
 namespace VlcScriptPlayer;
 

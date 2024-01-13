@@ -11,12 +11,12 @@ internal sealed partial class VolumeControl
    private static readonly DoubleAnimationUsingKeyFrames _fadeOutAnimation = new()
    {
       Duration = TimeSpan.FromMilliseconds( 1250 ),
-      KeyFrames = new DoubleKeyFrameCollection
-      {
+      KeyFrames =
+      [
          new DiscreteDoubleKeyFrame( 1.0, TimeSpan.Zero ),
          new DiscreteDoubleKeyFrame( 1.0, TimeSpan.FromSeconds( 1 ) ),
          new LinearDoubleKeyFrame( 0.0 )
-      }
+      ]
    };
 
    private VlcFilter _filter;

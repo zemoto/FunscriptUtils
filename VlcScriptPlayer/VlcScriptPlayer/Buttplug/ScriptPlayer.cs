@@ -18,7 +18,7 @@ internal sealed class ScriptPlayer : IAsyncDisposable
 
    public void SetActions( List<VibrationAction> actions ) => _actions = actions;
 
-   public void SetDevice( ButtplugClientDevice device ) => _device  = device;
+   public void SetDevice( ButtplugClientDevice device ) => _device = device;
 
    public async ValueTask DisposeAsync()
    {

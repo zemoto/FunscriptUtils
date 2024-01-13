@@ -2,8 +2,5 @@
 
 public partial class ButtplugSettings
 {
-   public ButtplugSettings()
-   {
-      InitializeComponent();
-   }
+   public ButtplugSettings() => InitializeComponent();
 }
