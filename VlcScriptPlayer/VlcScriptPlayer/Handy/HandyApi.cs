@@ -1,20 +1,37 @@
-﻿using System;
+﻿using Polly;
+using Polly.Retry;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using ZemotoCommon;
 
 namespace VlcScriptPlayer.Handy;
 
 internal sealed class HandyApi : IDisposable
 {
    private readonly HttpClient _client = new();
+   private readonly ResiliencePipeline<HttpResponseMessage> _pipeline;
 
    private long _estimatedClientServerOffset;
    private string _lastUploadedScriptSha256;
+
+   public HandyApi()
+   {
+      var retryStrategy = new RetryStrategyOptions<HttpResponseMessage>
+      {
+         Delay = TimeSpan.FromSeconds( 1 ),
+         OnRetry = static args =>
+         {
+            Logger.Log( $"Exception on attempt #{args.AttemptNumber}: {args.Outcome.Exception.Message}" );
+            return default;
+         }
+      };
+      _pipeline = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetry( retryStrategy ).Build();
+   }
 
    public void Dispose() => _client.Dispose();
 
@@ -33,7 +50,7 @@ internal sealed class HandyApi : IDisposable
    private async Task<bool> ConnectAsync()
    {
       Logger.LogRequest( "Connect" );
-      using var response = await DoRequest( _client.GetAsync( Endpoints.CheckConnectionEndpoint ) );
+      using var response = await DoRequest( () => _client.GetAsync( Endpoints.CheckConnectionEndpoint ) );
       if ( response?.IsSuccessStatusCode != true )
       {
          return false;
@@ -57,11 +74,10 @@ internal sealed class HandyApi : IDisposable
       for ( int i = 0; i < 30; i++ )
       {
          var clientSendTime = DateTimeOffset.Now;
-         using var response = await SafeMethod.InvokeSafelyAsync( _client.GetAsync( Endpoints.ServerClockEndpoint ) );
+         using var response = await DoRequest( () => _client.GetAsync( Endpoints.ServerClockEndpoint ) );
          var clientReceiveTime = DateTimeOffset.Now;
          if ( response?.IsSuccessStatusCode != true )
          {
-            Logger.LogRequestFail( response.StatusCode );
             return false;
          }
 
@@ -86,14 +102,14 @@ internal sealed class HandyApi : IDisposable
    {
       Logger.LogRequest( "SetMode" );
       var content = new StringContent( "{ \"mode\": 1 }", Encoding.UTF8, "application/json" );
-      using var response = await DoRequest( _client.PutAsync( Endpoints.ModeEndpoint, content ) );
+      using var response = await DoRequest( () => _client.PutAsync( Endpoints.ModeEndpoint, content ) );
       return response?.IsSuccessStatusCode == true;
    }
 
    public async Task<int> GetOffsetAsync()
    {
       Logger.LogRequest( "GetOffset" );
-      using var response = await DoRequest( _client.GetAsync( Endpoints.OffsetEndpoint ) );
+      using var response = await DoRequest( () => _client.GetAsync( Endpoints.OffsetEndpoint ) );
       if ( response?.IsSuccessStatusCode != true )
       {
          return 0;
@@ -110,14 +126,14 @@ internal sealed class HandyApi : IDisposable
       Logger.LogRequest( "SetOffset" );
 
       var content = new StringContent( $"{{ \"offset\": {offset} }}", Encoding.UTF8, "application/json" );
-      using var response = await DoRequest( _client.PutAsync( Endpoints.OffsetEndpoint, content ) );
+      using var response = await DoRequest( () => _client.PutAsync( Endpoints.OffsetEndpoint, content ) );
       return response?.IsSuccessStatusCode == true;
    }
 
    public async Task<(double, double)> GetRangeAsync()
    {
       Logger.LogRequest( "GetRange" );
-      using var response = await DoRequest( _client.GetAsync( Endpoints.SlideEndpoint ) );
+      using var response = await DoRequest( () => _client.GetAsync( Endpoints.SlideEndpoint ) );
       if ( response?.IsSuccessStatusCode != true )
       {
          return (0, 0);
@@ -140,7 +156,7 @@ internal sealed class HandyApi : IDisposable
       Logger.LogRequest( "SetRange" );
 
       var content = new StringContent( $"{{ \"min\": {min}, \"max\": {max} }}", Encoding.UTF8, "application/json" );
-      using var response = await DoRequest( _client.PutAsync( Endpoints.SlideEndpoint, content ) );
+      using var response = await DoRequest( () => _client.PutAsync( Endpoints.SlideEndpoint, content ) );
       return response?.IsSuccessStatusCode == true;
    }
 
@@ -164,7 +180,7 @@ internal sealed class HandyApi : IDisposable
       var formData = new MultipartFormDataContent { { new StringContent( csv ), "syncFile", "VlcScriptPlayer.csv" } };
 
       Logger.LogRequest( "UploadingScript" );
-      using var uploadResponse = await DoRequest( _client.PostAsync( Endpoints.UploadCSVEndpoint, formData ) );
+      using var uploadResponse = await DoRequest( () => _client.PostAsync( Endpoints.UploadCSVEndpoint, formData ) );
       if ( uploadResponse?.IsSuccessStatusCode != true )
       {
          return false;
@@ -180,7 +196,7 @@ internal sealed class HandyApi : IDisposable
 
       Logger.LogRequest( "SyncSetup" );
       var setupContent = new StringContent( $"{{ \"url\": \"{parsedUploadResponse.Url}\" }}", Encoding.UTF8, "application/json" );
-      using var setupResponse = await DoRequest( _client.PutAsync( Endpoints.SetupEndpoint, setupContent ) );
+      using var setupResponse = await DoRequest( () => _client.PutAsync( Endpoints.SetupEndpoint, setupContent ) );
       if ( setupResponse?.IsSuccessStatusCode != true )
       {
          return false;
@@ -202,32 +218,34 @@ internal sealed class HandyApi : IDisposable
    {
       var estimatedServerTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + _estimatedClientServerOffset;
       var content = new StringContent( $"{{ \"estimatedServerTime\": {estimatedServerTime}, \"startTime\": {startTime} }}", Encoding.UTF8, "application/json" );
-      using var _ = await SafeMethod.InvokeSafelyAsync( _client.PutAsync( Endpoints.PlayEndpoint, content ) );
+      using var _ = await DoRequest( () => _client.PutAsync( Endpoints.PlayEndpoint, content ) );
    }
 
    public async Task StopScriptAsync()
    {
-      using var _ = await SafeMethod.InvokeSafelyAsync( _client.PutAsync( Endpoints.StopEndpoint, null ) );
+      using var _ = await DoRequest( () => _client.PutAsync( Endpoints.StopEndpoint, null ) );
    }
 
-   private static async Task<HttpResponseMessage> DoRequest( Task<HttpResponseMessage> request )
+   private async Task<HttpResponseMessage> DoRequest( Func<Task<HttpResponseMessage>> request )
    {
-      var response = await SafeMethod.InvokeSafelyAsync( request, ex => Logger.Log( $"Exception during request: {ex.Message}" ) );
-      if ( response is null )
+      try
+      {
+         var response = await _pipeline.ExecuteAsync( async _ => await request(), CancellationToken.None );
+         if ( response.IsSuccessStatusCode )
+         {
+            Logger.LogRequestSuccess();
+         }
+         else
+         {
+            Logger.LogRequestFail();
+         }
+
+         return response;
+      }
+      catch
       {
          return null;
       }
-
-      if ( response.IsSuccessStatusCode )
-      {
-         Logger.LogRequestSuccess();
-      }
-      else
-      {
-         Logger.LogRequestFail( response.StatusCode );
-      }
-
-      return response;
    }
 
    private static string ComputeSha256Hash( string rawData )
