@@ -218,26 +218,29 @@ internal sealed class HandyApi : IDisposable
    {
       var estimatedServerTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + _estimatedClientServerOffset;
       var content = new StringContent( $"{{ \"estimatedServerTime\": {estimatedServerTime}, \"startTime\": {startTime} }}", Encoding.UTF8, "application/json" );
-      using var _ = await DoRequest( () => _client.PutAsync( Endpoints.PlayEndpoint, content ) );
+      using var _ = await DoRequest( () => _client.PutAsync( Endpoints.PlayEndpoint, content ), logResult: false );
    }
 
    public async Task StopScriptAsync()
    {
-      using var _ = await DoRequest( () => _client.PutAsync( Endpoints.StopEndpoint, null ) );
+      using var _ = await DoRequest( () => _client.PutAsync( Endpoints.StopEndpoint, null ), logResult: false );
    }
 
-   private async Task<HttpResponseMessage> DoRequest( Func<Task<HttpResponseMessage>> request )
+   private async Task<HttpResponseMessage> DoRequest( Func<Task<HttpResponseMessage>> request, bool logResult = true )
    {
       try
       {
          var response = await _pipeline.ExecuteAsync( async _ => await request(), CancellationToken.None );
-         if ( response.IsSuccessStatusCode )
+         if ( logResult )
          {
-            Logger.LogRequestSuccess();
-         }
-         else
-         {
-            Logger.LogRequestFail();
+            if ( response.IsSuccessStatusCode )
+            {
+               Logger.LogRequestSuccess();
+            }
+            else
+            {
+               Logger.LogRequestFail();
+            }
          }
 
          return response;
