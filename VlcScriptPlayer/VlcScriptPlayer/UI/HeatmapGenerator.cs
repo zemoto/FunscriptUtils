@@ -31,7 +31,9 @@ internal static class HeatmapGenerator
 
       var samples = new (double speedBuffer, int sampleCount)[numSamples];
       var sampleDuration = (double)videoDurationMs / numSamples;
-      for ( int i = 0; i < script.Actions.Count - 1; i++ )
+      var numRelevantActions = script.Actions.Count( x => x.Time <= videoDurationMs );
+
+      for ( int i = 0; i < numRelevantActions - 1; i++ )
       {
          var current = script.Actions[i];
          var next = script.Actions[i + 1];
