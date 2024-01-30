@@ -24,8 +24,7 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
 
    private async Task ConnectToHandyAsync()
    {
-      _model.RequestInProgress = true;
-      using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
+      using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
 
       _model.IsConnected = false;
       if ( !await _handyApi.ConnectToAndSetupHandyAsync( _model ) )
@@ -41,9 +40,7 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
 
    private async Task SetHandyOffsetAsync()
    {
-      _model.RequestInProgress = true;
-      using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
-
+      using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
       if ( await _handyApi.SetOffsetAsync( _model.DesiredOffset ) )
       {
          _model.CurrentOffset = _model.DesiredOffset;
@@ -52,9 +49,7 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
 
    private async Task SetHandyRangeAsync()
    {
-      _model.RequestInProgress = true;
-      using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
-
+      using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
       if ( await _handyApi.SetRangeAsync( _model.DesiredSlideMin, _model.DesiredSlideMax ) )
       {
          _model.CurrentSlideMin = _model.DesiredSlideMin;
@@ -67,8 +62,7 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
 
    public async Task<bool> SetupSyncAsync( Funscript script )
    {
-      _model.RequestInProgress = true;
-      using var _ = new ScopeGuard( () => _model.RequestInProgress = false );
+      using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
       return await _handyApi.UploadScriptAsync( script );
    }
 

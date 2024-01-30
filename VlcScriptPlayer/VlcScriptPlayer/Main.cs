@@ -7,6 +7,7 @@ using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.UI;
 using VlcScriptPlayer.UI.VideoPlayer;
 using VlcScriptPlayer.Vlc;
+using ZemotoCommon;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer;
@@ -21,10 +22,12 @@ internal sealed class Main : IAsyncDisposable
    private readonly ScriptManager _script;
    private readonly HotkeyManager _hotkeyManager;
 
+   private bool _playerLaunched;
+
    public Main()
    {
       _model = ConfigSerializer.ReadFromFile();
-      _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync() );
+      _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync(), () => !_playerLaunched );
 
       _handy = new HandyManager( _model.HandyVm );
       _script = new ScriptManager( _model.ScriptVm );
@@ -60,21 +63,24 @@ internal sealed class Main : IAsyncDisposable
          return;
       }
 
-      var synchronizer = new VlcScriptSynchronizer( _vlc, _handy, _buttplug );
-      await using ( synchronizer.ConfigureAwait( true ) )
+      using ( new ScopeGuard( () => _playerLaunched = true, () => _playerLaunched = false ) )
       {
-         var script = Funscript.Load( _model.ScriptVm.ScriptFilePath );
-         if ( !await synchronizer.SetupSyncAsync( script ).ConfigureAwait( true ) )
+         var synchronizer = new VlcScriptSynchronizer( _vlc, _handy, _buttplug );
+         await using ( synchronizer.ConfigureAwait( true ) )
          {
-            return;
+            var script = Funscript.Load( _model.ScriptVm.ScriptFilePath );
+            if ( !await synchronizer.SetupSyncAsync( script ).ConfigureAwait( true ) )
+            {
+               return;
+            }
+
+            _window.Hide();
+            var videoPlayer = new VideoPlayerWindow( _vlc, script );
+            videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFilePath, _model.FilterVm );
+            videoPlayer.Closing += ( _, _ ) => _ = ThreadPool.QueueUserWorkItem( _ => _vlc.CloseVideo() );
+
+            videoPlayer.ShowDialog();
          }
-
-         _window.Hide();
-         var videoPlayer = new VideoPlayerWindow( _vlc, script );
-         videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFilePath, _model.FilterVm );
-         videoPlayer.Closing += ( _, _ ) => _ = ThreadPool.QueueUserWorkItem( _ => _vlc.CloseVideo() );
-
-         videoPlayer.ShowDialog();
       }
 
       _window.Show();
