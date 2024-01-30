@@ -74,7 +74,7 @@ internal sealed class HandyApi : IDisposable
       for ( int i = 0; i < 30; i++ )
       {
          var clientSendTime = DateTimeOffset.Now;
-         using var response = await DoRequest( () => _client.GetAsync( Endpoints.ServerClockEndpoint ) );
+         using var response = await DoRequest( () => _client.GetAsync( Endpoints.ServerClockEndpoint ), logResult: false );
          var clientReceiveTime = DateTimeOffset.Now;
          if ( response?.IsSuccessStatusCode != true )
          {
