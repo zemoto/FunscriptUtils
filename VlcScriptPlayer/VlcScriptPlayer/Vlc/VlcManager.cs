@@ -16,7 +16,7 @@ internal sealed class VlcManager : IDisposable
    public VlcVolumeWrapper VolumeManager { get; }
 
    public event EventHandler MediaOpened;
-   public event EventHandler MediaClosed;
+   public event EventHandler MediaClosing;
 
    private DateTime _lastPauseToggleTime = DateTime.MinValue;
 
@@ -34,10 +34,11 @@ internal sealed class VlcManager : IDisposable
 
       Marquee = new VlcMarquee( Player );
       Filter = new VlcFilter( Player, Marquee );
-      TimeProvider = new VlcTimeProvider( Player );
+      TimeProvider = new VlcTimeProvider( this );
       VolumeManager = new VlcVolumeWrapper( Player, Filter );
 
       Player.Paused += OnPlayerPaused;
+      Player.EndReached += OnPlayerEndReached;
    }
 
    public void Dispose()
@@ -58,14 +59,14 @@ internal sealed class VlcManager : IDisposable
 
    public void CloseVideo()
    {
+      Application.Current.Dispatcher.BeginInvoke( () => MediaClosing?.Invoke( this, EventArgs.Empty ) );
+
       Player.Buffering -= OnPlayerFirstTimeBuffering;
       Filter.UnsetFilters();
       Player.Stop();
       Player.Media?.Dispose();
       Player.Media = null;
       Marquee.SetEnabled( false );
-
-      Application.Current.Dispatcher.BeginInvoke( () => MediaClosed?.Invoke( this, EventArgs.Empty ) );
    }
 
    public void TogglePlayPause()
@@ -110,4 +111,6 @@ internal sealed class VlcManager : IDisposable
 
    // Force the player to resync itself with where it paused, as this can be incorrect sometimes
    private void OnPlayerPaused( object sender, EventArgs e ) => Player.Position -= float.Epsilon;
+
+   private void OnPlayerEndReached( object sender, EventArgs e ) => _ = ThreadPool.QueueUserWorkItem( _ => CloseVideo() );
 }

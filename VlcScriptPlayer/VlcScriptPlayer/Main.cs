@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using VlcScriptPlayer.Buttplug;
@@ -77,7 +76,6 @@ internal sealed class Main : IAsyncDisposable
             _window.Hide();
             var videoPlayer = new VideoPlayerWindow( _vlc, script );
             videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFilePath, _model.FilterVm );
-            videoPlayer.Closing += ( _, _ ) => _ = ThreadPool.QueueUserWorkItem( _ => _vlc.CloseVideo() );
 
             videoPlayer.ShowDialog();
          }

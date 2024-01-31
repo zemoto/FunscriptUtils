@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
-using System.Windows;
 using System.Windows.Input;
 using VlcScriptPlayer.Handy;
-using VlcScriptPlayer.UI.VideoPlayer;
 using VlcScriptPlayer.Vlc;
 
 namespace VlcScriptPlayer;
@@ -19,14 +16,14 @@ internal sealed class HotkeyManager : IDisposable
       _handy = handy;
 
       _vlc.MediaOpened += OnMediaOpened;
-      _vlc.MediaClosed += OnMediaClosed;
+      _vlc.MediaClosing += OnMediaClosing;
    }
 
    public void Dispose()
    {
       InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput;
       _vlc.MediaOpened -= OnMediaOpened;
-      _vlc.MediaClosed -= OnMediaClosed;
+      _vlc.MediaClosing -= OnMediaClosing;
    }
 
    private void OnMediaOpened( object sender, EventArgs e )
@@ -35,7 +32,7 @@ internal sealed class HotkeyManager : IDisposable
       InputManager.Current.PreProcessInput += OnInputManagerPreProcessInput;
    }
 
-   private void OnMediaClosed( object sender, EventArgs e ) => InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput;
+   private void OnMediaClosing( object sender, EventArgs e ) => InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput;
 
    private async void OnInputManagerPreProcessInput( object sender, PreProcessInputEventArgs e )
    {
@@ -50,8 +47,7 @@ internal sealed class HotkeyManager : IDisposable
             _vlc.TogglePlayPause();
             break;
          case Key.Escape:
-            var videoPlayer = Application.Current.Windows.OfType<VideoPlayerWindow>().FirstOrDefault();
-            videoPlayer?.Close();
+            _vlc.CloseVideo();
             break;
          case Key.B when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
             _vlc.Filter.BassBoostEnabled = !_vlc.Filter.BassBoostEnabled;

@@ -30,8 +30,7 @@ internal sealed partial class VideoControls
    {
       _player = vlc.Player;
       _player.Playing += OnPlayerPlaying;
-      _player.Paused += OnPlayerPausedOrStopped;
-      _player.Stopped += OnPlayerPausedOrStopped;
+      _player.Paused += OnPlayerPaused;
 
       _filter = vlc.Filter;
       _filter.PropertyChanged += OnFilterPropertyChanged;
@@ -52,11 +51,12 @@ internal sealed partial class VideoControls
 
    private void OnUnloaded( object sender, RoutedEventArgs e )
    {
+      _playbackTimer.Stop();
+
       if ( _player is not null )
       {
          _player.Playing -= OnPlayerPlaying;
-         _player.Paused -= OnPlayerPausedOrStopped;
-         _player.Stopped -= OnPlayerPausedOrStopped;
+         _player.Paused -= OnPlayerPaused;
       }
 
       if ( _filter is not null )
@@ -73,7 +73,7 @@ internal sealed partial class VideoControls
 
    private void OnPlayerPlaying( object sender, EventArgs e ) => _playbackTimer.Start();
 
-   private void OnPlayerPausedOrStopped( object sender, EventArgs e ) => _playbackTimer.Stop();
+   private void OnPlayerPaused( object sender, EventArgs e ) => _playbackTimer.Stop();
 
    private void OnFilterPropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e ) => UpdateFilterState();
 

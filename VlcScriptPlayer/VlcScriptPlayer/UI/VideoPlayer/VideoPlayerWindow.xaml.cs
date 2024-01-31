@@ -35,7 +35,7 @@ internal sealed partial class VideoPlayerWindow
       PlayPauseindicator.Init( _vlc.Player );
       VideoControls.Init( _vlc, _script );
 
-      _vlc.Player.EndReached += OnPlayerEndReached;
+      _vlc.MediaClosing += OnMediaClosing;
       MouseEventGrid.MouseWheel += OnMouseWheel;
       UniversalClick.AddClickHandler( VideoClickHandler, OnVideoClick );
    }
@@ -44,10 +44,10 @@ internal sealed partial class VideoPlayerWindow
    {
       Mouse.OverrideCursor = null;
       _hideScrubberTimer.Stop();
-      _vlc.Player.EndReached -= OnPlayerEndReached;
+      _vlc.MediaClosing -= OnMediaClosing;
    }
 
-   private void OnPlayerEndReached( object sender, EventArgs e ) => Dispatcher.BeginInvoke( Close );
+   private void OnMediaClosing( object sender, EventArgs e ) => Close();
 
    private void OnMouseMoveOverVideo( object sender, MouseEventArgs e )
    {

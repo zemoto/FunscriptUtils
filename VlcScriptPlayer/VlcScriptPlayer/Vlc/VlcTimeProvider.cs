@@ -1,5 +1,4 @@
-﻿using LibVLCSharp.Shared;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -7,27 +6,39 @@ namespace VlcScriptPlayer.Vlc;
 
 internal sealed class VlcTimeProvider
 {
-   private readonly MediaPlayer _player;
+   private readonly VlcManager _vlc;
    private readonly Stopwatch _playbackStopwatch = new();
    private TimeSpan _stopwatchOffset = TimeSpan.Zero;
 
    public TimeSpan Duration { get; set; }
 
-   public VlcTimeProvider( MediaPlayer player )
+   public VlcTimeProvider( VlcManager vlc )
    {
-      _player = player;
-      _player.Playing += OnPlaying;
-      _player.Paused += OnPausedOrStopped;
-      _player.Stopped += OnPausedOrStopped;
+      _vlc = vlc;
+      _vlc.MediaOpened += OnMediaOpened;
+      _vlc.MediaClosing += OnMediaClosing;
+   }
+
+   private void OnMediaOpened( object sender, EventArgs e )
+   {
+      _vlc.Player.Playing += OnPlaying;
+      _vlc.Player.Paused += OnPaused;
+   }
+
+   private void OnMediaClosing( object sender, EventArgs e )
+   {
+      _playbackStopwatch.Stop();
+      _vlc.Player.Playing -= OnPlaying;
+      _vlc.Player.Paused -= OnPaused;
    }
 
    private void OnPlaying( object sender, EventArgs e )
    {
-      _stopwatchOffset = TimeSpan.FromMilliseconds( _player.Time );
+      _stopwatchOffset = TimeSpan.FromMilliseconds( _vlc.Player.Time );
       _playbackStopwatch.Restart();
    }
 
-   private void OnPausedOrStopped( object sender, EventArgs e ) => _playbackStopwatch.Stop();
+   private void OnPaused( object sender, EventArgs e ) => _playbackStopwatch.Stop();
 
    public TimeSpan GetCurrentPlaybackTime() => _playbackStopwatch.IsRunning ? _playbackStopwatch.Elapsed + _stopwatchOffset : GetPlayerTime();
 
@@ -45,7 +56,7 @@ internal sealed class VlcTimeProvider
    {
       try
       {
-         return TimeSpan.FromMilliseconds( _player.Time );
+         return TimeSpan.FromMilliseconds( _vlc.Player.Time );
       }
       catch
       {
@@ -57,7 +68,7 @@ internal sealed class VlcTimeProvider
    {
       try
       {
-         return _player.Position;
+         return _vlc.Player.Position;
       }
       catch
       {

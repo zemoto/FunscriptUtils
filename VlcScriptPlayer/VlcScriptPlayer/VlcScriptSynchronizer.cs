@@ -33,6 +33,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       if ( _syncTargets.Count > 0 )
       {
          _vlc.MediaOpened += OnMediaOpened;
+         _vlc.MediaClosing += OnPlayerPausedOrClosed;
       }
    }
 
@@ -40,8 +41,10 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
    {
       var player = _vlc.Player;
       player.Playing -= OnPlayerPlaying;
-      player.Paused -= OnPlayStoppedOrPaused;
-      player.Stopped -= OnPlayStoppedOrPaused;
+      player.Paused -= OnPlayerPausedOrClosed;
+
+      _vlc.MediaOpened -= OnMediaOpened;
+      _vlc.MediaClosing -= OnPlayerPausedOrClosed;
 
       foreach ( var syncTarget in _syncTargets )
       {
@@ -55,13 +58,12 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 
       var player = _vlc.Player;
       player.Playing += OnPlayerPlaying;
-      player.Paused += OnPlayStoppedOrPaused;
-      player.Stopped += OnPlayStoppedOrPaused;
+      player.Paused += OnPlayerPausedOrClosed;
    }
 
    private void OnPlayerPlaying( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await StartSyncAsync(), DispatcherPriority.Send );
 
-   private void OnPlayStoppedOrPaused( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await StopSyncAsync(), DispatcherPriority.Send );
+   private void OnPlayerPausedOrClosed( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await StopSyncAsync(), DispatcherPriority.Send );
 
    public async Task<bool> SetupSyncAsync( Funscript script )
    {
