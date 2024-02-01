@@ -11,6 +11,7 @@ internal sealed partial class PlayPauseIndicator
    private static readonly ScaleTransform _scaleTransform = new( 0.5, 0.5 );
    private static readonly DoubleAnimation _animation = new( 0.5, 1.0, TimeSpan.FromMilliseconds( 250 ) );
    private MediaPlayer _player;
+   private bool _ignoreNextPlayingEvent;
 
    public PlayPauseIndicator()
    {
@@ -26,19 +27,19 @@ internal sealed partial class PlayPauseIndicator
       _player = player;
       _player.Playing += OnMediaPlaying;
       _player.Paused += OnMediaPaused;
+      _player.EndReached += OnPlayerEndReached;
    }
 
    private void OnUnloaded( object sender, RoutedEventArgs e )
    {
       _animation.Completed -= OnAnimationCompleted;
 
-      if ( _player is null )
+      if ( _player is not null )
       {
-         return;
+         _player.Playing -= OnMediaPlaying;
+         _player.Paused -= OnMediaPaused;
+         _player.EndReached -= OnPlayerEndReached;
       }
-
-      _player.Playing -= OnMediaPlaying;
-      _player.Paused -= OnMediaPaused;
    }
 
    private void OnAnimationCompleted( object sender, EventArgs e )
@@ -50,6 +51,12 @@ internal sealed partial class PlayPauseIndicator
 
    private void OnMediaPlaying( object sender, EventArgs e )
    {
+      if ( _ignoreNextPlayingEvent )
+      {
+         _ignoreNextPlayingEvent = false;
+         return;
+      }
+
       Dispatcher.BeginInvoke( () =>
       {
          Visibility = Visibility.Visible;
@@ -73,4 +80,6 @@ internal sealed partial class PlayPauseIndicator
          _scaleTransform.BeginAnimation( ScaleTransform.ScaleYProperty, _animation );
       } );
    }
+
+   private void OnPlayerEndReached( object sender, EventArgs e ) => _ignoreNextPlayingEvent = true; // If we get another Playing event it's because the media looped
 }

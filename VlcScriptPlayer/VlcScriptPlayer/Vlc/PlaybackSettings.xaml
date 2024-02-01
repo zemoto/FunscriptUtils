@@ -8,4 +8,8 @@
           mc:Ignorable="d"
           d:DataContext="{d:DesignInstance Type={x:Type vlc:PlaybackViewModel}}"
           Header="Playback">
+   <Grid Margin="4">
+      <CheckBox Content="Loop Video"
+                IsChecked="{Binding Loop, Mode=TwoWay}" />
+   </Grid>
 </GroupBox>
