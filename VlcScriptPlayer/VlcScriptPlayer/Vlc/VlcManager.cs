@@ -112,6 +112,11 @@ internal sealed class VlcManager : IDisposable
          Player.Time = 0;
 
          MediaOpened?.Invoke( this, EventArgs.Empty );
+
+         if ( _playbackSettings.Autoplay )
+         {
+            Player.Play();
+         }
       } );
    }
 
