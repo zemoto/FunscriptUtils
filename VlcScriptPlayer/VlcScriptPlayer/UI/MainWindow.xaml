@@ -16,22 +16,24 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         d:DataContext="{d:DesignInstance Type={x:Type ui:MainViewModel}, IsDesignTimeCreatable=True}">
-   <Grid>
+   <Grid Margin="8">
       <Grid.RowDefinitions>
          <RowDefinition Height="Auto" />
+         <RowDefinition Height="2" />
          <RowDefinition Height="Auto" />
+         <RowDefinition Height="8" />
          <RowDefinition Height="Auto" />
+         <RowDefinition Height="4" />
          <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
          <ColumnDefinition Width="260" />
+         <ColumnDefinition Width="4" />
          <ColumnDefinition Width="350" />
       </Grid.ColumnDefinitions>
 
       <TabControl Grid.Row="0"
-                  Grid.Column="0"
-                  Margin="8,4,2,0">
-
+                  Grid.Column="0">
          <TabItem Header="Handy">
             <handy:HandySettings DataContext="{Binding HandyVm, Mode=OneTime}" />
          </TabItem>
@@ -41,22 +43,18 @@
          </TabItem>
       </TabControl>
 
-
-      <filter:FilterSettings Grid.Row="1"
+      <filter:FilterSettings Grid.Row="2"
                              Grid.Column="0"
-                             Margin="8,0,2,8"
                              DataContext="{Binding FilterVm, Mode=OneTime}" />
 
       <handy:ScriptSettings Grid.Row="0"
-                            Grid.RowSpan="2"
-                            Grid.Column="1"
-                            Margin="2,4,8,8"
+                            Grid.RowSpan="3"
+                            Grid.Column="2"
                             DataContext="{Binding ScriptVm, Mode=OneTime}" />
 
-      <Button Grid.Row="2"
+      <Button Grid.Row="4"
               Grid.Column="0"
               Grid.ColumnSpan="99"
-              Margin="8,0"
               Content="Sync Script and Launch Player"
               Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}">
          <Button.IsEnabled>
@@ -74,12 +72,11 @@
       </Button>
 
       <TextBox x:Name="LogTextBox"
-               Grid.Row="3"
+               Grid.Row="6"
                Grid.Column="0"
                Grid.ColumnSpan="99"
                Height="100"
                Padding="4"
-               Margin="8,4,8,8"
                TextChanged="OnLogTextChanged"
                Text="{Binding Source={x:Static root:Logger.Instance}, Path=LogData, Mode=OneWay}"
                FontFamily="Consolas"
