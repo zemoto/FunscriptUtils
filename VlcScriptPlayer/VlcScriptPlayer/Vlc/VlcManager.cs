@@ -57,7 +57,7 @@ internal sealed class VlcManager : IDisposable
    public void OpenVideo( string filePath )
    {
       Filter.SetFilters( _filterSettings );
-      Player.Buffering += OnPlayerFirstTimeBuffering;
+      Player.Playing += OnPlayerInitialPlaying;
       var media = new Media( _libvlc, new Uri( filePath ) );
       Player.Play( media );
    }
@@ -66,7 +66,8 @@ internal sealed class VlcManager : IDisposable
    {
       Application.Current.Dispatcher.Invoke( () => MediaClosing?.Invoke( this, EventArgs.Empty ) );
 
-      Player.Buffering -= OnPlayerFirstTimeBuffering;
+      Player.Playing -= OnPlayerInitialPlaying;
+      Player.Paused -= OnPlayerPausedAfterInitialPlaying;
       Filter.UnsetFilters();
       Player.Stop();
       Player.Media?.Dispose();
@@ -93,24 +94,24 @@ internal sealed class VlcManager : IDisposable
       _lastPauseToggleTime = DateTime.Now;
    }
 
-   private void OnPlayerFirstTimeBuffering( object sender, MediaPlayerBufferingEventArgs e )
+   private void OnPlayerInitialPlaying( object sender, EventArgs e )
    {
-      if ( e.Cache < 100 )
-      {
-         return;
-      }
+      Player.Playing -= OnPlayerInitialPlaying;
+      Player.Paused += OnPlayerPausedAfterInitialPlaying;
+      Player.SetPause( true );
+   }
 
-      _ = ThreadPool.QueueUserWorkItem( _ =>
+   private void OnPlayerPausedAfterInitialPlaying( object sender, EventArgs e )
+   {
+      Player.Paused -= OnPlayerPausedAfterInitialPlaying;
+      Application.Current.Dispatcher.BeginInvoke( () =>
       {
-         Player.Buffering -= OnPlayerFirstTimeBuffering;
-         Player.SetPause( true );
-         Player.Time = 0;
          TimeProvider.Duration = TimeSpan.FromMilliseconds( Player.Media.Duration );
          VolumeManager.Volume = 100;
-
-         Thread.Sleep( 500 ); // Give VLC time to process
-         Application.Current.Dispatcher.BeginInvoke( () => MediaOpened?.Invoke( this, EventArgs.Empty ) );
          Marquee.SetEnabled( true );
+         Player.Time = 0;
+
+         MediaOpened?.Invoke( this, EventArgs.Empty );
       } );
    }
 
