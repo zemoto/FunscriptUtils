@@ -1,6 +1,6 @@
 ﻿namespace VlcScriptPlayer.Vlc;
 
-internal partial class PlaybackSettings
+internal sealed partial class PlaybackSettings
 {
    public PlaybackSettings()
    {

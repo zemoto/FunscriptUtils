@@ -39,7 +39,6 @@ internal sealed class VlcFilter( MediaPlayer player, VlcMarquee marquee ) : View
    }
 
    // This must be called before MediaPlayer.Stop() or else an Access Violation will occur when libvlc unloads the filters module.
-   // This also has to be done while the video window is still loaded or else the change won't be registered by the player.
    public void UnsetFilters()
    {
       player.SetAdjustInt( VideoAdjustOption.Enable, 0 );

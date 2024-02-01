@@ -1,8 +1,8 @@
-﻿using ZemotoCommon.UI;
+using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc;
 
-internal class PlaybackViewModel : ViewModelBase
+internal sealed class PlaybackViewModel : ViewModelBase
 {
    private bool _loop;
 	public bool Loop

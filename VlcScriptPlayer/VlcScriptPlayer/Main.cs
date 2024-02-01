@@ -21,15 +21,14 @@ internal sealed class Main : IAsyncDisposable
    private readonly ScriptManager _script;
    private readonly HotkeyManager _hotkeyManager;
 
-   private bool _playerLaunched;
+   private bool _playerOpen;
 
    public Main()
    {
       _model = ConfigSerializer.ReadFromFile();
-      _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync(), () => !_playerLaunched );
+      _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync(), () => !_playerOpen );
 
       _vlc = new VlcManager( _model.FilterVm, _model.PlaybackVm );
-
       _handy = new HandyManager( _model.HandyVm );
       _script = new ScriptManager( _model.ScriptVm );
       _buttplug = new ButtplugManager( _model.ButtplugVm );
@@ -64,7 +63,7 @@ internal sealed class Main : IAsyncDisposable
          return;
       }
 
-      using ( new ScopeGuard( () => _playerLaunched = true, () => _playerLaunched = false ) )
+      using ( new ScopeGuard( () => _playerOpen = true, () => _playerOpen = false ) )
       {
          var synchronizer = new VlcScriptSynchronizer( _vlc, _handy, _buttplug );
          await using ( synchronizer.ConfigureAwait( true ) )
