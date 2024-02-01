@@ -10,6 +10,7 @@
         xmlns:handy="clr-namespace:VlcScriptPlayer.Handy"
         xmlns:filter="clr-namespace:VlcScriptPlayer.Vlc.Filter"
         xmlns:buttplug="clr-namespace:VlcScriptPlayer.Buttplug"
+        xmlns:vlc="clr-namespace:VlcScriptPlayer.Vlc"
         mc:Ignorable="d"
         Title="VLC Script Player"
         SizeToContent="WidthAndHeight"
@@ -48,9 +49,12 @@
                              DataContext="{Binding FilterVm, Mode=OneTime}" />
 
       <handy:ScriptSettings Grid.Row="0"
-                            Grid.RowSpan="3"
                             Grid.Column="2"
                             DataContext="{Binding ScriptVm, Mode=OneTime}" />
+
+      <vlc:PlaybackSettings Grid.Row="2"
+                            Grid.Column="2"
+                            DataContext="{Binding PlaybackVm, Mode=OneTime}" />
 
       <Button Grid.Row="4"
               Grid.Column="0"

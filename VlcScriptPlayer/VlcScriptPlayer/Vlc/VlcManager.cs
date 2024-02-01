@@ -9,6 +9,9 @@ namespace VlcScriptPlayer.Vlc;
 internal sealed class VlcManager : IDisposable
 {
    private readonly LibVLC _libvlc = new();
+   private readonly FilterViewModel _filterSettings;
+   private readonly PlaybackViewModel _playbackSettings;
+
    public VlcMarquee Marquee { get; }
    public VlcFilter Filter { get; }
    public MediaPlayer Player { get; }
@@ -20,8 +23,11 @@ internal sealed class VlcManager : IDisposable
 
    private DateTime _lastPauseToggleTime = DateTime.MinValue;
 
-   public VlcManager()
+   public VlcManager( FilterViewModel filterVm, PlaybackViewModel playbackVm )
    {
+      _filterSettings = filterVm;
+      _playbackSettings = playbackVm;
+
       Player = new MediaPlayer( _libvlc )
       {
          FileCaching = 3000,
@@ -48,10 +54,9 @@ internal sealed class VlcManager : IDisposable
       Player.Dispose();
    }
 
-   public void OpenVideo( string filePath, FilterViewModel filterConfig )
+   public void OpenVideo( string filePath )
    {
-      Filter.SetFilters( filterConfig );
-
+      Filter.SetFilters( _filterSettings );
       Player.Buffering += OnPlayerFirstTimeBuffering;
       var media = new Media( _libvlc, new Uri( filePath ) );
       Player.Play( media );

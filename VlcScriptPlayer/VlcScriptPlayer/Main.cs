@@ -15,7 +15,7 @@ internal sealed class Main : IAsyncDisposable
 {
    private readonly MainWindow _window;
    private readonly MainViewModel _model;
-   private readonly VlcManager _vlc = new();
+   private readonly VlcManager _vlc;
    private readonly HandyManager _handy;
    private readonly ButtplugManager _buttplug;
    private readonly ScriptManager _script;
@@ -27,6 +27,8 @@ internal sealed class Main : IAsyncDisposable
    {
       _model = ConfigSerializer.ReadFromFile();
       _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync(), () => !_playerLaunched );
+
+      _vlc = new VlcManager( _model.FilterVm, _model.PlaybackVm );
 
       _handy = new HandyManager( _model.HandyVm );
       _script = new ScriptManager( _model.ScriptVm );
@@ -75,7 +77,7 @@ internal sealed class Main : IAsyncDisposable
 
             _window.Hide();
             var videoPlayer = new VideoPlayerWindow( _vlc, script );
-            videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFilePath, _model.FilterVm );
+            videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFilePath );
 
             videoPlayer.ShowDialog();
          }
