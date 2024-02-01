@@ -37,7 +37,7 @@ internal sealed partial class VideoControls
 
       _timeProvider = vlc.TimeProvider;
 
-      Heatmap.Fill = HeatmapGenerator.GetHeatmapBrush( script, vlc.Player.Length );
+      Heatmap.Fill = HeatmapGenerator.GetHeatmapBrush( script, vlc.TimeProvider.Duration.TotalMilliseconds );
       DurationLabel.Text = _timeProvider.GetDurationString();
       CurrentTimeLabel.Text = _timeProvider.GetTimeStringAtPosition( 0 );
       TimeLabelContainer.Visibility = Visibility.Visible;

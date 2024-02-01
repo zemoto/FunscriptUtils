@@ -20,7 +20,7 @@ internal static class HeatmapGenerator
 
    private static readonly int _maxIndex = _speedColors.Count - 1;
 
-   public static LinearGradientBrush GetHeatmapBrush( Funscript script, long videoDurationMs )
+   public static LinearGradientBrush GetHeatmapBrush( Funscript script, double videoDurationMs )
    {
       if ( script.Actions is null || script.Actions.Count < 2 )
       {
@@ -30,7 +30,7 @@ internal static class HeatmapGenerator
       const int numSamples = 2048;
 
       var samples = new (double speedBuffer, int sampleCount)[numSamples];
-      var sampleDuration = (double)videoDurationMs / numSamples;
+      var sampleDuration = videoDurationMs / numSamples;
       var numRelevantActions = script.Actions.Count( x => x.Time <= videoDurationMs );
 
       for ( int i = 0; i < numRelevantActions - 1; i++ )
