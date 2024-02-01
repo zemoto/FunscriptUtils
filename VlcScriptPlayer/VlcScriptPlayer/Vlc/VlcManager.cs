@@ -64,7 +64,7 @@ internal sealed class VlcManager : IDisposable
 
    public void CloseVideo()
    {
-      Application.Current.Dispatcher.BeginInvoke( () => MediaClosing?.Invoke( this, EventArgs.Empty ) );
+      Application.Current.Dispatcher.Invoke( () => MediaClosing?.Invoke( this, EventArgs.Empty ) );
 
       Player.Buffering -= OnPlayerFirstTimeBuffering;
       Filter.UnsetFilters();
