@@ -40,7 +40,7 @@ internal sealed class VlcManager : IDisposable
 
       Marquee = new VlcMarquee( Player );
       Filter = new VlcFilter( Player, Marquee );
-      TimeProvider = new VlcTimeProvider( this );
+      TimeProvider = new VlcTimeProvider( Player );
       VolumeManager = new VlcVolumeWrapper( Player, Filter );
 
       Player.Paused += OnPlayerPaused;

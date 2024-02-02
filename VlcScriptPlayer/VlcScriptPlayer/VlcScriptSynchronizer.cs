@@ -83,7 +83,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
    {
       foreach ( var syncTarget in _syncTargets )
       {
-         await syncTarget.StartSyncAsync( _vlc.Player.Time );
+         await syncTarget.StartSyncAsync( (long)_vlc.TimeProvider.GetCurrentTime().TotalMilliseconds );
       }
    }
 
