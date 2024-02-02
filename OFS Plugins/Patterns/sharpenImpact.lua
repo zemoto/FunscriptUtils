@@ -1,43 +1,29 @@
-local function getSpeedBetweenActions(first, second)
-	local gapInSeconds = second.at - first.at;
-	local change = math.abs(second.pos - first.pos)
-	return change / gapInSeconds
-end
-
 function sharpenImpact()
 	local script = ofs.Script(ofs.ActiveIdx())
 	local actionCount = #script.actions
 	
-	if not script:hasSelection() then
-		return
-	end
-	
 	local newActions = {}
 	local changesMade = false
-	for i=1,actionCount-1 do
+	for i=2,actionCount-1 do
+		local prevAction = script.actions[i-1]
 		local currentAction = script.actions[i]
 		local nextAction = script.actions[i+1]
 		
-		if not currentAction.selected or not nextAction.selected or getSpeedBetweenActions(currentAction,nextAction) > 300 or nextAction.at - currentAction.at < 0.28 then 
+		if script:hasSelection() and (not currentAction.selected or not nextAction.selected) then
 			goto continue
 		end
 		
-		local newTime = nextAction.at - ((nextAction.at - currentAction.at) / 8)
-		local maxDistance = math.floor(364 * (nextAction.at - newTime) + 0.5)
-		print("maxDistance",maxDistance)
-		if nextAction.pos > currentAction.pos then
-			newPos = nextAction.pos - maxDistance
-			if newPos <= currentAction.pos then
-				goto continue
-			end
-		else
-			newPos = nextAction.pos + maxDistance
-			if newPos >= currentAction.pos then
-				goto continue
-			end
+		local gap = nextAction.at - currentAction.at
+		if currentAction.pos ~= nextAction.pos or gap > 0.1 or gap < 0.04 then
+			goto continue 
 		end
+	
+		local change = math.floor(360 * gap / 2)
+		if currentAction.pos > prevAction.pos then
+			change = change * -1
+		end	
 		
-		table.insert(newActions, {at=newTime, pos=newPos})
+		table.insert(newActions, {at=((nextAction.at + currentAction.at)/2), pos=(currentAction.pos + change)})
 		changesMade = true
 		
 		::continue::

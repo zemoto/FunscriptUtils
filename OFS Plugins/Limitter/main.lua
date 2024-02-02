@@ -9,6 +9,7 @@ SpeedLimit.BlackSpeed = 454
 SpeedLimit.OnlyAdjustTopActions = false
 SpeedLimit.MaintainHolds = true
 SpeedLimit.HoldsAllowHighSpeeds = true
+SpeedLimit.SelectAdjustedActions = false
 
 function init()
 end
@@ -17,26 +18,32 @@ function update(delta)
 end
 
 function gui()
-	if ofs.Button( "Green" ) then
+	if ofs.Button( "250" ) then
 		limitSpeed(SpeedLimit.GreenSpeed)
 	end
 	
 	ofs.SameLine()
 	
-	if ofs.Button( "Yellow" ) then
+	if ofs.Button( "300" ) then
 		limitSpeed(SpeedLimit.YellowSpeed)
 	end
 	
 	ofs.SameLine()
 	
-	if ofs.Button( "Red" ) then
+	if ofs.Button( "364" ) then
 		limitSpeed(SpeedLimit.RedSpeed)
 	end
 	
 	ofs.SameLine()
 	
-	if ofs.Button( "Black" ) then
+	if ofs.Button( "454" ) then
 		limitSpeed(SpeedLimit.BlackSpeed)
+	end
+	
+	ofs.SameLine()
+	
+	if ofs.Button( "Ensure Minimum" ) then
+		ensureMinSpeed()
 	end
 	
 	ofs.Separator()
@@ -52,16 +59,26 @@ function gui()
 	if holdsAllowChanged and SpeedLimit.HoldsAllowHighSpeeds then
 		SpeedLimit.MaintainHolds = true
 	end
+	
+	SpeedLimit.SelectAdjustedActions, changed = ofs.Checkbox( "Select adjusted actions", SpeedLimit.SelectAdjustedActions )
 end
 
 function limitSpeed(speedLimit)
 	local script = ofs.Script(ofs.ActiveIdx())
 	local actionCount = #script.actions
+	local hasSelection = script:hasSelection()
+	
+	local actionsChanged = {}
 	
 	local changesMade = false
-	for idx, action in ipairs(script.actions) do
-		if idx == 1 or ( script:hasSelection() and not action.selected ) then
+	for idx=2,actionCount do
+		local action = script.actions[idx]
+		if hasSelection and not action.selected then
 			goto continue
+		end
+		
+		if hasSelection and SpeedLimit.SelectAdjustedActions then
+			action.selected = false
 		end
 		
 		local previousAction = script.actions[idx - 1]
@@ -90,12 +107,19 @@ function limitSpeed(speedLimit)
 				maxDistance = math.floor(speedLimit * (nextAction.at - previousAction.at))
 			end
 
+			if maxDistance > math.abs( action.pos - previousAction.pos ) then
+				goto continue
+			end
+
 			if previousAction.pos > action.pos then
 				maxDistance = maxDistance * -1
 			end
 		
 			local newPos = clamp( previousAction.pos + maxDistance, 0, 100 )
-			changesMade = changesMade or action.pos ~= newPos
+			if action.pos ~= newPos then
+				changesMade = true
+				table.insert(actionsChanged,idx)
+			end
 			action.pos = newPos
 		end
 		
@@ -112,8 +136,11 @@ function limitSpeed(speedLimit)
 				end
 			end
 			
-			local newPos = clamp( nextAction.pos + maxDistance, 0, 100 )
-			changesMade = changesMade or action.pos ~= newPos
+			local newPos = math.min( action.pos, clamp( nextAction.pos + maxDistance, 0, 100 ) )
+			if action.pos ~= newPos then
+				changesMade = true
+				table.insert(actionsChanged,idx)
+			end
 			action.pos = newPos
 		end
 
@@ -129,6 +156,59 @@ function limitSpeed(speedLimit)
 	end
 	
 	if changesMade then
+		if SpeedLimit.SelectAdjustedActions then
+			for idx, actionIdx in ipairs(actionsChanged) do
+				script.actions[actionIdx].selected = true
+			end
+		end
+	
+		script:commit()
+	end
+end
+
+function ensureMinSpeed()
+	local script = ofs.Script(ofs.ActiveIdx())
+	local actionCount = #script.actions
+	local hasSelection = script:hasSelection()
+	
+	local minSpeed = 32
+	
+	local newActions = {}
+	local changesMade = false
+	for idx=1,actionCount-1 do
+		local action = script.actions[idx]
+		local nextAction = script.actions[idx + 1]
+		if hasSelection and (not action.selected or not nextAction.selected) then
+			goto continue2
+		end
+		
+		local speed = getSpeedBetweenActions(action,nextAction)
+		if speed >= minSpeed or speed == 0 then
+			goto continue2
+		end
+		
+		local posChange = math.abs(nextAction.pos - action.pos)
+		local timeDelta = math.max(posChange / minSpeed, 0.05)
+		
+		if timeDelta > nextAction.at - action.at - 0.05 then
+			goto continue2
+		end
+		
+		changesMade = true
+		
+		table.insert(newActions, {at=action.at + timeDelta, pos=nextAction.pos})
+		
+		::continue2::
+	end
+	
+	if changesMade then
+		for idx, newAction in ipairs(newActions) do
+			local newAction = Action.new(newAction.at, newAction.pos);
+			newAction.selected = true
+			script.actions:add(newAction)
+		end
+		
+		script:sort()
 		script:commit()
 	end
 end

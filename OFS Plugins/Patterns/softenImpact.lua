@@ -13,7 +13,16 @@ local function getSpeed(firstTime, firstPos, secondTime, secondPos)
 	return change / gapInSeconds
 end
 
-function softenImpact(speedLimit, percentDistance)
+local SoftenImpact = {}
+SoftenImpact.PercentDistance = 15
+SoftenImpact.SoftenBeforeTop = false
+SoftenImpact.SoftenAfterTop = false
+SoftenImpact.SoftenBeforeBottom = false
+SoftenImpact.SoftenAfterBottom = false
+SoftenImpact.SoftenBeforeMiddle = false
+SoftenImpact.SoftenAfterMiddle = false
+
+function SoftenImpact.softenImpact(speedLimit)
 	local script = ofs.Script(ofs.ActiveIdx())
 	local actionCount = #script.actions
 	
@@ -41,23 +50,28 @@ function softenImpact(speedLimit, percentDistance)
 			nextAction = script.actions[i+1]
 		end
 		
-		if prevAction ~= nil and prevAction.selected and prevAction.pos < currentAction.pos and currentAction.at - prevAction.at > 0.09 then
-			local prevImpactTime = math.max((currentAction.at - prevAction.at)*(percentDistance/100.0),0.045)
-			local prevImpactPos = (currentAction.pos + (getPosAtTime(prevAction, currentAction, currentAction.at-prevImpactTime)))/2
+		local isTop = ((prevAction ~= nil and currentAction.pos >= prevAction.pos) or prevAction == nil) and ((nextAction ~= nil and currentAction.pos >= nextAction.pos) or nextAction == nil)
+		local isBottom = ((prevAction ~= nil and currentAction.pos <= prevAction.pos) or prevAction == nil) and ((nextAction ~= nil and currentAction.pos <= nextAction.pos) or nextAction == nil)
+		local isMiddle = not isTop and not isBottom
+		
+		local shouldSoftenBefore = (isTop and SoftenImpact.SoftenBeforeTop) or (isBottom and SoftenImpact.SoftenBeforeBottom) or (isMiddle and SoftenImpact.SoftenBeforeMiddle)
+		if shouldSoftenBefore and prevAction ~= nil and prevAction.selected and prevAction.pos ~= currentAction.pos and currentAction.at - prevAction.at > 0.09 then		
+			local prevImpactTime = math.max((currentAction.at - prevAction.at)*(SoftenImpact.PercentDistance/100.0),0.03333)
 			
-			-- Need to check if adding an impact action before the current puts us over the speed limit. Need to check against impact action added after previous action. 
-			-- Impact actions added after an action are fine, but actions added before that go over the speed limit are useless.
-			local posOfImpactActionAddedAfterPrev = (prevAction.pos + (getPosAtTime(prevAction,currentAction,prevAction.at+prevImpactTime)))/2
-			
-			if getSpeed(prevAction.at+prevImpactTime, posOfImpactActionAddedAfterPrev, currentAction.at-prevImpactTime, prevImpactPos) < speedLimit then		
-				table.insert(newActions, {at=currentAction.at-prevImpactTime, pos=prevImpactPos})
-				changesMade = true
+			-- When you go from non-0 to 0, it does not bottom out the device but 0 to 0 does
+			-- Therefore, going from non-0 to 0 to 0 creates the desired slow-down effect
+			local prevImpactPos = 0
+			if not isBottom then
+				prevImpactPos = (currentAction.pos + (getPosAtTime(prevAction, currentAction, currentAction.at-prevImpactTime)))/2
 			end
+			table.insert(newActions, {at=currentAction.at-prevImpactTime, pos=prevImpactPos})
+			changesMade = true
 		end
 		
-		if nextAction ~= nil and nextAction.selected and nextAction.pos ~= currentAction.pos and nextAction.at - currentAction.at > 0.09 then
-			local nextImpactTime = math.max((nextAction.at - currentAction.at)*(percentDistance/100.0),0.045)
-			local nextImpactPos = (currentAction.pos + (getPosAtTime(currentAction, nextAction, currentAction.at+nextImpactTime)))/2		
+		local shouldSoftenAfter = (isTop and SoftenImpact.SoftenAfterTop) or (isBottom and SoftenImpact.SoftenAfterBottom) or (isMiddle and SoftenImpact.SoftenAfterMiddle)
+		if shouldSoftenAfter and nextAction ~= nil and nextAction.selected and nextAction.pos ~= currentAction.pos and nextAction.at - currentAction.at > 0.09 then
+			local nextImpactTime = math.max((nextAction.at - currentAction.at)*(SoftenImpact.PercentDistance/100.0),0.03333)
+			local nextImpactPos = (currentAction.pos + (getPosAtTime(currentAction, nextAction, currentAction.at+nextImpactTime)))/2
 			table.insert(newActions, {at=currentAction.at+nextImpactTime, pos=nextImpactPos})
 			changesMade = true
 		end
@@ -67,7 +81,9 @@ function softenImpact(speedLimit, percentDistance)
 
 	if changesMade then
 		for idx, newAction in ipairs(newActions) do
-			script.actions:add(Action.new(newAction.at, newAction.pos))
+			local newAction = Action.new(newAction.at, newAction.pos);
+			newAction.selected = true
+			script.actions:add(newAction)
 		end
 		
 		script:sort()
@@ -75,4 +91,4 @@ function softenImpact(speedLimit, percentDistance)
 	end
 end
 
-return { softenImpact = softenImpact }
+return SoftenImpact

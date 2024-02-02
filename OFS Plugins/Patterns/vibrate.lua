@@ -1,52 +1,66 @@
-local function getSpeedBetweenActions(first, second)
-	local gapInSeconds = second.at - first.at;
-	local change = math.abs(second.pos - first.pos)
-	return change / gapInSeconds
-end
+local Vibrate = {}
+Vibrate.Intensity = 100
+Vibrate.Speed = 454
+Vibrate.MSBetweenVibrations = 35
+Vibrate.EndIsMiddlePoint = false
 
-function vibrate(speed,timeBetweenVibrations)
+function Vibrate.vibrate()
 	local script = ofs.Script(ofs.ActiveIdx())
 	local actionCount = #script.actions
+	local usePlayhead = false
 	
 	if not script:hasSelection() then
-		return
+		usePlayhead = true
+		actionCount = 2
 	end
    
-    local maxSpeedThreshold = speed / 2
-	local vibrationDistance = math.floor((speed * timeBetweenVibrations) / 2 + 0.5)
+    local timeBetweenVibrations = Vibrate.MSBetweenVibrations / 1000
     local newActions = {}
 	local changesMade = false
-	for i=1,actionCount-1 do
-		local start = script.actions[i]
-		local endAction = script.actions[i+1]
-		local speedBetweenStartAndEnd = getSpeedBetweenActions(start, endAction)
-		if not start.selected or not endAction.selected or speedBetweenStartAndEnd > maxSpeedThreshold then 
+	for i=1,actionCount-1 do	
+		local start = {}
+		local endAction = {} 
+		if usePlayhead then
+			local currentTime = player.CurrentTime()
+			start = script:closestAction(currentTime)
+			endAction = script:closestActionAfter(currentTime + 0.015)
+			if start == nil or endAction == nil then
+				return
+			end
+		else
+			start = script.actions[i]
+			endAction = script.actions[i+1]
+			if not start.selected or not endAction.selected then 
+				goto continue
+			end
+		end
+		
+		local numTimePoints = math.floor((endAction.at - start.at) / timeBetweenVibrations)
+		if numTimePoints == 0 then
 			goto continue
 		end
 		
 		local timePoints = {}
-		local currentTime = start.at + timeBetweenVibrations		
-		while currentTime < endAction.at - timeBetweenVibrations do
+		local timeBetweenActions = (endAction.at - start.at) / (numTimePoints + 1);
+		currentTime = start.at + timeBetweenActions;
+		for j=1,numTimePoints do
 			table.insert(timePoints, currentTime)
-			currentTime = currentTime + timeBetweenVibrations
+			currentTime = currentTime + timeBetweenActions;
 		end
 		
-		if #timePoints == 0 then
-			goto continue
-		end
+		local vibrationDistance = math.max(math.floor(Vibrate.Speed * timeBetweenActions / 2),3)
 		
-		-- Only want an odd number of points if the vibration will clip near the bounds
-		local vibrationWillClip = (start.pos < vibrationDistance and endAction.pos < vibrationDistance) or (start.pos > 100 - vibrationDistance and endAction.pos > 100 - vibrationDistance)
-		if not vibrationWillClip and #timePoints % 2 == 1 then
-			table.remove(timePoints, numberOfTimePoints)
-		end
-		
-		-- Ensure the vibration don't clip
+		-- Ensure the vibration doesn't clip
 		local startPos = start.pos
-		local endPos = endAction.pos
-		if vibrationWillClip then
+		local endPos = endAction.pos		
+		local vibrationClippingTop = start.pos > 100 - vibrationDistance and endAction.pos > 100 - vibrationDistance
+		local vibrationClippingBottom = start.pos < vibrationDistance and endAction.pos < vibrationDistance
+		if vibrationClippingTop or vibrationClippingBottom then
 			startPos = math.max(math.min(start.pos, 100 - vibrationDistance), vibrationDistance)
 			endPos = math.max(math.min(endAction.pos, 100 - vibrationDistance), vibrationDistance)
+		elseif start.pos == endAction.pos then
+			startPos = startPos + vibrationDistance
+			endPos = endPos + vibrationDistance
 		end
 		
 		local slope = (endPos - startPos) / (endAction.at - start.at)
@@ -54,6 +68,10 @@ function vibrate(speed,timeBetweenVibrations)
 		
 		local vibrationActions = {}
 		local addingBottom = slope < 0 or (slope == 0 and start.pos > 100 - vibrationDistance)
+		if Vibrate.Invert then
+			addingBottom = not addingBottom
+		end
+		
 		for i, time in ipairs(timePoints) do
 			local centerLineAtTime = (slope * time) + intercept
 			local position = 0
@@ -71,58 +89,8 @@ function vibrate(speed,timeBetweenVibrations)
 		end
 		
 		local numberOfNewActions = #vibrationActions
-		if numberOfNewActions > 0 then
-			-- Position the actions equal distances from start and end
-			local distanceFromStart = math.abs(vibrationActions[1].pos - start.pos)
-			local distanceFromEnd = math.abs(vibrationActions[numberOfNewActions].pos - endAction.pos )
-			local adjustment = 0
-			if slope < 0 then
-				adjustment = (distanceFromStart - distanceFromEnd) / 2
-			elseif slope > 0 then
-				adjustment = (distanceFromEnd - distanceFromStart) / 2
-			end
-		
-			-- Evenly distribute the actions
-			local timeBetweenActions = (endAction.at - start.at) / (numberOfNewActions + 1);
-			currentTime = start.at + timeBetweenActions;
-			for i, newAction in ipairs(vibrationActions) do
-				newAction.at = currentTime;
-				currentTime = currentTime + timeBetweenActions;
-				
-				newAction.pos = newAction.pos + adjustment;
-			end
-			
-			-- Ensure the vibration is below the target speed
-			for i, newAction in ipairs(vibrationActions) do
-				local prevAction = start
-				if i > 1 then
-					prevAction = vibrationActions[i-1]
-				end
-				
-				local maxDistance = math.floor(speed * (newAction.at - prevAction.at))
-				if math.abs(prevAction.pos - newAction.pos) > maxDistance then				
-					if newAction.pos < prevAction.pos then
-						newAction.pos = prevAction.pos - maxDistance
-					else
-						newAction.pos = prevAction.pos + maxDistance
-					end
-				end
-				
-				if i == numberOfNewActions then
-					maxDistance = math.floor(speed * (endAction.at - newAction.at))
-					if math.abs(endAction.pos - newAction.pos) > maxDistance then
-						if newAction.pos < endAction.pos then
-							newAction.pos = endAction.pos - maxDistance
-						else
-							newAction.pos = endAction.pos + maxDistance
-						end
-					end
-				end
-			end
-			
-			for i, newAction in ipairs(vibrationActions) do
-				table.insert(newActions, newAction)
-			end
+		for k, newAction in ipairs(vibrationActions) do
+			table.insert(newActions, newAction)
 		end
 		
 		changesMade = changesMade or numberOfNewActions > 0
@@ -143,4 +111,4 @@ function vibrate(speed,timeBetweenVibrations)
 	end
 end
 
-return { vibrate = vibrate }
+return Vibrate

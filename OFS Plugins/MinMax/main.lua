@@ -4,6 +4,11 @@ MinMax.Min = 0
 MinMax.Maximize = false
 MinMax.AdjustAllActions = false
 
+function binding.minmax()
+	applyMinMax()
+end
+
+
 function init()
 end
 
@@ -53,7 +58,7 @@ function applyMinMax()
 	
 	local onlySelectedActions = script:hasSelection()
 	local changesMade = false
-	if MinMax.AdjustAllActions then
+	if MinMax.AdjustAllActions then		
 		local oldMax = -1
 		local oldMin = 101
 		for idx, action in ipairs(script.actions) do
