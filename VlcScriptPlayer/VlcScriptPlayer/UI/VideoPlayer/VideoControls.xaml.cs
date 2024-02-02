@@ -127,10 +127,10 @@ internal sealed partial class VideoControls
 
    private async void OnTrackClicked( object sender, RoutedEventArgs e )
    {
-      var newPosition = TrackPreview.Width / PositionTrack.ActualWidth;
+      var newPosition = (float)( TrackPreview.Width / PositionTrack.ActualWidth );
 
       // Snap to the beginning if clicking early enough
-      if ( newPosition < 0.01 )
+      if ( newPosition < 0.01f )
       {
          newPosition = 0;
       }
@@ -141,8 +141,7 @@ internal sealed partial class VideoControls
          await Task.Delay( 200 ).ConfigureAwait( true );
       }
 
-      _player.Time = (long)( newPosition * _timeProvider.Duration.TotalMilliseconds );
-
+      _player.Position = newPosition;
       SetTrackProgress( newPosition );
       CurrentTimeLabel.Text = _timeProvider.GetCurrentTimeString();
    }
