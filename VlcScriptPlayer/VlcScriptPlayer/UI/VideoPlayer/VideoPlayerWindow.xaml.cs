@@ -31,7 +31,7 @@ internal sealed partial class VideoPlayerWindow
    {
       _vlc.MediaOpened -= OnMediaOpened;
 
-      VolumeOverlay.Init( _vlc );
+      MarqueeOverlay.Init( _vlc );
       PlayPauseindicator.Init( _vlc.Player );
       VideoControls.Init( _vlc, _script );
 

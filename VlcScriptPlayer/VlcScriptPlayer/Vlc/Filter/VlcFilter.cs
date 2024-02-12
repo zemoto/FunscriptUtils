@@ -4,7 +4,7 @@ using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc.Filter;
 
-internal sealed class VlcFilter( MediaPlayer player, VlcMarquee marquee ) : ViewModelBase, IDisposable
+internal sealed class VlcFilter( MediaPlayer player, MarqueeViewModel marquee ) : ViewModelBase, IDisposable
 {
    [Flags]
    private enum EqualizerUpdateType
@@ -80,7 +80,7 @@ internal sealed class VlcFilter( MediaPlayer player, VlcMarquee marquee ) : View
          if ( SetProperty( ref _bassBoostEnabled, value ) )
          {
             SetEqualizer( EqualizerUpdateType.Bass );
-            marquee.DisplayText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
+            marquee.SetText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
          }
       }
    }
@@ -94,7 +94,7 @@ internal sealed class VlcFilter( MediaPlayer player, VlcMarquee marquee ) : View
          if ( SetProperty( ref _saturationBoostEnabled, value ) )
          {
             player.SetAdjustFloat( VideoAdjustOption.Saturation, value ? 1.5f : 1f );
-            marquee.DisplayText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
+            marquee.SetText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
          }
       }
    }

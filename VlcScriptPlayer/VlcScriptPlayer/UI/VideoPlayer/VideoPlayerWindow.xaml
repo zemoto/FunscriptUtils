@@ -18,15 +18,14 @@
         Cursor="Arrow">
    <wpf:VideoView x:Name="VideoPlayer"
                   Background="Black">
-      <Grid x:Name="MouseEventGrid" 
+      <Grid x:Name="MouseEventGrid"
             MouseLeave="OnMouseLeavingVideo"
             MouseMove="OnMouseMoveOverVideo">
          <Rectangle x:Name="VideoClickHandler"
                     Fill="#01FFFFFF" />
 
-         <videoPlayer:VolumeControl x:Name="VolumeOverlay"
-                                    Margin="0,28,100,28"
-                                    HorizontalAlignment="Right" />
+         <videoPlayer:Marquee x:Name="MarqueeOverlay"
+                              Margin="60,30,80,30" />
 
          <videoPlayer:PlayPauseIndicator x:Name="PlayPauseindicator"
                                          HorizontalAlignment="Center"

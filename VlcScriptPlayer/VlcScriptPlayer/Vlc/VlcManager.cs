@@ -12,7 +12,7 @@ internal sealed class VlcManager : IDisposable
    private readonly FilterViewModel _filterSettings;
    private readonly PlaybackViewModel _playbackSettings;
 
-   public VlcMarquee Marquee { get; }
+   public MarqueeViewModel Marquee { get; } = new();
    public VlcFilter Filter { get; }
    public MediaPlayer Player { get; }
    public VlcTimeProvider TimeProvider { get; }
@@ -38,7 +38,6 @@ internal sealed class VlcManager : IDisposable
       // For some reason without this the audio on first play is super quiet.
       Player.Stop();
 
-      Marquee = new VlcMarquee( Player );
       Filter = new VlcFilter( Player, Marquee );
       TimeProvider = new VlcTimeProvider( Player );
       VolumeManager = new VlcVolumeWrapper( Player, Filter );
@@ -72,7 +71,7 @@ internal sealed class VlcManager : IDisposable
       Player.Stop();
       Player.Media?.Dispose();
       Player.Media = null;
-      Marquee.SetEnabled( false );
+      Marquee.Enabled = false;
    }
 
    public void TogglePlayPause()
@@ -108,7 +107,7 @@ internal sealed class VlcManager : IDisposable
       {
          TimeProvider.Duration = TimeSpan.FromMilliseconds( Player.Media.Duration );
          VolumeManager.Volume = 100;
-         Marquee.SetEnabled( true );
+         Marquee.Enabled = true;
          Player.Time = 0;
 
          MediaOpened?.Invoke( this, EventArgs.Empty );
