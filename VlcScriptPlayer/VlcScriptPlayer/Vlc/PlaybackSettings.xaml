@@ -8,13 +8,37 @@
           mc:Ignorable="d"
           d:DataContext="{d:DesignInstance Type={x:Type vlc:PlaybackViewModel}}"
           Header="Playback">
-   <StackPanel Margin="4"
-               VerticalAlignment="Center">
-      <CheckBox Content="Loop Video"
+   <Grid Margin="4">
+      <Grid.RowDefinitions>
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="10" />
+         <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+         <ColumnDefinition Width="Auto" />
+         <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+
+      <TextBlock Grid.Row="0"
+                 Grid.Column="0"
+                 Text="Audio Output:"
+                 Margin="0,0,8,0"
+                 VerticalAlignment="Center" />
+
+      <ComboBox Grid.Row="0"
+                Grid.Column="1"
+                ItemsSource="{Binding AudioOutputs, Mode=OneTime}"
+                SelectedValue="{Binding SelectedAudioOutput, Mode=TwoWay}" />
+
+      <CheckBox Grid.Row="2" 
+                Grid.Column="0"
+                Content="Loop Video"
+                Margin="0,0,8,0"
                 IsChecked="{Binding Loop, Mode=TwoWay}" />
 
-      <CheckBox Content="Autoplay"
-                Margin="0,8,0,0"
+      <CheckBox Grid.Row="2"
+                Grid.Column="1"
+                Content="Autoplay"
                 IsChecked="{Binding Autoplay, Mode=TwoWay}" />
-   </StackPanel>
+   </Grid>
 </GroupBox>

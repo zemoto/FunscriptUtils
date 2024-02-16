@@ -1,5 +1,6 @@
 using LibVLCSharp.Shared;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using VlcScriptPlayer.Vlc.Filter;
@@ -27,16 +28,13 @@ internal sealed class VlcManager : IDisposable
    {
       _filterSettings = filterVm;
       _playbackSettings = playbackVm;
+      _playbackSettings.AudioOutputs = _libvlc.AudioOutputs.Skip( 3 ).Select( x => x.Name ).ToList();
 
       Player = new MediaPlayer( _libvlc )
       {
          FileCaching = 3000,
          EnableHardwareDecoding = true
       };
-
-      // Weird hack that ensures first play is in a good initial state.
-      // For some reason without this the audio on first play is super quiet.
-      Player.Stop();
 
       Filter = new VlcFilter( Player, Marquee );
       TimeProvider = new VlcTimeProvider( Player );
@@ -56,6 +54,7 @@ internal sealed class VlcManager : IDisposable
    public void OpenVideo( string filePath )
    {
       Filter.SetFilters( _filterSettings );
+      Player.SetAudioOutput( _playbackSettings.SelectedAudioOutput );
       Player.Playing += OnPlayerInitialPlaying;
       var media = new Media( _libvlc, new Uri( filePath ) );
       Player.Play( media );
