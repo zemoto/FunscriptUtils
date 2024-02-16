@@ -37,10 +37,17 @@ internal static class HeatmapGenerator
       {
          var current = script.Actions[i];
          var next = script.Actions[i + 1];
+         var gap = next.Time - current.Time;
+
+         // Ignore action pairs that are very close together or out of order
+         if ( gap < 20 )
+         {
+            continue;
+         }
 
          var currentSampleIdx = (int)( current.Time / sampleDuration );
          var nextSampleIdx = (int)( next.Time / sampleDuration );
-         var speed = (double)Math.Abs( next.Position - current.Position ) / ( next.Time - current.Time ) * 1000;
+         var speed = (double)Math.Abs( next.Position - current.Position ) / gap * 1000;
 
          int j = currentSampleIdx;
          do
