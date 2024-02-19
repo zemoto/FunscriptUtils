@@ -1,0 +1,60 @@
+﻿<Window x:Class="VlcScriptPlayer.Vlc.AdvancedPlaybackSettingsWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vlc="clr-namespace:VlcScriptPlayer.Vlc"
+        xmlns:ui="clr-namespace:ZemotoCommon.UI"
+        mc:Ignorable="d"
+        Title="Advanced Playback Settings"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        MinWidth="300"
+        d:DataContext="{d:DesignInstance Type={x:Type vlc:PlaybackSettingsViewModel}}">
+   <Grid Margin="12,8,12,12">
+      <Grid.ColumnDefinitions>
+         <ColumnDefinition Width="Auto" />
+         <ColumnDefinition Width="8" />
+         <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="8" />
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="8" />
+         <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <TextBlock Grid.Row="0"
+                 Grid.Column="0"
+                 Text="Audio Output:"
+                 VerticalAlignment="Center" />
+
+      <ComboBox Grid.Row="0"
+                Grid.Column="2"
+                Height="20"
+                Padding="6,1"
+                ItemsSource="{Binding AudioOutputs, Mode=OneTime}"
+                SelectedValue="{Binding SelectedAudioOutput, Mode=TwoWay}" />
+
+      <TextBlock Grid.Row="2"
+                 Grid.Column="0"
+                 Text="Cache Length (ms):"
+                 VerticalAlignment="Center" />
+
+      <TextBox Grid.Row="2"
+               Grid.Column="2"
+               Height="20"
+               Padding="2,1,0,0"
+               Text="{ui:IntMinMaxBinding CacheSize, 0, 10000, Mode=TwoWay}" />
+
+      <CheckBox Grid.Row="4"
+                Grid.Column="0"
+                Grid.ColumnSpan="99"
+                Content="Use Hardware Decoding"
+                IsChecked="{Binding UseHardwareDecoding, Mode=TwoWay}" />
+   </Grid>
+</Window>

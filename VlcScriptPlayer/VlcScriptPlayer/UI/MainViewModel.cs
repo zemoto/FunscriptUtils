@@ -13,7 +13,7 @@ internal sealed class MainViewModel : ViewModelBase
    public ButtplugViewModel ButtplugVm { get; init; } = new();
    public FilterViewModel FilterVm { get; init; } = new();
    public ScriptViewModel ScriptVm { get; init; } = new();
-   public PlaybackViewModel PlaybackVm { get; init; } = new();
+   public PlaybackSettingsViewModel PlaybackVm { get; init; } = new();
 
    [JsonIgnore]
    public RelayCommand UploadScriptAndLaunchPlayerCommand { get; set; }

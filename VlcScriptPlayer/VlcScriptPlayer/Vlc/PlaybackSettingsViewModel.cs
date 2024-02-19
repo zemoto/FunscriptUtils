@@ -5,7 +5,7 @@ using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc;
 
-internal sealed class PlaybackViewModel : ViewModelBase
+internal sealed class PlaybackSettingsViewModel : ViewModelBase
 {
    private List<string> _audioOutputs;
    [JsonIgnore]
@@ -28,6 +28,20 @@ internal sealed class PlaybackViewModel : ViewModelBase
       set => SetProperty( ref _selectedAudioOutput, value );
    }
 
+   private uint _cacheSize = 3000;
+   public uint CacheSize
+   {
+      get => _cacheSize;
+      set => SetProperty( ref _cacheSize, value );
+   }
+
+   private bool _UseHardwareDecoding = true;
+   public bool UseHardwareDecoding
+   {
+      get => _UseHardwareDecoding;
+      set => SetProperty( ref _UseHardwareDecoding, value );
+   }
+
    private bool _loop;
    public bool Loop
    {
@@ -41,4 +55,7 @@ internal sealed class PlaybackViewModel : ViewModelBase
       get => _autoplay;
       set => SetProperty( ref _autoplay, value );
    }
+
+   [JsonIgnore]
+   public RelayCommand ShowAdvancedPlaybackSettingsCommand { get; set; }
 }

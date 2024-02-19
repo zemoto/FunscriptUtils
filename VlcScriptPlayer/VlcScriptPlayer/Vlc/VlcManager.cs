@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using VlcScriptPlayer.Vlc.Filter;
+using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc;
 
@@ -11,7 +12,7 @@ internal sealed class VlcManager : IDisposable
 {
    private readonly LibVLC _libvlc = new();
    private readonly FilterViewModel _filterSettings;
-   private readonly PlaybackViewModel _playbackSettings;
+   private readonly PlaybackSettingsViewModel _playbackSettings;
 
    public MarqueeViewModel Marquee { get; } = new();
    public VlcFilter Filter { get; }
@@ -24,24 +25,22 @@ internal sealed class VlcManager : IDisposable
 
    private DateTime _lastPauseToggleTime = DateTime.MinValue;
 
-   public VlcManager( FilterViewModel filterVm, PlaybackViewModel playbackVm )
+   public VlcManager( FilterViewModel filterVm, PlaybackSettingsViewModel playbackVm )
    {
       _filterSettings = filterVm;
       _playbackSettings = playbackVm;
       _playbackSettings.AudioOutputs = _libvlc.AudioOutputs.Skip( 3 ).Select( x => x.Name ).ToList();
+      _playbackSettings.ShowAdvancedPlaybackSettingsCommand = new RelayCommand( ShowAdvancedPlaybackSettings );
 
-      Player = new MediaPlayer( _libvlc )
-      {
-         FileCaching = 3000,
-         EnableHardwareDecoding = true
-      };
-
+      Player = new MediaPlayer( _libvlc );
       Filter = new VlcFilter( Player, Marquee );
       TimeProvider = new VlcTimeProvider( Player );
       VolumeManager = new VlcVolumeWrapper( Player, Filter );
 
       Player.Paused += OnPlayerPaused;
       Player.EndReached += OnPlayerEndReached;
+
+      SetPlaybackSettings();
    }
 
    public void Dispose()
@@ -54,7 +53,6 @@ internal sealed class VlcManager : IDisposable
    public void OpenVideo( string filePath )
    {
       Filter.SetFilters( _filterSettings );
-      Player.SetAudioOutput( _playbackSettings.SelectedAudioOutput );
       Player.Playing += OnPlayerInitialPlaying;
       var media = new Media( _libvlc, new Uri( filePath ) );
       Player.Play( media );
@@ -116,6 +114,20 @@ internal sealed class VlcManager : IDisposable
             Player.Play();
          }
       } );
+   }
+
+   private void ShowAdvancedPlaybackSettings()
+   {
+      var dialog = new AdvancedPlaybackSettingsWindow( _playbackSettings ) { Owner = Application.Current.MainWindow };
+      dialog.ShowDialog();
+      SetPlaybackSettings();
+   }
+
+   private void SetPlaybackSettings()
+   {
+      Player.SetAudioOutput( _playbackSettings.SelectedAudioOutput );
+      Player.FileCaching = _playbackSettings.CacheSize;
+      Player.EnableHardwareDecoding = _playbackSettings.UseHardwareDecoding;
    }
 
    // Force the player to resync itself with where it paused, as this can be incorrect sometimes

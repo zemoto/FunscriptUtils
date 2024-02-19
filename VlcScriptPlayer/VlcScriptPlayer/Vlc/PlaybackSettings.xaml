@@ -6,7 +6,7 @@
           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
           xmlns:vlc="clr-namespace:VlcScriptPlayer.Vlc"
           mc:Ignorable="d"
-          d:DataContext="{d:DesignInstance Type={x:Type vlc:PlaybackViewModel}}"
+          d:DataContext="{d:DesignInstance Type={x:Type vlc:PlaybackSettingsViewModel}}"
           Header="Playback">
    <Grid Margin="4">
       <Grid.RowDefinitions>
@@ -19,16 +19,13 @@
          <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
 
-      <TextBlock Grid.Row="0"
-                 Grid.Column="0"
-                 Text="Audio Output:"
-                 Margin="0,0,8,0"
-                 VerticalAlignment="Center" />
-
-      <ComboBox Grid.Row="0"
-                Grid.Column="1"
-                ItemsSource="{Binding AudioOutputs, Mode=OneTime}"
-                SelectedValue="{Binding SelectedAudioOutput, Mode=TwoWay}" />
+      <Button Grid.Row="0"
+              Grid.Column="0"
+              Grid.ColumnSpan="90"
+              HorizontalAlignment="Left"
+              Padding="12,0"
+              Content="Advanced"
+              Command="{Binding ShowAdvancedPlaybackSettingsCommand, Mode=OneTime}" />
 
       <CheckBox Grid.Row="2" 
                 Grid.Column="0"
