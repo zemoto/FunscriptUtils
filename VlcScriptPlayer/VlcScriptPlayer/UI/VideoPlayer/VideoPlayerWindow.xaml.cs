@@ -30,24 +30,26 @@ internal sealed partial class VideoPlayerWindow
    private void OnMediaOpened( object sender, EventArgs e )
    {
       _vlc.MediaOpened -= OnMediaOpened;
+      Dispatcher.Invoke( () =>
+      {
+         MarqueeOverlay.Init( _vlc );
+         PlayPauseindicator.Init( _vlc.Player );
+         VideoControls.Init( _vlc, _script );
 
-      MarqueeOverlay.Init( _vlc );
-      PlayPauseindicator.Init( _vlc.Player );
-      VideoControls.Init( _vlc, _script );
-
-      _vlc.MediaClosing += OnMediaClosing;
-      MouseEventGrid.MouseWheel += OnMouseWheel;
-      UniversalClick.AddClickHandler( VideoClickHandler, OnVideoClick );
+         _vlc.MediaClosed += OnMediaClosed;
+         MouseEventGrid.MouseWheel += OnMouseWheel;
+         UniversalClick.AddClickHandler( VideoClickHandler, OnVideoClick );
+      } );
    }
 
    private void OnClosing( object sender, System.ComponentModel.CancelEventArgs e )
    {
       Mouse.OverrideCursor = null;
       _hideScrubberTimer.Stop();
-      _vlc.MediaClosing -= OnMediaClosing;
+      _vlc.MediaClosed -= OnMediaClosed;
    }
 
-   private void OnMediaClosing( object sender, EventArgs e ) => Close();
+   private void OnMediaClosed( object sender, EventArgs e ) => Dispatcher.Invoke( Close );
 
    private void OnMouseMoveOverVideo( object sender, MouseEventArgs e )
    {

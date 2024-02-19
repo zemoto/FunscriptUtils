@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
 using VlcScriptPlayer.Vlc;
 
 namespace VlcScriptPlayer;
@@ -33,7 +32,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       if ( _syncTargets.Count > 0 )
       {
          _vlc.MediaOpened += OnMediaOpened;
-         _vlc.MediaClosing += OnPlayerPausedOrClosed;
+         _vlc.MediaClosed += OnPlayerPausedOrClosed;
       }
    }
 
@@ -44,7 +43,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       player.Paused -= OnPlayerPausedOrClosed;
 
       _vlc.MediaOpened -= OnMediaOpened;
-      _vlc.MediaClosing -= OnPlayerPausedOrClosed;
+      _vlc.MediaClosed -= OnPlayerPausedOrClosed;
 
       foreach ( var syncTarget in _syncTargets )
       {
@@ -61,9 +60,9 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       player.Paused += OnPlayerPausedOrClosed;
    }
 
-   private void OnPlayerPlaying( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await StartSyncAsync(), DispatcherPriority.Send );
+   private void OnPlayerPlaying( object sender, EventArgs e ) => _ = ThreadPool.QueueUserWorkItem( async _ => await StartSyncAsync() );
 
-   private void OnPlayerPausedOrClosed( object sender, EventArgs e ) => _ = Application.Current.Dispatcher.BeginInvoke( async () => await StopSyncAsync(), DispatcherPriority.Send );
+   private void OnPlayerPausedOrClosed( object sender, EventArgs e ) => _ = ThreadPool.QueueUserWorkItem( async _ => await StopSyncAsync() );
 
    public async Task<bool> SetupSyncAsync( Funscript script )
    {

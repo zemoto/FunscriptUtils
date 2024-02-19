@@ -21,7 +21,7 @@ internal sealed class VlcManager : IDisposable
    public VlcVolumeWrapper VolumeManager { get; }
 
    public event EventHandler MediaOpened;
-   public event EventHandler MediaClosing;
+   public event EventHandler MediaClosed;
 
    private DateTime _lastPauseToggleTime = DateTime.MinValue;
 
@@ -60,8 +60,6 @@ internal sealed class VlcManager : IDisposable
 
    public void CloseVideo()
    {
-      Application.Current.Dispatcher.Invoke( () => MediaClosing?.Invoke( this, EventArgs.Empty ) );
-
       Player.Playing -= OnPlayerInitialPlaying;
       Player.Paused -= OnPlayerPausedAfterInitialPlaying;
       Filter.UnsetFilters();
@@ -69,6 +67,8 @@ internal sealed class VlcManager : IDisposable
       Player.Media?.Dispose();
       Player.Media = null;
       Marquee.Enabled = false;
+
+      MediaClosed?.Invoke( this, EventArgs.Empty );
    }
 
    public void TogglePlayPause()
@@ -100,7 +100,7 @@ internal sealed class VlcManager : IDisposable
    private void OnPlayerPausedAfterInitialPlaying( object sender, EventArgs e )
    {
       Player.Paused -= OnPlayerPausedAfterInitialPlaying;
-      Application.Current.Dispatcher.BeginInvoke( () =>
+      _ = ThreadPool.QueueUserWorkItem( _ =>
       {
          TimeProvider.Duration = TimeSpan.FromMilliseconds( Player.Media.Duration );
          VolumeManager.Volume = 100;

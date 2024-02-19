@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using System.Windows.Input;
 using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.Vlc;
@@ -16,23 +17,26 @@ internal sealed class HotkeyManager : IDisposable
       _handy = handy;
 
       _vlc.MediaOpened += OnMediaOpened;
-      _vlc.MediaClosing += OnMediaClosing;
+      _vlc.MediaClosed += OnMediaClosed;
    }
 
    public void Dispose()
    {
       InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput;
       _vlc.MediaOpened -= OnMediaOpened;
-      _vlc.MediaClosing -= OnMediaClosing;
+      _vlc.MediaClosed -= OnMediaClosed;
    }
 
    private void OnMediaOpened( object sender, EventArgs e )
    {
-      InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput;
-      InputManager.Current.PreProcessInput += OnInputManagerPreProcessInput;
+      Application.Current.Dispatcher.Invoke( () =>
+      {
+         InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput;
+         InputManager.Current.PreProcessInput += OnInputManagerPreProcessInput;
+      } );
    }
 
-   private void OnMediaClosing( object sender, EventArgs e ) => InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput;
+   private void OnMediaClosed( object sender, EventArgs e ) => Application.Current.Dispatcher.Invoke( () => InputManager.Current.PreProcessInput -= OnInputManagerPreProcessInput );
 
    private async void OnInputManagerPreProcessInput( object sender, PreProcessInputEventArgs e )
    {
