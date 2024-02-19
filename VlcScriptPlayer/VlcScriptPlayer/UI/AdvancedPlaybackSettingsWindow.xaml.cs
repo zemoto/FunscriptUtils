@@ -1,4 +1,6 @@
-﻿namespace VlcScriptPlayer.Vlc;
+﻿using VlcScriptPlayer.Vlc;
+
+namespace VlcScriptPlayer.UI;
 
 internal sealed partial class AdvancedPlaybackSettingsWindow
 {

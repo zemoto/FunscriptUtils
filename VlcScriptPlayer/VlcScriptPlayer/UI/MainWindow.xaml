@@ -36,25 +36,25 @@
       <TabControl Grid.Row="0"
                   Grid.Column="0">
          <TabItem Header="Handy">
-            <handy:HandySettings DataContext="{Binding HandyVm, Mode=OneTime}" />
+            <ui:HandySettings DataContext="{Binding HandyVm, Mode=OneTime}" />
          </TabItem>
 
          <TabItem Header="Buttplug">
-            <buttplug:ButtplugSettings DataContext="{Binding ButtplugVm, Mode=OneTime}" />
+            <ui:ButtplugSettings DataContext="{Binding ButtplugVm, Mode=OneTime}" />
          </TabItem>
       </TabControl>
 
-      <filter:FilterSettings Grid.Row="2"
-                             Grid.Column="0"
-                             DataContext="{Binding FilterVm, Mode=OneTime}" />
+      <ui:FilterSettings Grid.Row="2"
+                         Grid.Column="0"
+                         DataContext="{Binding FilterVm, Mode=OneTime}" />
 
-      <handy:ScriptSettings Grid.Row="0"
-                            Grid.Column="2"
-                            DataContext="{Binding ScriptVm, Mode=OneTime}" />
+      <ui:ScriptSettings Grid.Row="0"
+                         Grid.Column="2"
+                         DataContext="{Binding ScriptVm, Mode=OneTime}" />
 
-      <vlc:PlaybackSettings Grid.Row="2"
-                            Grid.Column="2"
-                            DataContext="{Binding PlaybackVm, Mode=OneTime}" />
+      <ui:PlaybackSettings Grid.Row="2"
+                           Grid.Column="2"
+                           DataContext="{Binding PlaybackVm, Mode=OneTime}" />
 
       <Button Grid.Row="4"
               Grid.Column="0"
