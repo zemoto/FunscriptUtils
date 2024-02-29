@@ -80,17 +80,9 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 
    private async Task StartSyncAsync()
    {
-      foreach ( var syncTarget in _syncTargets )
-      {
-         await syncTarget.StartSyncAsync( (long)_vlc.TimeProvider.GetCurrentTime().TotalMilliseconds );
-      }
+      var time = (long)_vlc.TimeProvider.GetCurrentTime().TotalMilliseconds;
+      await Task.WhenAll( _syncTargets.Select( x => x.StartSyncAsync( time ) ) );
    }
 
-   private async Task StopSyncAsync()
-   {
-      foreach ( var syncTarget in _syncTargets )
-      {
-         await syncTarget.StopSyncAsync();
-      }
-   }
+   private async Task StopSyncAsync() => await Task.WhenAll( _syncTargets.Select( x => x.StopSyncAsync() ) );
 }
