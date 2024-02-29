@@ -35,7 +35,8 @@
                Grid.Column="0"
                IsReadOnly="True"
                Text="{Binding DisplayedVideoFilePath, Mode=OneWay}"
-               VerticalContentAlignment="Center" />
+               VerticalContentAlignment="Center"
+               Focusable="False" />
 
       <Button Grid.Row="1"
               Grid.Column="1"
@@ -54,7 +55,8 @@
                Grid.Column="0"
                IsReadOnly="True"
                Text="{Binding DisplayedScriptFilePath, Mode=OneWay}"
-               VerticalContentAlignment="Center" />
+               VerticalContentAlignment="Center"
+               Focusable="False" />
 
       <Button Grid.Row="4"
               Grid.Column="1"
@@ -73,7 +75,8 @@
                Grid.Column="0"
                IsReadOnly="True"
                Text="{Binding ScriptFolder, Mode=OneWay}"
-               VerticalContentAlignment="Center" />
+               VerticalContentAlignment="Center"
+               Focusable="False" />
 
       <Button Grid.Row="7"
               Grid.Column="1"

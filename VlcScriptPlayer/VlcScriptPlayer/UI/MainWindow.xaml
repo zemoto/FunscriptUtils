@@ -88,6 +88,7 @@
                IsReadOnly="True"
                VerticalScrollBarVisibility="Auto"
                HorizontalScrollBarVisibility="Disabled"
-               TextWrapping="Wrap" />
+               TextWrapping="Wrap"
+               Focusable="False" />
    </Grid>
 </Window>
