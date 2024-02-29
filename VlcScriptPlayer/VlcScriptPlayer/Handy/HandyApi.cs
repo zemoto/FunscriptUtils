@@ -1,4 +1,4 @@
-﻿using Polly;
+using Polly;
 using Polly.Retry;
 using System;
 using System.Collections.Generic;
@@ -35,16 +35,12 @@ internal sealed class HandyApi : IDisposable
 
    public void Dispose() => _client.Dispose();
 
-   public async Task<bool> ConnectToAndSetupHandyAsync( HandyViewModel config )
+   public async Task<bool> ConnectToAndSetupHandyAsync( string connectionId )
    {
       _client.DefaultRequestHeaders.Remove( "X-Connection-Key" );
-      _client.DefaultRequestHeaders.Add( "X-Connection-Key", config.ConnectionId );
+      _client.DefaultRequestHeaders.Add( "X-Connection-Key", connectionId );
 
-      return await ConnectAsync() &&
-             await SetupServerClockSyncAsync() &&
-             await EnsureModeAsync() &&
-             await SetOffsetAsync( config.DesiredOffset ) &&
-             await SetRangeAsync( config.DesiredSlideMin, config.DesiredSlideMax );
+      return await ConnectAsync() && await SetupServerClockSyncAsync() && await EnsureModeAsync();
    }
 
    private async Task<bool> ConnectAsync()

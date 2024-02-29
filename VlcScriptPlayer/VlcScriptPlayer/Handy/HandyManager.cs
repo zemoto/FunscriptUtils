@@ -13,9 +13,9 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
    public HandyManager( HandyViewModel model )
    {
       _model = model;
-      _model.ConnectCommand = new RelayCommand( () => _ = ConnectToHandyAsync() );
-      _model.SetOffsetCommand = new RelayCommand( () => _ = SetHandyOffsetAsync() );
-      _model.SetRangeCommand = new RelayCommand( () => _ = SetHandyRangeAsync() );
+      _model.ConnectCommand = new RelayCommand( async () => await ConnectToHandyAsync() );
+      _model.SetOffsetCommand = new RelayCommand( async () => await SetHandyOffsetAsync() );
+      _model.SetRangeCommand = new RelayCommand( async () => await SetHandyRangeAsync() );
    }
 
    public void Dispose() => _handyApi.Dispose();
@@ -27,34 +27,24 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
       using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
 
       _model.IsConnected = false;
-      if ( !await _handyApi.ConnectToAndSetupHandyAsync( _model ) )
+      if ( !await _handyApi.ConnectToAndSetupHandyAsync( _model.ConnectionId ) )
       {
          return;
       }
 
-      _model.CurrentOffset = _model.DesiredOffset;
-      _model.CurrentSlideMin = _model.DesiredSlideMin;
-      _model.CurrentSlideMax = _model.DesiredSlideMax;
       _model.IsConnected = true;
    }
 
    private async Task SetHandyOffsetAsync()
    {
       using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
-      if ( await _handyApi.SetOffsetAsync( _model.DesiredOffset ) )
-      {
-         _model.CurrentOffset = _model.DesiredOffset;
-      }
+      await _handyApi.SetOffsetAsync( _model.DesiredOffset );
    }
 
    private async Task SetHandyRangeAsync()
    {
       using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
-      if ( await _handyApi.SetRangeAsync( _model.DesiredSlideMin, _model.DesiredSlideMax ) )
-      {
-         _model.CurrentSlideMin = _model.DesiredSlideMin;
-         _model.CurrentSlideMax = _model.DesiredSlideMax;
-      }
+      await _handyApi.SetRangeAsync( _model.DesiredSlideMin, _model.DesiredSlideMax );
    }
 
    //ISyncTarget
@@ -63,6 +53,13 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
    public async Task<bool> SetupSyncAsync( Funscript script )
    {
       using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
+
+      if ( _model.SetOptionsWhenSyncing )
+      {
+         await _handyApi.SetOffsetAsync( _model.DesiredOffset );
+         await _handyApi.SetRangeAsync( _model.DesiredSlideMin, _model.DesiredSlideMax );
+      }
+
       return await _handyApi.UploadScriptAsync( script );
    }
 
@@ -70,12 +67,5 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
 
    public async Task StopSyncAsync() => await _handyApi.StopScriptAsync();
 
-   public async Task CleanupAsync( bool syncSetupSuccessful )
-   {
-      if ( syncSetupSuccessful )
-      {
-         await StopSyncAsync();
-         (_model.CurrentSlideMin, _model.CurrentSlideMax) = await GetHandyRangeAsync();
-      }
-   }
+   public Task CleanupAsync( bool syncSetupSuccessful ) => Task.CompletedTask;
 }

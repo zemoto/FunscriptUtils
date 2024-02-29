@@ -37,11 +37,7 @@
                  Command="{Binding ConnectCommand, Mode=OneTime}" />
       </Grid>
 
-      <TextBlock Margin="0,4,0,0"
-                 FontWeight="SemiBold"
-                 Text="{Binding CurrentOffset, Mode=OneWay, StringFormat={}Current Offset: {0}ms}" />
-
-      <Grid Margin="0,4,0,0"
+      <Grid Margin="0,8,0,0"
             IsEnabled="{Binding IsConnected, Mode=OneWay}">
          <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -58,12 +54,7 @@
                  Command="{Binding SetOffsetCommand, Mode=OneTime}" />
       </Grid>
 
-      <TextBlock Margin="0,4,0,0"
-                 FontWeight="SemiBold">
-      <Run Text="Current Slide Range:" /> <Run Text="{Binding CurrentSlideMin, Mode=OneWay, StringFormat=N2}" />% - <Run Text="{Binding CurrentSlideMax, Mode=OneWay, StringFormat=N2}" />%
-      </TextBlock>
-
-      <Grid Margin="0,4,0,0"
+      <Grid Margin="0,8,0,0"
             IsEnabled="{Binding IsConnected, Mode=OneWay}">
          <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -93,5 +84,9 @@
                  Content="Set Range"
                  Command="{Binding SetRangeCommand, Mode=OneTime}" />
       </Grid>
+
+      <CheckBox Margin="0,8,0,0"
+                Content="Set options when syncing"
+                IsChecked="{Binding SetOptionsWhenSyncing, Mode=TwoWay}" />
    </StackPanel>
 </GroupBox>

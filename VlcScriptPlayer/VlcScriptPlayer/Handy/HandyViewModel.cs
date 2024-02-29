@@ -36,14 +36,6 @@ internal sealed class HandyViewModel : ViewModelBase
       set => SetProperty( ref _desiredOffset, value );
    }
 
-   private int _currentOffset;
-   [JsonIgnore]
-   public int CurrentOffset
-   {
-      get => _currentOffset;
-      set => SetProperty( ref _currentOffset, value );
-   }
-
    private double _desiredSlideMin;
    public double DesiredSlideMin
    {
@@ -58,20 +50,11 @@ internal sealed class HandyViewModel : ViewModelBase
       set => SetProperty( ref _desiredSlideMax, value );
    }
 
-   private double _currentSlideMin;
-   [JsonIgnore]
-   public double CurrentSlideMin
+   private bool _setOptionsWhenSyncing = true;
+   public bool SetOptionsWhenSyncing
    {
-      get => _currentSlideMin;
-      set => SetProperty( ref _currentSlideMin, value );
-   }
-
-   private double _currentSlideMax;
-   [JsonIgnore]
-   public double CurrentSlideMax
-   {
-      get => _currentSlideMax;
-      set => SetProperty( ref _currentSlideMax, value );
+      get => _setOptionsWhenSyncing;
+      set => SetProperty( ref _setOptionsWhenSyncing, value );
    }
 
    [JsonIgnore]
