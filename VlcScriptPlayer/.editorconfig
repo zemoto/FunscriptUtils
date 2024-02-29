@@ -33,6 +33,9 @@ dotnet_diagnostic.CA1303.severity = none
 # CA1031: Do not catch general exception types
 dotnet_diagnostic.CA1031.severity = none
 
+# IDE0058: Expression value is never used
+dotnet_diagnostic.IDE0058.severity = suggestion
+
 # RCS1079: Implement the method instead of throwing NotImplementedException
 dotnet_diagnostic.RCS1079.severity = none
 csharp_using_directive_placement = outside_namespace:silent
@@ -62,6 +65,9 @@ csharp_style_inlined_variable_declaration = true:suggestion
 csharp_style_deconstructed_variable_declaration = true:suggestion
 csharp_style_unused_value_assignment_preference = discard_variable:suggestion
 csharp_style_unused_value_expression_statement_preference = discard_variable:silent
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_indent_labels = no_change
+csharp_space_around_binary_operators = before_and_after
 [*.{cs,vb}]
 #### Naming styles ####
 
@@ -124,3 +130,8 @@ dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 dotnet_style_prefer_compound_assignment = true:suggestion
 dotnet_style_prefer_simplified_interpolation = true:suggestion
 dotnet_style_namespace_match_folder = true:suggestion
+dotnet_style_prefer_collection_expression = true:suggestion
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+tab_width = 3
+indent_size = 3
+end_of_line = crlf
