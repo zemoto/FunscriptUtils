@@ -56,7 +56,7 @@ internal sealed class VlcManager : IDisposable
       Filter.SetFilters( _filterSettings );
       Player.Playing += OnPlayerInitialPlaying;
       var media = new Media( _libvlc, new Uri( filePath ) );
-      Player.Play( media );
+      _ = Player.Play( media );
    }
 
    public void CloseVideo()
@@ -85,7 +85,7 @@ internal sealed class VlcManager : IDisposable
       }
       else
       {
-         Player.Play();
+         _ = Player.Play();
       }
 
       _lastPauseToggleTime = DateTime.Now;
@@ -112,7 +112,7 @@ internal sealed class VlcManager : IDisposable
 
          if ( _playbackSettings.Autoplay )
          {
-            Player.Play();
+            _ = Player.Play();
          }
       } );
    }
@@ -120,13 +120,13 @@ internal sealed class VlcManager : IDisposable
    private void ShowAdvancedPlaybackSettings()
    {
       var dialog = new AdvancedPlaybackSettingsWindow( _playbackSettings ) { Owner = Application.Current.MainWindow };
-      dialog.ShowDialog();
+      _ = dialog.ShowDialog();
       SetPlaybackSettings();
    }
 
    private void SetPlaybackSettings()
    {
-      Player.SetAudioOutput( _playbackSettings.SelectedAudioOutput );
+      _ = Player.SetAudioOutput( _playbackSettings.SelectedAudioOutput );
       Player.FileCaching = _playbackSettings.CacheSize;
       Player.EnableHardwareDecoding = _playbackSettings.UseHardwareDecoding;
    }
@@ -140,7 +140,7 @@ internal sealed class VlcManager : IDisposable
       {
          if ( _playbackSettings.Loop )
          {
-            Player.Play( Player.Media );
+            _ = Player.Play( Player.Media );
          }
          else
          {

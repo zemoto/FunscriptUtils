@@ -24,7 +24,7 @@ internal sealed class Funscript
       var sb = new StringBuilder();
       foreach ( var action in Actions )
       {
-         sb.Append( action.Time ).Append( ',' ).Append( action.Position ).Append( '\n' );
+         _ = sb.Append( action.Time ).Append( ',' ).Append( action.Position ).Append( '\n' );
       }
 
       return sb.ToString();

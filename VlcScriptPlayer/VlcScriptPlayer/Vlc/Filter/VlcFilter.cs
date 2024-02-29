@@ -48,14 +48,14 @@ internal sealed class VlcFilter( MediaPlayer player, MarqueeViewModel marquee ) 
    {
       if ( updateType.HasFlag( EqualizerUpdateType.Volume ) )
       {
-         _equalizer.SetPreamp( _volumeAmpEnabled ? 20f : _defaultPreampValue );
+         _ = _equalizer.SetPreamp( _volumeAmpEnabled ? 20f : _defaultPreampValue );
       }
       if ( updateType.HasFlag( EqualizerUpdateType.Bass ) )
       {
-         _equalizer.SetAmp( _bassBoostEnabled ? 20f : _defaultBassValue, 0 );
+         _ = _equalizer.SetAmp( _bassBoostEnabled ? 20f : _defaultBassValue, 0 );
       }
 
-      player.SetEqualizer( _equalizer );
+      _ = player.SetEqualizer( _equalizer );
    }
 
    private bool _volumeAmpEnabled;

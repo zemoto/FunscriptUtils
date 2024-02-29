@@ -82,15 +82,15 @@ internal sealed partial class VideoControls
       var filterString = new StringBuilder( 3 );
       if ( _filter.VolumeAmpEnabled )
       {
-         filterString.Append( 'V' );
+         _ = filterString.Append( 'V' );
       }
       if ( _filter.SaturationBoostEnabled )
       {
-         filterString.Append( 'S' );
+         _ = filterString.Append( 'S' );
       }
       if ( _filter.BassBoostEnabled )
       {
-         filterString.Append( 'B' );
+         _ = filterString.Append( 'B' );
       }
       FilterIndicator.Text = filterString.ToString();
    }

@@ -53,7 +53,7 @@ internal sealed partial class Marquee
    {
       if ( e.PropertyName == nameof( _marquee.Text ) )
       {
-         Dispatcher.BeginInvoke( () =>
+         _ = Dispatcher.BeginInvoke( () =>
          {
             switch ( _marquee.Type )
             {
@@ -88,7 +88,7 @@ internal sealed partial class Marquee
 
    private void OnVolumeChanged( object sender, EventArgs e )
    {
-      Dispatcher.BeginInvoke( () =>
+      _ = Dispatcher.BeginInvoke( () =>
       {
          if ( _filter.VolumeAmpEnabled )
          {

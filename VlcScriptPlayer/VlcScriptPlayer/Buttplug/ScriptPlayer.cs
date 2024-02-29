@@ -76,22 +76,20 @@ internal sealed class ScriptPlayer : IAsyncDisposable
       await _scriptTask;
    }
 
-   private async Task<bool> StopDeviceAsync()
+   private async Task StopDeviceAsync()
    {
       if ( _device is null )
       {
-         return false;
+         return;
       }
 
       try
       {
          await _device.Stop();
-         return true;
       }
       catch
       {
          _device = null;
-         return false;
       }
    }
 

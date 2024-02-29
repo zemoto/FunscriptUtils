@@ -18,7 +18,7 @@ internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
    public ButtplugManager( ButtplugViewModel model )
    {
       _model = model;
-      _model.ConnectToServerCommand = new RelayCommand( () => _ = ConnectToServerAsync() );
+      _model.ConnectToServerCommand = new RelayCommand( async () => await ConnectToServerAsync() );
 
       _client = new ButtplugClient( "VlcScriptPlayer" );
       _client.DeviceAdded += OnDeviceAdded;

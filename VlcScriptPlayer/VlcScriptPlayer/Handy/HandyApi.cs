@@ -37,7 +37,7 @@ internal sealed class HandyApi : IDisposable
 
    public async Task<bool> ConnectToAndSetupHandyAsync( string connectionId )
    {
-      _client.DefaultRequestHeaders.Remove( "X-Connection-Key" );
+      _ = _client.DefaultRequestHeaders.Remove( "X-Connection-Key" );
       _client.DefaultRequestHeaders.Add( "X-Connection-Key", connectionId );
 
       return await ConnectAsync() && await SetupServerClockSyncAsync() && await EnsureModeAsync();
@@ -243,7 +243,7 @@ internal sealed class HandyApi : IDisposable
       var sb = new StringBuilder();
       for ( int i = 0; i < bytes.Length; i++ )
       {
-         sb.Append( bytes[i].ToString( "x2", System.Globalization.CultureInfo.InvariantCulture ) );
+         _ = sb.Append( bytes[i].ToString( "x2", System.Globalization.CultureInfo.InvariantCulture ) );
       }
       return sb.ToString();
    }

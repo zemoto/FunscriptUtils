@@ -57,7 +57,7 @@ internal sealed partial class PlayPauseIndicator
          return;
       }
 
-      Dispatcher.BeginInvoke( () =>
+      _ = Dispatcher.BeginInvoke( () =>
       {
          Visibility = Visibility.Visible;
          PlayGlyph.Visibility = Visibility.Visible;
@@ -70,7 +70,7 @@ internal sealed partial class PlayPauseIndicator
 
    private void OnMediaPaused( object sender, EventArgs e )
    {
-      Dispatcher.BeginInvoke( () =>
+      _ = Dispatcher.BeginInvoke( () =>
       {
          Visibility = Visibility.Visible;
          PlayGlyph.Visibility = Visibility.Collapsed;
