@@ -44,11 +44,11 @@ internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
 
       const string serverUri = "ws://localhost:12345";
       var connector = new ButtplugWebsocketConnector( new Uri( serverUri ) );
-      Logger.LogRequest( "Connecting to Intiface Server" );
+      Logger.Log( "Connecting to Intiface Server" );
       try
       {
          await _client.ConnectAsync( connector );
-         Logger.LogRequestSuccess();
+         Logger.Log( "Connection to server successful" );
          _model.IsConnectedToServer = true;
 
          if ( !_model.IsConnectedToDevice )
@@ -65,7 +65,7 @@ internal sealed class ButtplugManager : ISyncTarget, IAsyncDisposable
       }
       catch
       {
-         Logger.LogRequestFail();
+         Logger.LogError( "Failed to find server" );
       }
    }
 

@@ -14,12 +14,6 @@ internal sealed class ServerTimeResponse
    public long ServerTime { get; set; }
 }
 
-internal sealed class GetOffsetResponse
-{
-   [JsonPropertyName( "offset" )]
-   public int Offset { get; set; }
-}
-
 internal sealed class GetSlideResponse
 {
    [JsonPropertyName( "min" )]

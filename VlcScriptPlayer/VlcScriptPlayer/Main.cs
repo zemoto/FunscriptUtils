@@ -59,7 +59,7 @@ internal sealed class Main : IAsyncDisposable
    {
       if ( !_script.VerifyPaths() )
       {
-         Logger.Log( "Error: Could not find script or video file" );
+         Logger.LogError( "Could not find script or video file" );
          return;
       }
 
