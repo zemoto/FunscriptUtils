@@ -15,7 +15,7 @@ internal sealed partial class VideoPlayerWindow
 
    public VideoPlayerWindow( VlcManager vlc, ScriptManager scriptManager )
    {
-      _hideScrubberTimer = new DispatcherTimer( TimeSpan.FromSeconds( 3 ), DispatcherPriority.Normal, OnHideScrubberTimerTick, Dispatcher ) { IsEnabled = false };
+      _hideScrubberTimer = new DispatcherTimer( TimeSpan.FromSeconds( 1 ), DispatcherPriority.Normal, OnHideScrubberTimerTick, Dispatcher ) { IsEnabled = false };
       _vlc = vlc;
       _scriptManager = scriptManager;
 
