@@ -1,5 +1,6 @@
 ﻿using Ookii.Dialogs.Wpf;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -41,6 +42,14 @@ internal sealed class ScriptManager
       }
 
       return pathsValid;
+   }
+
+   public void OpenSelectedScriptInEditor()
+   {
+      if ( VerifyPaths() )
+      {
+         _ = Process.Start( "explorer", $"\"{_model.ScriptFilePath}\"" );
+      }
    }
 
    private void SelectVideo()

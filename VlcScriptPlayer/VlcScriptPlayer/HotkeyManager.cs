@@ -10,12 +10,13 @@ internal sealed class HotkeyManager : IDisposable
 {
    private readonly VlcManager _vlc;
    private readonly HandyManager _handy;
+   private readonly ScriptManager _script;
 
-   public HotkeyManager( VlcManager vlc, HandyManager handy )
+   public HotkeyManager( VlcManager vlc, HandyManager handy, ScriptManager script )
    {
       _vlc = vlc;
       _handy = handy;
-
+      _script = script;
       _vlc.MediaOpened += OnMediaOpened;
       _vlc.MediaClosed += OnMediaClosed;
    }
@@ -63,6 +64,9 @@ internal sealed class HotkeyManager : IDisposable
             _vlc.Marquee.SetText( "Retrieving Range..." );
             var (handyMin, handyMax) = await _handy.GetHandyRangeAsync();
             _vlc.Marquee.SetText( $"{handyMin} - {handyMax}" );
+            break;
+         case Key.E when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
+            _script.OpenSelectedScriptInEditor();
             break;
       }
    }

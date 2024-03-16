@@ -32,7 +32,7 @@ internal sealed class Main : IAsyncDisposable
       _handy = new HandyManager( _model.HandyVm );
       _script = new ScriptManager( _model.ScriptVm );
       _buttplug = new ButtplugManager( _model.ButtplugVm );
-      _hotkeyManager = new HotkeyManager( _vlc, _handy );
+      _hotkeyManager = new HotkeyManager( _vlc, _handy, _script );
 
       _window = new MainWindow( _model );
       _window.Closed += OnMainWindowClosed;
