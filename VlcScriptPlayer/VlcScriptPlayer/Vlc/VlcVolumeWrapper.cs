@@ -10,7 +10,7 @@ internal sealed class VlcVolumeWrapper( MediaPlayer player, VlcFilter filter )
 
    public event EventHandler VolumeChanged;
 
-   private int _volume = -1;
+   private int _volume = player.Volume;
    public int Volume
    {
       get => _volume;

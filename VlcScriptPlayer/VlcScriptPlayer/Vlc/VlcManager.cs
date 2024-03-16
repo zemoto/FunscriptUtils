@@ -116,7 +116,6 @@ internal sealed class VlcManager : IDisposable
       _ = ThreadPool.QueueUserWorkItem( _ =>
       {
          TimeProvider.Duration = TimeSpan.FromMilliseconds( Player.Media.Duration );
-         VolumeManager.Volume = 100;
          Marquee.Enabled = true;
          Player.Time = 0;
 
