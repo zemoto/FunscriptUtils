@@ -37,6 +37,9 @@ internal sealed class HandyApi : IDisposable
 
    public async Task<bool> ConnectToAndSetupHandyAsync( string connectionId )
    {
+      _lastUploadedScriptSha256 = string.Empty;
+      _estimatedClientServerOffset = 0;
+
       _ = _client.DefaultRequestHeaders.Remove( "X-Connection-Key" );
       _client.DefaultRequestHeaders.Add( "X-Connection-Key", connectionId );
 
