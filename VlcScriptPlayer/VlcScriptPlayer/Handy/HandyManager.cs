@@ -63,6 +63,8 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
       return await _handyApi.UploadScriptAsync( script );
    }
 
+   public async Task UpdateScriptAsync( Funscript script ) => await _handyApi.UploadScriptAsync( script );
+
    public async Task StartSyncAsync( long time ) => await _handyApi.PlayScriptAsync( time );
 
    public async Task StopSyncAsync() => await _handyApi.StopScriptAsync();

@@ -26,7 +26,7 @@ internal sealed partial class VideoControls
       InitializeComponent();
    }
 
-   public void Init( VlcManager vlc, Funscript script )
+   public void Init( VlcManager vlc )
    {
       _player = vlc.Player;
       _player.Playing += OnPlayerPlaying;
@@ -37,7 +37,6 @@ internal sealed partial class VideoControls
 
       _timeProvider = vlc.TimeProvider;
 
-      Heatmap.Fill = HeatmapGenerator.GetHeatmapBrush( script, vlc.TimeProvider.Duration.TotalMilliseconds );
       DurationLabel.Text = _timeProvider.GetDurationString();
       CurrentTimeLabel.Text = _timeProvider.GetTimeStringAtPosition( 0 );
       TimeLabelContainer.Visibility = Visibility.Visible;
@@ -47,6 +46,14 @@ internal sealed partial class VideoControls
       PositionTrack.MouseLeave += OnScrubberMouseLeave;
       PositionTrack.MouseMove += OnScrubberMouseMove;
       UniversalClick.AddClickHandler( PositionTrack, OnTrackClicked );
+   }
+
+   public void SetScript( Funscript script )
+   {
+      if ( script is not null && _timeProvider is not null )
+      {
+         Heatmap.Fill = HeatmapGenerator.GetHeatmapBrush( script, _timeProvider.Duration.TotalMilliseconds );
+      }
    }
 
    private void OnUnloaded( object sender, RoutedEventArgs e )

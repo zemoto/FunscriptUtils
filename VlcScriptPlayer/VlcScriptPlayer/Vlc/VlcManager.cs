@@ -15,6 +15,8 @@ internal sealed class VlcManager : IDisposable
    private readonly FilterViewModel _filterSettings;
    private readonly PlaybackSettingsViewModel _playbackSettings;
 
+   private bool _playbackEnabled = true;
+
    public MarqueeViewModel Marquee { get; } = new();
    public VlcFilter Filter { get; }
    public MediaPlayer Player { get; }
@@ -74,7 +76,7 @@ internal sealed class VlcManager : IDisposable
 
    public void TogglePlayPause()
    {
-      if ( DateTime.Now < _lastPauseToggleTime + TimeSpan.FromSeconds( 1 ) )
+      if ( !_playbackEnabled || DateTime.Now < _lastPauseToggleTime + TimeSpan.FromSeconds( 1 ) )
       {
          return;
       }
@@ -89,6 +91,16 @@ internal sealed class VlcManager : IDisposable
       }
 
       _lastPauseToggleTime = DateTime.Now;
+   }
+
+   public void SetPlaybackEnabled( bool enabled )
+   {
+      if ( !enabled )
+      {
+         Player.SetPause( true );
+      }
+
+      _playbackEnabled = enabled;
    }
 
    private void OnPlayerInitialPlaying( object sender, EventArgs e )
@@ -110,7 +122,7 @@ internal sealed class VlcManager : IDisposable
 
          MediaOpened?.Invoke( this, EventArgs.Empty );
 
-         if ( _playbackSettings.Autoplay )
+         if ( _playbackSettings.Autoplay && _playbackEnabled )
          {
             _ = Player.Play();
          }

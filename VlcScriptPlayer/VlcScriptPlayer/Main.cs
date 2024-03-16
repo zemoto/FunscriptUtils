@@ -65,17 +65,16 @@ internal sealed class Main : IAsyncDisposable
 
       using ( new ScopeGuard( () => _playerOpen = true, () => _playerOpen = false ) )
       {
-         var synchronizer = new VlcScriptSynchronizer( _vlc, _handy, _buttplug );
+         var synchronizer = new VlcScriptSynchronizer( _vlc, _script, _handy, _buttplug );
          await using ( synchronizer.ConfigureAwait( true ) )
          {
-            var script = Funscript.Load( _model.ScriptVm.ScriptFilePath );
-            if ( !await synchronizer.SetupSyncAsync( script ).ConfigureAwait( true ) )
+            if ( !await synchronizer.SetupSyncAsync( _model.ScriptVm.Script ).ConfigureAwait( true ) )
             {
                return;
             }
 
             _window.Hide();
-            var videoPlayer = new VideoPlayerWindow( _vlc, script );
+            var videoPlayer = new VideoPlayerWindow( _vlc, _script );
             videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFilePath );
 
             _ = videoPlayer.ShowDialog();

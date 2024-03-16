@@ -1,12 +1,16 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows.Input;
 using ZemotoCommon;
 using ZemotoCommon.UI;
 
-namespace VlcScriptPlayer.Handy;
+namespace VlcScriptPlayer;
 
 internal sealed class ScriptViewModel : ViewModelBase
 {
+   public void ReloadScript() => _script = null;
+
    private string _videoFilePath = string.Empty;
    public string VideoFilePath
    {
@@ -30,8 +34,23 @@ internal sealed class ScriptViewModel : ViewModelBase
       {
          if ( SetProperty( ref _scriptFilePath, value ) )
          {
+            _script = null;
             OnPropertyChanged( nameof( DisplayedScriptFilePath ) );
          }
+      }
+   }
+
+   private Funscript _script;
+   public Funscript Script
+   {
+      get
+      {
+         if ( _script is null && File.Exists( _scriptFilePath ) )
+         {
+            _script = JsonSerializer.Deserialize<Funscript>( File.ReadAllText( _scriptFilePath ) );
+         }
+
+         return _script;
       }
    }
 

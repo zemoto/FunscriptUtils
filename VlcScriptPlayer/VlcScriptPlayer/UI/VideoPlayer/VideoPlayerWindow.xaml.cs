@@ -11,13 +11,13 @@ internal sealed partial class VideoPlayerWindow
 {
    private readonly DispatcherTimer _hideScrubberTimer;
    private readonly VlcManager _vlc;
-   private readonly Funscript _script;
+   private readonly ScriptManager _scriptManager;
 
-   public VideoPlayerWindow( VlcManager vlc, Funscript script )
+   public VideoPlayerWindow( VlcManager vlc, ScriptManager scriptManager )
    {
       _hideScrubberTimer = new DispatcherTimer( TimeSpan.FromSeconds( 3 ), DispatcherPriority.Normal, OnHideScrubberTimerTick, Dispatcher ) { IsEnabled = false };
       _vlc = vlc;
-      _script = script;
+      _scriptManager = scriptManager;
 
       InitializeComponent();
 
@@ -30,11 +30,14 @@ internal sealed partial class VideoPlayerWindow
    private void OnMediaOpened( object sender, EventArgs e )
    {
       _vlc.MediaOpened -= OnMediaOpened;
+      _scriptManager.ScriptChanged += OnScriptChanged;
       Dispatcher.Invoke( () =>
       {
          MarqueeOverlay.Init( _vlc );
          PlayPauseindicator.Init( _vlc.Player );
-         VideoControls.Init( _vlc, _script );
+         VideoControls.Init( _vlc );
+
+         VideoControls.SetScript( _scriptManager.Model.Script );
 
          _vlc.MediaClosed += OnMediaClosed;
          MouseEventGrid.MouseWheel += OnMouseWheel;
@@ -42,11 +45,14 @@ internal sealed partial class VideoPlayerWindow
       } );
    }
 
+   private void OnScriptChanged( object sender, EventArgs e ) => VideoControls.SetScript( _scriptManager.Model.Script );
+
    private void OnClosing( object sender, System.ComponentModel.CancelEventArgs e )
    {
       Mouse.OverrideCursor = null;
       _hideScrubberTimer.Stop();
       _vlc.MediaClosed -= OnMediaClosed;
+      _scriptManager.ScriptChanged -= OnScriptChanged;
    }
 
    private void OnMediaClosed( object sender, EventArgs e ) => Dispatcher.Invoke( Close );

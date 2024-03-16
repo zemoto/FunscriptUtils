@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VlcScriptPlayer.Vlc;
+using ZemotoCommon;
 
 namespace VlcScriptPlayer;
 
@@ -12,6 +13,7 @@ internal interface ISyncTarget
    bool CanSync { get; }
 
    Task<bool> SetupSyncAsync( Funscript script );
+   Task UpdateScriptAsync( Funscript script );
    Task StartSyncAsync( long time );
    Task StopSyncAsync();
    Task CleanupAsync( bool syncSetupSuccessful );
@@ -20,15 +22,19 @@ internal interface ISyncTarget
 internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 {
    private readonly VlcManager _vlc;
+   private readonly ScriptManager _scriptManager;
    private readonly List<ISyncTarget> _syncTargets;
 
    private bool _syncSetupSuccessful;
 
-   public VlcScriptSynchronizer( VlcManager vlc, params ISyncTarget[] syncTargets )
+   public VlcScriptSynchronizer( VlcManager vlc, ScriptManager scriptManager, params ISyncTarget[] syncTargets )
    {
       _vlc = vlc;
-      _syncTargets = syncTargets.Where( x => x.CanSync ).ToList();
 
+      _scriptManager = scriptManager;
+      _scriptManager.ScriptChanged += OnScriptChanged;
+
+      _syncTargets = syncTargets.Where( x => x.CanSync ).ToList();
       if ( _syncTargets.Count > 0 )
       {
          _vlc.MediaOpened += OnMediaOpened;
@@ -45,10 +51,24 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       _vlc.MediaOpened -= OnMediaOpened;
       _vlc.MediaClosed -= OnPlayerPausedOrClosed;
 
+      _scriptManager.ScriptChanged -= OnScriptChanged;
+
       foreach ( var syncTarget in _syncTargets )
       {
          await syncTarget.CleanupAsync( _syncSetupSuccessful );
       }
+   }
+
+   private async void OnScriptChanged( object sender, EventArgs e )
+   {
+      using var _ = new ScopeGuard( () => _vlc.SetPlaybackEnabled( false ), () => _vlc.SetPlaybackEnabled( true ) );
+
+      _vlc.Marquee.SetText( "Updating script...", MarqueeType.Process );
+      foreach ( var syncTarget in _syncTargets )
+      {
+         await syncTarget.UpdateScriptAsync( _scriptManager.Model.Script );
+      }
+      _vlc.Marquee.SetText( "Script update complete..." );
    }
 
    private void OnMediaOpened( object sender, EventArgs e )

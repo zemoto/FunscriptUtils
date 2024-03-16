@@ -6,6 +6,7 @@ internal enum MarqueeType
 {
    General,
    Volume,
+   Process
 }
 
 internal sealed class MarqueeViewModel : ViewModelBase

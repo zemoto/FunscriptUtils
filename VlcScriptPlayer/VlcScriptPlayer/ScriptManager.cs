@@ -6,39 +6,41 @@ using System.Linq;
 using System.Windows;
 using ZemotoCommon.UI;
 
-namespace VlcScriptPlayer.Handy;
+namespace VlcScriptPlayer;
 
 internal sealed class ScriptManager
 {
-   private readonly ScriptViewModel _model;
+   public ScriptViewModel Model { get; }
+
+   public event EventHandler ScriptChanged;
 
    public ScriptManager( ScriptViewModel model )
    {
-      _model = model;
-      _model.SelectVideoCommand = new RelayCommand( SelectVideo );
-      _model.SelectScriptCommand = new RelayCommand( SelectScript );
-      _model.SelectScriptFolderCommand = new RelayCommand( SelectScriptFolder );
+      Model = model;
+      Model.SelectVideoCommand = new RelayCommand( SelectVideo );
+      Model.SelectScriptCommand = new RelayCommand( SelectScript );
+      Model.SelectScriptFolderCommand = new RelayCommand( SelectScriptFolder );
       _ = VerifyPaths();
    }
 
    public bool VerifyPaths()
    {
       bool pathsValid = true;
-      if ( !File.Exists( _model.VideoFilePath ) )
+      if ( !File.Exists( Model.VideoFilePath ) )
       {
-         _model.VideoFilePath = string.Empty;
+         Model.VideoFilePath = string.Empty;
          pathsValid = false;
       }
 
-      if ( !File.Exists( _model.ScriptFilePath ) )
+      if ( !File.Exists( Model.ScriptFilePath ) )
       {
-         _model.ScriptFilePath = string.Empty;
+         Model.ScriptFilePath = string.Empty;
          pathsValid = false;
       }
 
-      if ( !string.IsNullOrEmpty( _model.ScriptFolder ) && !Directory.Exists( _model.ScriptFolder ) )
+      if ( !string.IsNullOrEmpty( Model.ScriptFolder ) && !Directory.Exists( Model.ScriptFolder ) )
       {
-         _model.ScriptFolder = string.Empty;
+         Model.ScriptFolder = string.Empty;
       }
 
       return pathsValid;
@@ -48,7 +50,16 @@ internal sealed class ScriptManager
    {
       if ( VerifyPaths() )
       {
-         _ = Process.Start( "explorer", $"\"{_model.ScriptFilePath}\"" );
+         _ = Process.Start( "explorer", $"\"{Model.ScriptFilePath}\"" );
+      }
+   }
+
+   public void NotifyScriptChanged()
+   {
+      if ( VerifyPaths() )
+      {
+         Model.ReloadScript();
+         ScriptChanged?.Invoke( this, EventArgs.Empty );
       }
    }
 
@@ -66,11 +77,11 @@ internal sealed class ScriptManager
          return;
       }
 
-      _model.VideoFilePath = dlg.FileName;
+      Model.VideoFilePath = dlg.FileName;
 
       var videoFolderPath = Path.GetDirectoryName( dlg.FileName );
       var fileName = Path.GetFileNameWithoutExtension( dlg.FileName );
-      foreach ( var folder in new string[2] { videoFolderPath, _model.ScriptFolder } )
+      foreach ( var folder in new string[2] { videoFolderPath, Model.ScriptFolder } )
       {
          if ( string.IsNullOrEmpty( folder ) )
          {
@@ -82,7 +93,7 @@ internal sealed class ScriptManager
          var matchingScript = Array.Find( scripts, x => Path.GetFileNameWithoutExtension( x ).Equals( fileName, StringComparison.Ordinal ) );
          if ( !string.IsNullOrWhiteSpace( matchingScript ) )
          {
-            _model.ScriptFilePath = matchingScript;
+            Model.ScriptFilePath = matchingScript;
             Logger.Log( $"Found script: {matchingScript}" );
             return;
          }
@@ -100,7 +111,7 @@ internal sealed class ScriptManager
 
       if ( dlg.ShowDialog( Application.Current.MainWindow ) == true )
       {
-         _model.ScriptFilePath = dlg.FileName;
+         Model.ScriptFilePath = dlg.FileName;
       }
    }
 
@@ -109,7 +120,7 @@ internal sealed class ScriptManager
       var dlg = new VistaFolderBrowserDialog() { Multiselect = false };
       if ( dlg.ShowDialog( Application.Current.MainWindow ) == true )
       {
-         _model.ScriptFolder = dlg.SelectedPath;
+         Model.ScriptFolder = dlg.SelectedPath;
       }
    }
 }

@@ -57,18 +57,14 @@ internal sealed partial class Marquee
          {
             switch ( _marquee.Type )
             {
-               case MarqueeType.General:
-               {
-                  HorizontalAlignment = HorizontalAlignment.Left;
-                  VolumeTrack.Visibility = Visibility.Collapsed;
-                  break;
-               }
                case MarqueeType.Volume:
-               {
                   HorizontalAlignment = HorizontalAlignment.Right;
                   VolumeTrack.Visibility = Visibility.Visible;
                   break;
-               }
+               default:
+                  HorizontalAlignment = HorizontalAlignment.Left;
+                  VolumeTrack.Visibility = Visibility.Collapsed;
+                  break;
             }
 
             MarqueeTextBlock.Text = _marquee.Text;
@@ -77,6 +73,10 @@ internal sealed partial class Marquee
             if ( string.IsNullOrEmpty( _marquee.Text ) )
             {
                Opacity = 0;
+            }
+            else if ( _marquee.Type is MarqueeType.Process )
+            {
+               Opacity = 1;
             }
             else
             {
