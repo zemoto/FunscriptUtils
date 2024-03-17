@@ -61,9 +61,16 @@ internal sealed class HotkeyManager : IDisposable
             _vlc.Filter.SaturationBoostEnabled = !_vlc.Filter.SaturationBoostEnabled;
             break;
          case Key.R when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
-            _vlc.Marquee.SetText( "Retrieving Range...", MarqueeType.Process );
-            var (handyMin, handyMax) = await _handy.GetHandyRangeAsync();
-            _vlc.Marquee.SetText( $"{handyMin} - {handyMax}" );
+            if ( _handy.CanSync )
+            {
+               _vlc.Marquee.SetText( "Retrieving Range...", MarqueeType.Process );
+               var (handyMin, handyMax) = await _handy.GetHandyRangeAsync();
+               _vlc.Marquee.SetText( $"{handyMin} - {handyMax}" );
+            }
+            else
+            {
+               _vlc.Marquee.SetText( "Error: Handy not connected" );
+            }
             break;
          case Key.E when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
             _script.OpenSelectedScriptInEditor();

@@ -61,14 +61,21 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 
    private async void OnScriptChanged( object sender, EventArgs e )
    {
-      using var _ = new ScopeGuard( () => _vlc.SetPlaybackEnabled( false ), () => _vlc.SetPlaybackEnabled( true ) );
+      if ( _syncTargets.Count == 0 )
+      {
+         return;
+      }
 
-      _vlc.Marquee.SetText( "Updating script...", MarqueeType.Process );
+      _vlc.SetPlaybackEnabled( false );
+      _vlc.Marquee.SetPriorityText( "Sending updated script to devices..." );
+
       foreach ( var syncTarget in _syncTargets )
       {
          await syncTarget.UpdateScriptAsync( _scriptManager.Model.Script );
       }
-      _vlc.Marquee.SetText( "Script update complete..." );
+
+      _vlc.Marquee.FinalizePriorityText( "Script updated" );
+      _vlc.SetPlaybackEnabled( true );
    }
 
    private void OnMediaOpened( object sender, EventArgs e )

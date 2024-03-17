@@ -2,6 +2,13 @@
 
 namespace VlcScriptPlayer.Vlc;
 
+internal enum MarqueePosition
+{
+   Info,
+   Volume,
+   Priority
+}
+
 internal enum MarqueeType
 {
    General,
@@ -11,40 +18,72 @@ internal enum MarqueeType
 
 internal sealed class MarqueeViewModel : ViewModelBase
 {
+   private bool _enabled;
+   private MarqueeType _type;
+   private bool _displayingPriorityText;
+
+   public void SetEnabled( bool enabled )
+   {
+      _enabled = enabled;
+      if ( !_enabled )
+      {
+         _type = MarqueeType.General;
+         _displayingPriorityText = false;
+         Text = string.Empty;
+      }
+   }
+
    public void SetText( string text, MarqueeType type = MarqueeType.General )
    {
-      if ( Enabled )
+      if ( _enabled && !_displayingPriorityText )
       {
+         _type = type;
          Text = text;
-         Type = type;
       }
    }
 
-   private bool _enabled;
-   public bool Enabled
+   public void SetPriorityText( string text )
    {
-      get => _enabled;
-      set
-      {
-         if ( SetProperty( ref _enabled, value ) && !value )
-         {
-            Text = string.Empty;
-         }
-      }
+      _displayingPriorityText = true;
+      Text = text;
    }
 
-   private string _Text;
+   public void FinalizePriorityText( string text )
+   {
+      if ( !_displayingPriorityText )
+      {
+         return;
+      }
+
+      _displayingPriorityText = false;
+      SetText( text );
+   }
+
+   private string _text;
    public string Text
    {
-      get => _Text;
-      private set => SetProperty( ref _Text, value );
+      get => _text;
+      private set => SetProperty( ref _text, value );
    }
 
-
-   private MarqueeType _type;
-   public MarqueeType Type
+   public MarqueePosition Position
    {
-      get => _type;
-      private set => SetProperty( ref _type, value );
+      get
+      {
+         if ( _displayingPriorityText )
+         {
+            return MarqueePosition.Priority;
+         }
+
+         return _type switch
+         {
+            MarqueeType.General => MarqueePosition.Info,
+            MarqueeType.Volume => MarqueePosition.Volume,
+            MarqueeType.Process => MarqueePosition.Info,
+            _ => MarqueePosition.Info,
+         };
+      }
    }
+
+   public bool IsPerpetual => _type is MarqueeType.Process || _displayingPriorityText;
 }

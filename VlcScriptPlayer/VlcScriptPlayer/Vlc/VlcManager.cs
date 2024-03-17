@@ -69,7 +69,7 @@ internal sealed class VlcManager : IDisposable
       Player.Stop();
       Player.Media?.Dispose();
       Player.Media = null;
-      Marquee.Enabled = false;
+      Marquee.SetEnabled( false );
 
       MediaClosed?.Invoke( this, EventArgs.Empty );
    }
@@ -116,7 +116,7 @@ internal sealed class VlcManager : IDisposable
       _ = ThreadPool.QueueUserWorkItem( _ =>
       {
          TimeProvider.Duration = TimeSpan.FromMilliseconds( Player.Media.Duration );
-         Marquee.Enabled = true;
+         Marquee.SetEnabled( true );
          Player.Time = 0;
 
          MediaOpened?.Invoke( this, EventArgs.Empty );
