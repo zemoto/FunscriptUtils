@@ -8,11 +8,13 @@ using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer;
 
-internal sealed class ScriptManager
+internal sealed class ScriptManager : IDisposable
 {
    public ScriptViewModel Model { get; }
 
    public event EventHandler ScriptChanged;
+
+   private readonly FileSystemWatcher _scriptFileWatcher;
 
    public ScriptManager( ScriptViewModel model )
    {
@@ -21,7 +23,20 @@ internal sealed class ScriptManager
       Model.SelectScriptCommand = new RelayCommand( SelectScript );
       Model.SelectScriptFolderCommand = new RelayCommand( SelectScriptFolder );
       _ = VerifyPaths();
+
+      Model.PropertyChanged += OnPropertyChanged;
+
+      _scriptFileWatcher = new FileSystemWatcher
+      {
+         Path = Path.GetDirectoryName( Model.ScriptFilePath ),
+         Filter = Path.GetFileName( Model.ScriptFilePath ),
+         NotifyFilter = NotifyFilters.LastWrite,
+         EnableRaisingEvents = Model.NotifyOnScriptFileModified
+      };
+      _scriptFileWatcher.Changed += OnScriptFileChanged;
    }
+
+   public void Dispose() => _scriptFileWatcher.Dispose();
 
    public bool VerifyPaths()
    {
@@ -48,7 +63,7 @@ internal sealed class ScriptManager
 
    public void OpenSelectedScriptInEditor()
    {
-      if ( VerifyPaths() )
+      if ( File.Exists( Model.ScriptFilePath ) )
       {
          _ = Process.Start( "explorer", $"\"{Model.ScriptFilePath}\"" );
       }
@@ -56,11 +71,31 @@ internal sealed class ScriptManager
 
    public void NotifyScriptChanged()
    {
-      if ( VerifyPaths() )
+      if ( File.Exists( Model.ScriptFilePath ) )
       {
          Model.ReloadScript();
          ScriptChanged?.Invoke( this, EventArgs.Empty );
       }
+   }
+
+   private void OnPropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+   {
+      if ( e.PropertyName.Equals( nameof( Model.ScriptFilePath ), StringComparison.OrdinalIgnoreCase ) )
+      {
+         _scriptFileWatcher.Path = Path.GetDirectoryName( Model.ScriptFilePath );
+         _scriptFileWatcher.Filter = Path.GetFileName( Model.ScriptFilePath );
+      }
+      else if ( e.PropertyName.Equals( nameof( Model.NotifyOnScriptFileModified ), StringComparison.OrdinalIgnoreCase ) )
+      {
+         _scriptFileWatcher.EnableRaisingEvents = Model.NotifyOnScriptFileModified;
+      }
+   }
+
+   private void OnScriptFileChanged( object sender, FileSystemEventArgs e )
+   {
+      _scriptFileWatcher.EnableRaisingEvents = false;
+      NotifyScriptChanged();
+      _scriptFileWatcher.EnableRaisingEvents = true;
    }
 
    private void SelectVideo()

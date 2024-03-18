@@ -63,6 +63,13 @@ internal sealed class ScriptViewModel : ViewModelBase
       set => SetProperty( ref _scriptFolder, value );
    }
 
+   private bool _notifyOnScriptFileModified;
+   public bool NotifyOnScriptFileModified
+   {
+      get => _notifyOnScriptFileModified;
+      set => SetProperty( ref _notifyOnScriptFileModified, value );
+   }
+
    [JsonIgnore]
    public ICommand SelectVideoCommand { get; set; }
 

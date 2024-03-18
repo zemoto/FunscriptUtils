@@ -45,7 +45,7 @@ internal sealed partial class VideoPlayerWindow
       } );
    }
 
-   private void OnScriptChanged( object sender, EventArgs e ) => VideoControls.SetScript( _scriptManager.Model.Script );
+   private void OnScriptChanged( object sender, EventArgs e ) => Dispatcher.Invoke( () => VideoControls.SetScript( _scriptManager.Model.Script ) );
 
    private void OnClosing( object sender, System.ComponentModel.CancelEventArgs e )
    {

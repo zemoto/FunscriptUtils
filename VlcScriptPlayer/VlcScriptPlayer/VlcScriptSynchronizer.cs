@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VlcScriptPlayer.Vlc;
-using ZemotoCommon;
 
 namespace VlcScriptPlayer;
 
@@ -74,7 +73,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
          await syncTarget.UpdateScriptAsync( _scriptManager.Model.Script );
       }
 
-      _vlc.Marquee.FinalizePriorityText( "Script updated" );
+      _vlc.Marquee.FinalizePriorityText( "Updated script synced" );
       _vlc.SetPlaybackEnabled( true );
    }
 

@@ -50,6 +50,7 @@ internal sealed class Main : IAsyncDisposable
       _handy.Dispose();
       _vlc.Dispose();
       _hotkeyManager.Dispose();
+      _script.Dispose();
       await _buttplug.DisposeAsync();
    }
 

@@ -4,9 +4,9 @@
           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-          xmlns:handy="clr-namespace:VlcScriptPlayer.Handy"
+          xmlns:vlcscriptplayer="clr-namespace:VlcScriptPlayer"
           mc:Ignorable="d"
-          d:DataContext="{d:DesignInstance Type={x:Type handy:ScriptViewModel}, IsDesignTimeCreatable=True}"
+          d:DataContext="{d:DesignInstance Type={x:Type vlcscriptplayer:ScriptViewModel}, IsDesignTimeCreatable=True}"
           Header="Video/Script">
    <Grid Margin="4">
       <Grid.RowDefinitions>
@@ -17,6 +17,8 @@
          <RowDefinition Height="Auto" />
          <RowDefinition Height="4" />
          <RowDefinition Height="Auto" />
+         <RowDefinition Height="Auto" />
+         <RowDefinition Height="4" />
          <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
@@ -83,5 +85,12 @@
               Margin="4,0,0,0"
               Content="Select"
               Command="{Binding SelectScriptFolderCommand, Mode=OneTime}" />
+
+      <CheckBox Grid.Row="9"
+                Grid.Column="0"
+                Grid.ColumnSpan="99"
+                Content="Resend script to devices when script file modified"
+                IsChecked="{Binding NotifyOnScriptFileModified, Mode=TwoWay}"
+                Margin="0,4,0,0" />
    </Grid>
 </GroupBox>
