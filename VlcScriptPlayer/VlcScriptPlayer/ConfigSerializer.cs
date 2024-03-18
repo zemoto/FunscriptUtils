@@ -7,6 +7,10 @@ namespace VlcScriptPlayer;
 internal static class ConfigSerializer
 {
    private const string _configName = "config.json";
+   private static readonly JsonSerializerOptions _serializerOptions = new()
+   {
+      IgnoreReadOnlyProperties = true,
+   };
 
    public static MainViewModel ReadFromFile()
    {
@@ -21,7 +25,7 @@ internal static class ConfigSerializer
 
    public static void SaveToFile( MainViewModel mainVm )
    {
-      var configJson = JsonSerializer.Serialize( mainVm );
+      var configJson = JsonSerializer.Serialize( mainVm, _serializerOptions );
       File.WriteAllText( _configName, configJson );
    }
 }
