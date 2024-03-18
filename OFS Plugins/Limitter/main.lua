@@ -42,8 +42,18 @@ function gui()
 	
 	ofs.SameLine()
 	
-	if ofs.Button( "Ensure Minimum" ) then
+	if ofs.Button( "< 40" ) then
 		ensureMinSpeed()
+	end
+	
+	if ofs.Button( "Delete Bad Mids" ) then
+		deleteBadMidpoints()
+	end
+	
+	ofs.SameLine()
+	
+	if ofs.Button( "Ensure Long Holds" ) then
+		ensureLongHolds()
 	end
 	
 	ofs.Separator()
@@ -171,7 +181,7 @@ function ensureMinSpeed()
 	local actionCount = #script.actions
 	local hasSelection = script:hasSelection()
 	
-	local minSpeed = 32
+	local minSpeed = 40
 	
 	local newActions = {}
 	local changesMade = false
@@ -211,6 +221,80 @@ function ensureMinSpeed()
 		script:sort()
 		script:commit()
 	end
+end
+
+function deleteBadMidpoints()
+	local script = ofs.Script(ofs.ActiveIdx())
+	local actionCount = #script.actions
+	local hasSelection = script:hasSelection()
+	
+	local maxSpeed = 405
+	local actionsToRemoveFound = false
+	local newActions = {}
+	local changesMade = false
+	for idx=3,actionCount-2 do
+		local prevPrevAction = script.actions[idx - 2]
+		local prevAction = script.actions[idx - 1]
+		local action = script.actions[idx]
+		local nextAction = script.actions[idx + 1]
+		local nextNextAction = script.actions[idx + 2]
+		if hasSelection and not action.selected then
+			goto continue3
+		end
+		
+		local isMid = (prevAction.pos > action.pos and action.pos > nextAction.pos ) or (prevAction.pos < action.pos and action.pos < nextAction.pos)
+		if not isMid then
+			goto continue3
+		end
+		
+		local prevIsMid = (prevPrevAction.pos > prevAction.pos and prevAction.pos > action.pos ) or (prevPrevAction.pos < prevAction.pos and prevAction.pos < action.pos)
+		local nextIsMid = (action.pos > nextAction.pos and nextAction.pos > nextNextAction.pos ) or (action.pos < nextAction.pos and nextAction.pos < nextNextAction.pos)
+		local prevToCurrentSpeed = getSpeedBetweenActions(prevAction,action)
+		local currentToNextSpeed = getSpeedBetweenActions(action,nextAction)		
+		if prevToCurrentSpeed > maxSpeed then
+			script:markForRemoval(idx)
+			actionsToRemoveFound = true
+			local postRemovalSpeed = getSpeedBetweenActions(prevAction,nextAction)
+			if postRemovalSpeed > maxSpeed and prevIsMid then
+				script:markForRemoval(idx-1)
+			end
+		elseif currentToNextSpeed > maxSpeed and not nextIsMid then
+			script:markForRemoval(idx)
+			actionsToRemoveFound = true
+		end
+		
+		::continue3::
+	end
+	
+	if actionsToRemoveFound then
+		script:removeMarked()
+		script:commit()
+	end	
+end
+
+function ensureLongHolds()
+	local script = ofs.Script(ofs.ActiveIdx())
+	local actionCount = #script.actions
+	
+	local changesMade = false
+	for idx=1,actionCount-1 do
+		local action = script.actions[idx]
+		local nextAction = script.actions[idx + 1]
+		
+		if action.pos == nextAction.pos and nextAction.at - action.at > 3 then
+			changesMade = true
+			local currentTime = action.at + 3
+			while currentTime < nextAction.at do
+				script.actions:add(Action.new(currentTime, action.pos))
+				currentTime = currentTime + 3
+			end			
+		end
+	end
+	
+	if changesMade then
+		script:sort()
+		script:commit()
+	end	
 end
 
 function getSpeedBetweenActions(first, second)

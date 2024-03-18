@@ -86,28 +86,34 @@ function Taper.growThenShrink()
 	local actionCount = #script.actions
 	local currentTime = player.CurrentTime()
 	
+	local startTime = currentTime - 0.29498
+	
 	for i=1,actionCount do
 		local actionTime = script.actions[i].at
-		if actionTime >= currentTime - 0.2 and actionTime <= currentTime + 0.2 then
+		if actionTime > startTime + 0.6 then
+			break
+		elseif actionTime >= currentTime - 0.3 and actionTime <= currentTime + 0.3 then
 			return
 		end
 	end
 	
-	script.actions:add(Action.new(currentTime - 0.195, 0))
-	script.actions:add(Action.new(currentTime - 0.17, 11))
-	script.actions:add(Action.new(currentTime - 0.145, 0))
-	script.actions:add(Action.new(currentTime - 0.12, 20))
-	script.actions:add(Action.new(currentTime - 0.095, 9))
-	script.actions:add(Action.new(currentTime - 0.065, 30))
-	script.actions:add(Action.new(currentTime - 0.035, 17))
-	script.actions:add(Action.new(currentTime, 40))
-	script.actions:add(Action.new(currentTime + 0.035, 17))
-	script.actions:add(Action.new(currentTime + 0.065, 30))
-	script.actions:add(Action.new(currentTime + 0.095, 9))
-	script.actions:add(Action.new(currentTime + 0.12, 20))
-	script.actions:add(Action.new(currentTime + 0.145, 0))	
-	script.actions:add(Action.new(currentTime + 0.17, 11))
-	script.actions:add(Action.new(currentTime + 0.195, 0))
+	
+	
+	script.actions:add(Action.new(startTime, 0))
+	script.actions:add(Action.new(startTime + 0.04214, 19))
+	script.actions:add(Action.new(startTime + 0.08428, 2))
+	script.actions:add(Action.new(startTime + 0.12642, 21))
+	script.actions:add(Action.new(startTime + 0.16856, 12))
+	script.actions:add(Action.new(startTime + 0.2107, 31))
+	script.actions:add(Action.new(startTime + 0.25284, 22))
+	script.actions:add(Action.new(startTime + 0.29498, 41))
+	script.actions:add(Action.new(startTime + 0.33712, 22))
+	script.actions:add(Action.new(startTime + 0.37926, 31))
+	script.actions:add(Action.new(startTime + 0.4214, 12))
+	script.actions:add(Action.new(startTime + 0.46354, 21))
+	script.actions:add(Action.new(startTime + 0.50568, 2))	
+	script.actions:add(Action.new(startTime + 0.54783, 19))
+	script.actions:add(Action.new(startTime + 0.58997, 0))
 	
 	script:sort()
 	script:commit()

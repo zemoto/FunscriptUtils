@@ -1,4 +1,8 @@
-function changingMax(startMax,endMax)
+local ChangingMax = {}
+ChangingMax.StartMax = 50
+ChangingMax.EndMax = 50
+
+function ChangingMax.changingMax()
 	local script = ofs.Script(ofs.ActiveIdx())
 	
 	if not script:hasSelection() then
@@ -25,8 +29,8 @@ function changingMax(startMax,endMax)
 	
 	local startAction = script.actions[startIdx]
 	local endAction = script.actions[endIdx]	
-	local slope = (endMax - startMax) / (endAction.at - startAction.at)
-	local intercept = startMax - (slope * startAction.at)
+	local slope = (ChangingMax.EndMax - ChangingMax.StartMax) / (endAction.at - startAction.at)
+	local intercept = ChangingMax.StartMax - (slope * startAction.at)
 	
 	local localMax = 0
 	for i=startIdx,endIdx do
@@ -52,4 +56,4 @@ function changingMax(startMax,endMax)
 	end
 end
 
-return { changingMax = changingMax }
+return ChangingMax

@@ -14,13 +14,14 @@ local function getSpeed(firstTime, firstPos, secondTime, secondPos)
 end
 
 local SoftenImpact = {}
-SoftenImpact.PercentDistance = 15
-SoftenImpact.SoftenBeforeTop = false
-SoftenImpact.SoftenAfterTop = false
-SoftenImpact.SoftenBeforeBottom = false
-SoftenImpact.SoftenAfterBottom = false
-SoftenImpact.SoftenBeforeMiddle = false
-SoftenImpact.SoftenAfterMiddle = false
+SoftenImpact.SoftenAfterTop = true
+SoftenImpact.AfterTopPercentDistance = 15
+SoftenImpact.SoftenBeforeBottom = true
+SoftenImpact.BeforeBottomPercentDistance = 15
+SoftenImpact.SoftenAfterBottom = true
+SoftenImpact.AfterBottomPercentDistance = 15
+SoftenImpact.SoftenBeforeTop = true
+SoftenImpact.BeforeTopPercentDistance = 15
 
 function SoftenImpact.softenImpact(speedLimit)
 	local script = ofs.Script(ofs.ActiveIdx())
@@ -52,27 +53,32 @@ function SoftenImpact.softenImpact(speedLimit)
 		
 		local isTop = ((prevAction ~= nil and currentAction.pos >= prevAction.pos) or prevAction == nil) and ((nextAction ~= nil and currentAction.pos >= nextAction.pos) or nextAction == nil)
 		local isBottom = ((prevAction ~= nil and currentAction.pos <= prevAction.pos) or prevAction == nil) and ((nextAction ~= nil and currentAction.pos <= nextAction.pos) or nextAction == nil)
-		local isMiddle = not isTop and not isBottom
 		
-		local shouldSoftenBefore = (isTop and SoftenImpact.SoftenBeforeTop) or (isBottom and SoftenImpact.SoftenBeforeBottom) or (isMiddle and SoftenImpact.SoftenBeforeMiddle)
-		if shouldSoftenBefore and prevAction ~= nil and prevAction.selected and prevAction.pos ~= currentAction.pos and currentAction.at - prevAction.at > 0.09 then		
-			local prevImpactTime = math.max((currentAction.at - prevAction.at)*(SoftenImpact.PercentDistance/100.0),0.03333)
-			
-			-- When you go from non-0 to 0, it does not bottom out the device but 0 to 0 does
-			-- Therefore, going from non-0 to 0 to 0 creates the desired slow-down effect
-			local prevImpactPos = 0
-			if not isBottom then
-				prevImpactPos = (currentAction.pos + (getPosAtTime(prevAction, currentAction, currentAction.at-prevImpactTime)))/2
-			end
+		if isTop and SoftenImpact.SoftenAfterTop and nextAction ~= nil and nextAction.selected and nextAction.pos ~= currentAction.pos and nextAction.at - currentAction.at > 0.09 then
+			local nextImpactTime = math.max((nextAction.at - currentAction.at)*(SoftenImpact.AfterTopPercentDistance/100.0),0.03333)
+			local nextImpactPos = (currentAction.pos + (getPosAtTime(currentAction, nextAction, currentAction.at+nextImpactTime)))/2
+			table.insert(newActions, {at=currentAction.at+nextImpactTime, pos=nextImpactPos})
+			changesMade = true
+		end
+		
+		if isBottom and SoftenImpact.SoftenBeforeBottom and prevAction ~= nil and prevAction.selected and prevAction.pos ~= currentAction.pos and currentAction.at - prevAction.at > 0.09 then		
+			local prevImpactTime = math.max((currentAction.at - prevAction.at)*(SoftenImpact.BeforeBottomPercentDistance/100.0),0.03333)			
+			local prevImpactPos = (currentAction.pos + (getPosAtTime(prevAction, currentAction, currentAction.at-prevImpactTime)))/2
 			table.insert(newActions, {at=currentAction.at-prevImpactTime, pos=prevImpactPos})
 			changesMade = true
 		end
 		
-		local shouldSoftenAfter = (isTop and SoftenImpact.SoftenAfterTop) or (isBottom and SoftenImpact.SoftenAfterBottom) or (isMiddle and SoftenImpact.SoftenAfterMiddle)
-		if shouldSoftenAfter and nextAction ~= nil and nextAction.selected and nextAction.pos ~= currentAction.pos and nextAction.at - currentAction.at > 0.09 then
-			local nextImpactTime = math.max((nextAction.at - currentAction.at)*(SoftenImpact.PercentDistance/100.0),0.03333)
+		if isBottom and SoftenImpact.SoftenAfterBottom and nextAction ~= nil and nextAction.selected and nextAction.pos ~= currentAction.pos and nextAction.at - currentAction.at > 0.09 then
+			local nextImpactTime = math.max((nextAction.at - currentAction.at)*(SoftenImpact.AfterBottomPercentDistance/100.0),0.03333)
 			local nextImpactPos = (currentAction.pos + (getPosAtTime(currentAction, nextAction, currentAction.at+nextImpactTime)))/2
 			table.insert(newActions, {at=currentAction.at+nextImpactTime, pos=nextImpactPos})
+			changesMade = true
+		end
+		
+		if isTop and SoftenImpact.SoftenBeforeTop and prevAction ~= nil and prevAction.selected and prevAction.pos ~= currentAction.pos and currentAction.at - prevAction.at > 0.09 then		
+			local prevImpactTime = math.max((currentAction.at - prevAction.at)*(SoftenImpact.BeforeTopPercentDistance/100.0),0.03333)			
+			local prevImpactPos = (currentAction.pos + (getPosAtTime(prevAction, currentAction, currentAction.at-prevImpactTime)))/2
+			table.insert(newActions, {at=currentAction.at-prevImpactTime, pos=prevImpactPos})
 			changesMade = true
 		end
 		

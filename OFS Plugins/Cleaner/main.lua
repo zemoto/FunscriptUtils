@@ -21,13 +21,29 @@ function gui()
 	
 	ofs.SameLine()
 	
-	if ofs.Button( "Delete Holds" ) then
-		deleteHolds()
-	end
-	
 	if ofs.Button( "Clean Redundants" ) then
 		cleanRedundants()
 	end
+	
+	if ofs.Button( "Delete Pre-Holds" ) then
+		deletePreHolds()
+	end
+	
+	ofs.SameLine()
+	
+	if ofs.Button( "Delete Post-Holds" ) then
+		deletePostHolds()
+	end
+	
+	if ofs.Button( "Clean Ignored MidPoints" ) then
+		deleteIgnoredMidPoints()
+	end
+end
+
+function getSpeedBetweenActions(first, second)
+	local gapInSeconds = second.at - first.at;
+	local change = math.abs( second.pos - first.pos )
+	return change / gapInSeconds
 end
 
 function cleanVibration()
@@ -190,7 +206,32 @@ function deleteMidPoints()
 	end	
 end
 
-function deleteHolds()
+function deletePreHolds()
+	local script = ofs.Script(ofs.ActiveIdx())
+	local actionCount = #script.actions
+	
+	if not script:hasSelection() then
+		return
+	end
+	
+	local actionsToRemoveFound = false	
+	for i=1,actionCount-1 do
+		local currentAction = script.actions[i]
+		local nextAction = script.actions[i+1]
+		
+		if currentAction.selected and currentAction.pos == nextAction.pos then
+			script:markForRemoval(i)
+			actionsToRemoveFound = true
+		end
+	end
+	
+	if actionsToRemoveFound then
+		script:removeMarked()
+		script:commit()
+	end	
+end
+
+function deletePostHolds()
 	local script = ofs.Script(ofs.ActiveIdx())
 	local actionCount = #script.actions
 	
@@ -224,12 +265,41 @@ function cleanRedundants()
 		local prevAction = script.actions[i-1]
 		local currentAction = script.actions[i]
 		
-		if currentAction.at - prevAction.at < 0.02 then
+		if currentAction.at - prevAction.at < 0.019 then
 			script:markForRemoval(i)
 			actionsToRemoveFound = true
 		end
 	end
 	
+	if actionsToRemoveFound then
+		script:removeMarked()
+		script:commit()
+	end	
+end
+
+function deleteIgnoredMidPoints()
+	local script = ofs.Script(ofs.ActiveIdx())
+	local actionCount = #script.actions
+	
+	local actionsToRemoveFound = false
+	for i=2,actionCount-1 do
+		local prevAction = script.actions[i-1]
+		local currentAction = script.actions[i]
+		local nextAction = script.actions[i+1]
+	
+		local isBottom = currentAction.pos < nextAction.pos and currentAction.pos < prevAction.pos
+		local isTop = currentAction.pos > nextAction.pos and currentAction.pos > prevAction.pos
+		local isHold = currentAction.pos == nextAction.pos or currentAction.pos == prevAction.pos
+		local isMid = not isBottom and not isTop and not isHold
+		
+		if isMid and getSpeedBetweenActions(prevAction,currentAction) > 364 then
+			script:markForRemoval(i)
+			actionsToRemoveFound = true
+		end
+		
+		::continue::
+	end
+
 	if actionsToRemoveFound then
 		script:removeMarked()
 		script:commit()
