@@ -37,7 +37,7 @@ internal sealed partial class VideoPlayerWindow
          PlayPauseindicator.Init( _vlc.Player );
          VideoControls.Init( _vlc );
 
-         VideoControls.SetScript( _scriptManager.Model.Script );
+         VideoControls.SetScript( _scriptManager.Script );
 
          _vlc.MediaClosed += OnMediaClosed;
          MouseEventGrid.MouseWheel += OnMouseWheel;
@@ -45,7 +45,7 @@ internal sealed partial class VideoPlayerWindow
       } );
    }
 
-   private void OnScriptChanged( object sender, EventArgs e ) => Dispatcher.Invoke( () => VideoControls.SetScript( _scriptManager.Model.Script ) );
+   private void OnScriptChanged( object sender, EventArgs e ) => Dispatcher.Invoke( () => VideoControls.SetScript( _scriptManager.Script ) );
 
    private void OnClosing( object sender, System.ComponentModel.CancelEventArgs e )
    {

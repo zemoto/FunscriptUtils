@@ -70,7 +70,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
 
       foreach ( var syncTarget in _syncTargets )
       {
-         await syncTarget.UpdateScriptAsync( _scriptManager.Model.Script );
+         await syncTarget.UpdateScriptAsync( _scriptManager.Script );
       }
 
       _vlc.Marquee.FinalizePriorityText( "Updated script synced" );

@@ -10,28 +10,29 @@ namespace VlcScriptPlayer;
 
 internal sealed class ScriptManager : IDisposable
 {
-   public ScriptViewModel Model { get; }
+   public readonly ScriptViewModel _model;
+   private readonly FileSystemWatcher _scriptFileWatcher;
 
    public event EventHandler ScriptChanged;
 
-   private readonly FileSystemWatcher _scriptFileWatcher;
+   public Funscript Script => _model.Script;
 
    public ScriptManager( ScriptViewModel model )
    {
-      Model = model;
-      Model.SelectVideoCommand = new RelayCommand( SelectVideo );
-      Model.SelectScriptCommand = new RelayCommand( SelectScript );
-      Model.SelectScriptFolderCommand = new RelayCommand( SelectScriptFolder );
+      _model = model;
+      _model.SelectVideoCommand = new RelayCommand( SelectVideo );
+      _model.SelectScriptCommand = new RelayCommand( SelectScript );
+      _model.SelectScriptFolderCommand = new RelayCommand( SelectScriptFolder );
       _ = VerifyPaths();
 
-      Model.PropertyChanged += OnPropertyChanged;
+      _model.PropertyChanged += OnPropertyChanged;
 
       _scriptFileWatcher = new FileSystemWatcher
       {
-         Path = Path.GetDirectoryName( Model.ScriptFilePath ),
-         Filter = Path.GetFileName( Model.ScriptFilePath ),
+         Path = Path.GetDirectoryName( _model.ScriptFilePath ),
+         Filter = Path.GetFileName( _model.ScriptFilePath ),
          NotifyFilter = NotifyFilters.LastWrite,
-         EnableRaisingEvents = Model.NotifyOnScriptFileModified
+         EnableRaisingEvents = _model.NotifyOnScriptFileModified
       };
       _scriptFileWatcher.Changed += OnScriptFileChanged;
    }
@@ -41,21 +42,21 @@ internal sealed class ScriptManager : IDisposable
    public bool VerifyPaths()
    {
       bool pathsValid = true;
-      if ( !File.Exists( Model.VideoFilePath ) )
+      if ( !File.Exists( _model.VideoFilePath ) )
       {
-         Model.VideoFilePath = string.Empty;
+         _model.VideoFilePath = string.Empty;
          pathsValid = false;
       }
 
-      if ( !File.Exists( Model.ScriptFilePath ) )
+      if ( !File.Exists( _model.ScriptFilePath ) )
       {
-         Model.ScriptFilePath = string.Empty;
+         _model.ScriptFilePath = string.Empty;
          pathsValid = false;
       }
 
-      if ( !string.IsNullOrEmpty( Model.ScriptFolder ) && !Directory.Exists( Model.ScriptFolder ) )
+      if ( !string.IsNullOrEmpty( _model.ScriptFolder ) && !Directory.Exists( _model.ScriptFolder ) )
       {
-         Model.ScriptFolder = string.Empty;
+         _model.ScriptFolder = string.Empty;
       }
 
       return pathsValid;
@@ -63,31 +64,31 @@ internal sealed class ScriptManager : IDisposable
 
    public void OpenSelectedScriptInEditor()
    {
-      if ( File.Exists( Model.ScriptFilePath ) )
+      if ( File.Exists( _model.ScriptFilePath ) )
       {
-         _ = Process.Start( "explorer", $"\"{Model.ScriptFilePath}\"" );
+         _ = Process.Start( "explorer", $"\"{_model.ScriptFilePath}\"" );
       }
    }
 
    public void NotifyScriptChanged()
    {
-      if ( File.Exists( Model.ScriptFilePath ) )
+      if ( File.Exists( _model.ScriptFilePath ) )
       {
-         Model.ReloadScript();
+         _model.ReloadScript();
          ScriptChanged?.Invoke( this, EventArgs.Empty );
       }
    }
 
    private void OnPropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
    {
-      if ( e.PropertyName.Equals( nameof( Model.ScriptFilePath ), StringComparison.OrdinalIgnoreCase ) )
+      if ( e.PropertyName.Equals( nameof( _model.ScriptFilePath ), StringComparison.OrdinalIgnoreCase ) )
       {
-         _scriptFileWatcher.Path = Path.GetDirectoryName( Model.ScriptFilePath );
-         _scriptFileWatcher.Filter = Path.GetFileName( Model.ScriptFilePath );
+         _scriptFileWatcher.Path = Path.GetDirectoryName( _model.ScriptFilePath );
+         _scriptFileWatcher.Filter = Path.GetFileName( _model.ScriptFilePath );
       }
-      else if ( e.PropertyName.Equals( nameof( Model.NotifyOnScriptFileModified ), StringComparison.OrdinalIgnoreCase ) )
+      else if ( e.PropertyName.Equals( nameof( _model.NotifyOnScriptFileModified ), StringComparison.OrdinalIgnoreCase ) )
       {
-         _scriptFileWatcher.EnableRaisingEvents = Model.NotifyOnScriptFileModified;
+         _scriptFileWatcher.EnableRaisingEvents = _model.NotifyOnScriptFileModified;
       }
    }
 
@@ -112,11 +113,11 @@ internal sealed class ScriptManager : IDisposable
          return;
       }
 
-      Model.VideoFilePath = dlg.FileName;
+      _model.VideoFilePath = dlg.FileName;
 
       var videoFolderPath = Path.GetDirectoryName( dlg.FileName );
       var fileName = Path.GetFileNameWithoutExtension( dlg.FileName );
-      foreach ( var folder in new string[2] { videoFolderPath, Model.ScriptFolder } )
+      foreach ( var folder in new string[2] { videoFolderPath, _model.ScriptFolder } )
       {
          if ( string.IsNullOrEmpty( folder ) )
          {
@@ -128,7 +129,7 @@ internal sealed class ScriptManager : IDisposable
          var matchingScript = Array.Find( scripts, x => Path.GetFileNameWithoutExtension( x ).Equals( fileName, StringComparison.Ordinal ) );
          if ( !string.IsNullOrWhiteSpace( matchingScript ) )
          {
-            Model.ScriptFilePath = matchingScript;
+            _model.ScriptFilePath = matchingScript;
             Logger.Log( $"Found script: {matchingScript}" );
             return;
          }
@@ -146,7 +147,7 @@ internal sealed class ScriptManager : IDisposable
 
       if ( dlg.ShowDialog( Application.Current.MainWindow ) == true )
       {
-         Model.ScriptFilePath = dlg.FileName;
+         _model.ScriptFilePath = dlg.FileName;
       }
    }
 
@@ -155,7 +156,7 @@ internal sealed class ScriptManager : IDisposable
       var dlg = new VistaFolderBrowserDialog() { Multiselect = false };
       if ( dlg.ShowDialog( Application.Current.MainWindow ) == true )
       {
-         Model.ScriptFolder = dlg.SelectedPath;
+         _model.ScriptFolder = dlg.SelectedPath;
       }
    }
 }
