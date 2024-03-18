@@ -1,33 +1,15 @@
-﻿using LibVLCSharp.Shared;
-using System.IO;
-using System.Windows;
-using System.Windows.Threading;
-using ZemotoCommon;
+﻿namespace VlcScriptPlayer;
 
-namespace VlcScriptPlayer;
-
-internal sealed partial class App : System.IDisposable
+internal sealed partial class App : ZemotoCommon.UI.CommonApp
 {
-   private readonly SingleInstance _singleInstance = new( "VlcScriptPlayer", listenForOtherInstances: false );
-
    public App()
+      : base( "VlcScriptPlayer", listenForOtherInstances: false )
    {
-      DispatcherUnhandledException += OnUnhandledException;
-      if ( !_singleInstance.Claim() )
-      {
-         Shutdown();
-      }
    }
 
-   public void Dispose() => _singleInstance.Dispose();
-
-   protected override void OnStartup( StartupEventArgs e )
+   protected override void OnStartup( System.Windows.StartupEventArgs e )
    {
-      Core.Initialize();
+      LibVLCSharp.Shared.Core.Initialize();
       new Main().Start();
    }
-
-   protected override void OnExit( ExitEventArgs e ) => Dispose();
-
-   private void OnUnhandledException( object sender, DispatcherUnhandledExceptionEventArgs e ) => File.WriteAllText( "crash.txt", e.Exception.ToString() );
 }
