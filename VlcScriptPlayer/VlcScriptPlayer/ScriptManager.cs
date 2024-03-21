@@ -27,13 +27,14 @@ internal sealed class ScriptManager : IDisposable
 
       _model.PropertyChanged += OnPropertyChanged;
 
-      _scriptFileWatcher = new FileSystemWatcher
+      _scriptFileWatcher = new FileSystemWatcher { NotifyFilter = NotifyFilters.LastWrite };
+      if ( File.Exists( _model.ScriptFilePath ) )
       {
-         Path = Path.GetDirectoryName( _model.ScriptFilePath ),
-         Filter = Path.GetFileName( _model.ScriptFilePath ),
-         NotifyFilter = NotifyFilters.LastWrite,
-         EnableRaisingEvents = _model.NotifyOnScriptFileModified
-      };
+         _scriptFileWatcher.Path = Path.GetDirectoryName( _model.ScriptFilePath );
+         _scriptFileWatcher.Filter = Path.GetFileName( _model.ScriptFilePath );
+         _scriptFileWatcher.EnableRaisingEvents = _model.NotifyOnScriptFileModified;
+      }
+
       _scriptFileWatcher.Changed += OnScriptFileChanged;
    }
 
@@ -85,6 +86,7 @@ internal sealed class ScriptManager : IDisposable
       {
          _scriptFileWatcher.Path = Path.GetDirectoryName( _model.ScriptFilePath );
          _scriptFileWatcher.Filter = Path.GetFileName( _model.ScriptFilePath );
+         _scriptFileWatcher.EnableRaisingEvents = _model.NotifyOnScriptFileModified;
       }
       else if ( e.PropertyName.Equals( nameof( _model.NotifyOnScriptFileModified ), StringComparison.OrdinalIgnoreCase ) )
       {
