@@ -1,4 +1,4 @@
-﻿[*.cs]
+[*.cs]
 
 # IDE0008: Use explicit type
 dotnet_diagnostic.IDE0008.severity = none
@@ -41,7 +41,7 @@ dotnet_diagnostic.RCS1079.severity = none
 csharp_using_directive_placement = outside_namespace:silent
 csharp_prefer_simple_using_statement = true:suggestion
 csharp_prefer_braces = true:silent
-csharp_style_namespace_declarations = block_scoped:silent
+csharp_style_namespace_declarations = file_scoped:silent
 csharp_style_prefer_method_group_conversion = true:silent
 csharp_style_prefer_top_level_statements = true:silent
 csharp_style_expression_bodied_methods = false:silent
