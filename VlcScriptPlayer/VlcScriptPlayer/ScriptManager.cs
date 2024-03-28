@@ -28,12 +28,7 @@ internal sealed class ScriptManager : IDisposable
       _model.PropertyChanged += OnPropertyChanged;
 
       _scriptFileWatcher = new FileSystemWatcher { NotifyFilter = NotifyFilters.LastWrite };
-      if ( File.Exists( _model.ScriptFilePath ) )
-      {
-         _scriptFileWatcher.Path = Path.GetDirectoryName( _model.ScriptFilePath );
-         _scriptFileWatcher.Filter = Path.GetFileName( _model.ScriptFilePath );
-         _scriptFileWatcher.EnableRaisingEvents = _model.NotifyOnScriptFileModified;
-      }
+      UpdateScriptWatcher();
 
       _scriptFileWatcher.Changed += OnScriptFileChanged;
    }
@@ -80,25 +75,37 @@ internal sealed class ScriptManager : IDisposable
       }
    }
 
+   private void UpdateScriptWatcher()
+   {
+      if ( !string.IsNullOrEmpty( _model.ScriptFilePath ) && File.Exists( _model.ScriptFilePath ) )
+      {
+         _scriptFileWatcher.Path = Path.GetDirectoryName( _model.ScriptFilePath );
+         _scriptFileWatcher.Filter = Path.GetFileName( _model.ScriptFilePath );
+         _scriptFileWatcher.EnableRaisingEvents = true;
+      }
+      else
+      {
+         _scriptFileWatcher.Filter = string.Empty;
+         _scriptFileWatcher.EnableRaisingEvents = false;
+      }
+   }
+
    private void OnPropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
    {
       if ( e.PropertyName.Equals( nameof( _model.ScriptFilePath ), StringComparison.OrdinalIgnoreCase ) )
       {
-         _scriptFileWatcher.Path = Path.GetDirectoryName( _model.ScriptFilePath );
-         _scriptFileWatcher.Filter = Path.GetFileName( _model.ScriptFilePath );
-         _scriptFileWatcher.EnableRaisingEvents = _model.NotifyOnScriptFileModified;
-      }
-      else if ( e.PropertyName.Equals( nameof( _model.NotifyOnScriptFileModified ), StringComparison.OrdinalIgnoreCase ) )
-      {
-         _scriptFileWatcher.EnableRaisingEvents = _model.NotifyOnScriptFileModified;
+         UpdateScriptWatcher();
       }
    }
 
    private void OnScriptFileChanged( object sender, FileSystemEventArgs e )
    {
-      _scriptFileWatcher.EnableRaisingEvents = false;
-      NotifyScriptChanged();
-      _scriptFileWatcher.EnableRaisingEvents = true;
+      if ( _model.NotifyOnScriptFileModified )
+      {
+         _scriptFileWatcher.EnableRaisingEvents = false;
+         NotifyScriptChanged();
+         _scriptFileWatcher.EnableRaisingEvents = true;
+      }
    }
 
    private void SelectVideo()
