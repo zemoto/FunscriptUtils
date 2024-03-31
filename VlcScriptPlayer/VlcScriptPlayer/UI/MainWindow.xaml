@@ -63,13 +63,13 @@
               Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}">
          <Button.IsEnabled>
             <MultiBinding Converter="{x:Static commonui:MultiBoolToBoolAndConverter.Instance}">
-               <Binding Path="ScriptVm.VideoFilePath.Length"
+               <Binding Path="ScriptVm.VideoFile"
                         Converter="{StaticResource InequalityConverter}"
-                        ConverterParameter="0"
+                        ConverterParameter="{x:Null}"
                         Mode="OneWay" />
-               <Binding Path="ScriptVm.ScriptFilePath.Length"
+               <Binding Path="ScriptVm.ScriptFile"
                         Converter="{StaticResource InequalityConverter}"
-                        ConverterParameter="0"
+                        ConverterParameter="{x:Null}"
                         Mode="OneWay" />
             </MultiBinding>
          </Button.IsEnabled>

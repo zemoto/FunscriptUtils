@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using ZemotoCommon;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer;
@@ -38,15 +39,15 @@ internal sealed class ScriptManager : IDisposable
    public bool VerifyPaths()
    {
       bool pathsValid = true;
-      if ( !File.Exists( _model.VideoFilePath ) )
+      if ( !_model.VideoFile.Exists() )
       {
-         _model.VideoFilePath = string.Empty;
+         _model.VideoFile = null;
          pathsValid = false;
       }
 
-      if ( !File.Exists( _model.ScriptFilePath ) )
+      if ( !_model.ScriptFile.Exists() )
       {
-         _model.ScriptFilePath = string.Empty;
+         _model.ScriptFile = null;
          pathsValid = false;
       }
 
@@ -60,15 +61,15 @@ internal sealed class ScriptManager : IDisposable
 
    public void OpenSelectedScriptInEditor()
    {
-      if ( File.Exists( _model.ScriptFilePath ) )
+      if ( _model.ScriptFile.Exists() )
       {
-         _ = Process.Start( "explorer", $"\"{_model.ScriptFilePath}\"" );
+         _ = Process.Start( "explorer", $"\"{_model.ScriptFile}\"" );
       }
    }
 
    public void NotifyScriptChanged()
    {
-      if ( File.Exists( _model.ScriptFilePath ) )
+      if ( _model.ScriptFile.Exists() )
       {
          _model.ReloadScript();
          ScriptChanged?.Invoke( this, EventArgs.Empty );
@@ -77,10 +78,11 @@ internal sealed class ScriptManager : IDisposable
 
    private void UpdateScriptWatcher()
    {
-      if ( !string.IsNullOrEmpty( _model.ScriptFilePath ) && File.Exists( _model.ScriptFilePath ) )
+      var scriptFile = _model.ScriptFile;
+      if ( scriptFile.Exists() )
       {
-         _scriptFileWatcher.Path = Path.GetDirectoryName( _model.ScriptFilePath );
-         _scriptFileWatcher.Filter = Path.GetFileName( _model.ScriptFilePath );
+         _scriptFileWatcher.Path = scriptFile.Directory;
+         _scriptFileWatcher.Filter = scriptFile.FileName;
          _scriptFileWatcher.EnableRaisingEvents = true;
       }
       else
@@ -92,7 +94,7 @@ internal sealed class ScriptManager : IDisposable
 
    private void OnPropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
    {
-      if ( e.PropertyName.Equals( nameof( _model.ScriptFilePath ), StringComparison.OrdinalIgnoreCase ) )
+      if ( e.PropertyName.Equals( nameof( _model.ScriptFile ), StringComparison.OrdinalIgnoreCase ) )
       {
          UpdateScriptWatcher();
       }
@@ -122,11 +124,9 @@ internal sealed class ScriptManager : IDisposable
          return;
       }
 
-      _model.VideoFilePath = dlg.FileName;
+      _model.VideoFile = dlg.FileName;
 
-      var videoFolderPath = Path.GetDirectoryName( dlg.FileName );
-      var fileName = Path.GetFileNameWithoutExtension( dlg.FileName );
-      foreach ( var folder in new string[2] { videoFolderPath, _model.ScriptFolder } )
+      foreach ( var folder in new string[2] { _model.VideoFile.Directory, _model.ScriptFolder } )
       {
          if ( string.IsNullOrEmpty( folder ) )
          {
@@ -135,10 +135,10 @@ internal sealed class ScriptManager : IDisposable
 
          Logger.Log( $"Searching folder for script: {folder}" );
          var scripts = Directory.GetFiles( folder, "*.funscript" ).Concat( Directory.GetFiles( folder, "*.csv" ) ).ToArray();
-         var matchingScript = Array.Find( scripts, x => Path.GetFileNameWithoutExtension( x ).Equals( fileName, StringComparison.Ordinal ) );
+         var matchingScript = Array.Find( scripts, x => Path.GetFileNameWithoutExtension( x ).Equals( _model.VideoFile.FileNameNoExtension, StringComparison.OrdinalIgnoreCase ) );
          if ( !string.IsNullOrWhiteSpace( matchingScript ) )
          {
-            _model.ScriptFilePath = matchingScript;
+            _model.ScriptFile = matchingScript;
             Logger.Log( $"Found script: {matchingScript}" );
             return;
          }
@@ -156,7 +156,7 @@ internal sealed class ScriptManager : IDisposable
 
       if ( dlg.ShowDialog( Application.Current.MainWindow ) == true )
       {
-         _model.ScriptFilePath = dlg.FileName;
+         _model.ScriptFile = dlg.FileName;
       }
    }
 

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 using VlcScriptPlayer.UI;
+using ZemotoCommon;
 
 namespace VlcScriptPlayer;
 
@@ -12,16 +13,7 @@ internal static class ConfigSerializer
       IgnoreReadOnlyProperties = true,
    };
 
-   public static MainViewModel ReadFromFile()
-   {
-      if ( !File.Exists( _configName ) )
-      {
-         return new();
-      }
-
-      var configString = File.ReadAllText( _configName );
-      return JsonSerializer.Deserialize<MainViewModel>( configString );
-   }
+   public static MainViewModel ReadFromFile() => new SystemFile( _configName ).DeserializeContents<MainViewModel>();
 
    public static void SaveToFile( MainViewModel mainVm )
    {

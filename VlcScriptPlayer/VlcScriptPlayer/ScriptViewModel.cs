@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using System.Windows.Input;
 using ZemotoCommon;
 using ZemotoCommon.UI;
@@ -11,50 +9,28 @@ internal sealed class ScriptViewModel : ViewModelBase
 {
    public void ReloadScript() => _script = null;
 
-   private string _videoFilePath = string.Empty;
-   public string VideoFilePath
+   private SystemFile _videoFile;
+   public SystemFile VideoFile
    {
-      get => _videoFilePath;
-      set
-      {
-         if ( SetProperty( ref _videoFilePath, value ) )
-         {
-            OnPropertyChanged( nameof( DisplayedVideoFilePath ) );
-         }
-      }
+      get => _videoFile;
+      set => SetProperty( ref _videoFile, value );
    }
 
-   public string DisplayedVideoFilePath => FileUtils.AbbreviatePath( _videoFilePath );
-
-   private string _scriptFilePath = string.Empty;
-   public string ScriptFilePath
+   private SystemFile _scriptFile;
+   public SystemFile ScriptFile
    {
-      get => _scriptFilePath;
+      get => _scriptFile;
       set
       {
-         if ( SetProperty( ref _scriptFilePath, value ) )
+         if ( SetProperty( ref _scriptFile, value ) )
          {
             _script = null;
-            OnPropertyChanged( nameof( DisplayedScriptFilePath ) );
          }
       }
    }
 
    private Funscript _script;
-   public Funscript Script
-   {
-      get
-      {
-         if ( _script is null && File.Exists( _scriptFilePath ) )
-         {
-            _script = JsonSerializer.Deserialize<Funscript>( File.ReadAllText( _scriptFilePath ) );
-         }
-
-         return _script;
-      }
-   }
-
-   public string DisplayedScriptFilePath => FileUtils.AbbreviatePath( _scriptFilePath );
+   public Funscript Script => _script ??= _scriptFile.DeserializeContents<Funscript>();
 
    private string _scriptFolder = string.Empty;
    public string ScriptFolder

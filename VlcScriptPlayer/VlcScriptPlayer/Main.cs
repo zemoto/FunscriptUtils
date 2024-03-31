@@ -76,7 +76,7 @@ internal sealed class Main : IAsyncDisposable
 
             _window.Hide();
             var videoPlayer = new VideoPlayerWindow( _vlc, _script );
-            videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFilePath );
+            videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFile.FullPath );
 
             _ = videoPlayer.ShowDialog();
          }

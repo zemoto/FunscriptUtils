@@ -36,7 +36,7 @@
       <TextBox Grid.Row="1"
                Grid.Column="0"
                IsReadOnly="True"
-               Text="{Binding DisplayedVideoFilePath, Mode=OneWay}"
+               Text="{Binding VideoFile.AbbreviatedPath, Mode=OneWay}"
                VerticalContentAlignment="Center"
                Focusable="False" />
 
@@ -56,7 +56,7 @@
       <TextBox Grid.Row="4"
                Grid.Column="0"
                IsReadOnly="True"
-               Text="{Binding DisplayedScriptFilePath, Mode=OneWay}"
+               Text="{Binding ScriptFile.AbbreviatedPath, Mode=OneWay}"
                VerticalContentAlignment="Center"
                Focusable="False" />
 
