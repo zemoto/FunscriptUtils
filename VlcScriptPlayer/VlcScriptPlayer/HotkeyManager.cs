@@ -75,9 +75,6 @@ internal sealed class HotkeyManager : IDisposable
          case Key.E when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
             _script.OpenSelectedScriptInEditor();
             break;
-         case Key.U when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
-            _script.NotifyScriptChanged();
-            break;
       }
    }
 }

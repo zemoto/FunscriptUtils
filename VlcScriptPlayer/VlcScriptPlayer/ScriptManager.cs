@@ -127,15 +127,6 @@ internal sealed class ScriptManager : IDisposable
       _tempScriptFileChanged = false;
    }
 
-   public void NotifyScriptChanged()
-   {
-      if ( _model.ScriptFile.Exists() )
-      {
-         _model.ReloadScript();
-         ScriptChanged?.Invoke( this, EventArgs.Empty );
-      }
-   }
-
    public void OnVideoPlayerClosing() => _scriptFileEditorProcess?.Kill();
 
    private void UpdateScriptWatcher()
@@ -172,7 +163,11 @@ internal sealed class ScriptManager : IDisposable
       if ( _model.NotifyOnScriptFileModified )
       {
          _scriptFileWatcher.EnableRaisingEvents = false;
-         NotifyScriptChanged();
+         if ( _model.ScriptFile.Exists() )
+         {
+            _model.ReloadScript();
+            ScriptChanged?.Invoke( this, EventArgs.Empty );
+         }
          _scriptFileWatcher.EnableRaisingEvents = true;
       }
    }
