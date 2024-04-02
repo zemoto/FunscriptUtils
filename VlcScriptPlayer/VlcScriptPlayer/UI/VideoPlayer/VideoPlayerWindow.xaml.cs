@@ -49,6 +49,8 @@ internal sealed partial class VideoPlayerWindow
 
    private void OnClosing( object sender, System.ComponentModel.CancelEventArgs e )
    {
+      _scriptManager.OnVideoPlayerClosing();
+
       Mouse.OverrideCursor = null;
       _hideScrubberTimer.Stop();
       _vlc.MediaClosed -= OnMediaClosed;

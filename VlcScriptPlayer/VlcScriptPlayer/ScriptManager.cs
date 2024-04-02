@@ -1,8 +1,9 @@
-﻿using Ookii.Dialogs.Wpf;
+using Ookii.Dialogs.Wpf;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using ZemotoCommon;
 using ZemotoCommon.UI;
@@ -13,6 +14,10 @@ internal sealed class ScriptManager : IDisposable
 {
    public readonly ScriptViewModel _model;
    private readonly FileSystemWatcher _scriptFileWatcher;
+
+   private Process _scriptFileEditorProcess;
+   private SystemFile _originalScriptFile;
+   private bool _tempScriptFileChanged;
 
    public event EventHandler ScriptChanged;
 
@@ -61,10 +66,65 @@ internal sealed class ScriptManager : IDisposable
 
    public void OpenSelectedScriptInEditor()
    {
-      if ( _model.ScriptFile.Exists() )
+      if ( _scriptFileEditorProcess is not null )
       {
-         _ = Process.Start( "explorer", $"\"{_model.ScriptFile}\"" );
+         NativeMethods.SetForegroundWindow( _scriptFileEditorProcess.MainWindowHandle );
+         return;
       }
+
+      if ( !_model.ScriptFile.Exists() || !FileUtils.GetDefaultAppForExtension( _model.ScriptFile.Extension, out var editorExe ) )
+      {
+         return;
+      }
+
+      if ( _originalScriptFile is null && !NameAndDirectoryMatch( _model.ScriptFile, _model.VideoFile ) )
+      {
+         if ( _model.ScriptFile.CopyTo( _model.VideoFile.Directory, _model.VideoFile.NameNoExtension, overwrite: false, out var tempScriptFile ) )
+         {
+            _originalScriptFile = _model.ScriptFile;
+            _model.ScriptFile = tempScriptFile;
+         }
+         else
+         {
+            return;
+         }
+      }
+
+      EditScriptAsync( editorExe );
+   }
+
+   public static bool NameAndDirectoryMatch( SystemFile l, SystemFile r ) => l.NameNoExtension.Equals( r.NameNoExtension, StringComparison.OrdinalIgnoreCase ) && l.Directory.Equals( r.Directory, StringComparison.OrdinalIgnoreCase );
+
+   private async void EditScriptAsync( string editorExe )
+   {
+      await Task.Run( () =>
+      {
+         _scriptFileEditorProcess = Process.Start( editorExe, $"\"{_model.ScriptFile.FullPath}\"" );
+         _scriptFileEditorProcess.WaitForExit();
+         _scriptFileEditorProcess.Dispose();
+         _scriptFileEditorProcess = null;
+      } );
+
+      if ( _originalScriptFile is not null )
+      {
+         if ( _tempScriptFileChanged )
+         {
+            if ( !_model.ScriptFile.MoveTo( _originalScriptFile.FullPath, overwrite: true, out _ ) )
+            {
+               _model.ScriptFile.Delete();
+            }
+
+            _model.ScriptFile = _originalScriptFile;
+         }
+         else
+         {
+            _model.ScriptFile.Delete();
+            _model.ScriptFile = _originalScriptFile;
+         }
+      }
+
+      _originalScriptFile = null;
+      _tempScriptFileChanged = false;
    }
 
    public void NotifyScriptChanged()
@@ -76,13 +136,15 @@ internal sealed class ScriptManager : IDisposable
       }
    }
 
+   public void OnVideoPlayerClosing() => _scriptFileEditorProcess?.Kill();
+
    private void UpdateScriptWatcher()
    {
       var scriptFile = _model.ScriptFile;
       if ( scriptFile.Exists() )
       {
          _scriptFileWatcher.Path = scriptFile.Directory;
-         _scriptFileWatcher.Filter = scriptFile.FileName;
+         _scriptFileWatcher.Filter = scriptFile.Name;
          _scriptFileWatcher.EnableRaisingEvents = true;
       }
       else
@@ -102,6 +164,11 @@ internal sealed class ScriptManager : IDisposable
 
    private void OnScriptFileChanged( object sender, FileSystemEventArgs e )
    {
+      if ( _originalScriptFile is not null )
+      {
+         _tempScriptFileChanged = true;
+      }
+
       if ( _model.NotifyOnScriptFileModified )
       {
          _scriptFileWatcher.EnableRaisingEvents = false;
@@ -135,7 +202,7 @@ internal sealed class ScriptManager : IDisposable
 
          Logger.Log( $"Searching folder for script: {folder}" );
          var scripts = Directory.GetFiles( folder, "*.funscript" ).Concat( Directory.GetFiles( folder, "*.csv" ) ).ToArray();
-         var matchingScript = Array.Find( scripts, x => Path.GetFileNameWithoutExtension( x ).Equals( _model.VideoFile.FileNameNoExtension, StringComparison.OrdinalIgnoreCase ) );
+         var matchingScript = Array.Find( scripts, x => Path.GetFileNameWithoutExtension( x ).Equals( _model.VideoFile.NameNoExtension, StringComparison.OrdinalIgnoreCase ) );
          if ( !string.IsNullOrWhiteSpace( matchingScript ) )
          {
             _model.ScriptFile = matchingScript;
