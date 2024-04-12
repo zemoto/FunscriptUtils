@@ -1,5 +1,6 @@
 using LibVLCSharp.Shared;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -8,13 +9,23 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using VlcScriptPlayer.Vlc;
 using VlcScriptPlayer.Vlc.Filter;
+using ZemotoCommon;
 using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI.VideoPlayer;
 
+internal sealed class SnapPoint( string name, double percent )
+{
+   public string Name { get; } = name;
+   public double Percent { get; } = percent;
+}
+
 internal sealed partial class VideoControls
 {
+   private const double _snapThreshold = 0.003;
+
    private readonly DispatcherTimer _playbackTimer;
+   private readonly List<SnapPoint> _snapPoints = [];
 
    private MediaPlayer _player;
    private VlcFilter _filter;
@@ -50,9 +61,38 @@ internal sealed partial class VideoControls
 
    public void SetScript( Funscript script )
    {
-      if ( script is not null && _timeProvider is not null )
+      _snapPoints.Clear();
+      Heatmap.Fill = null;
+
+      if ( script is null || _timeProvider is null )
       {
-         Heatmap.Fill = HeatmapGenerator.GetHeatmapBrush( script, _timeProvider.Duration.TotalMilliseconds );
+         return;
+      }
+
+      var videoDuration = _timeProvider.Duration;
+      Heatmap.Fill = HeatmapGenerator.GetHeatmapBrush( script, _timeProvider.Duration.TotalMilliseconds );
+
+      var chapters = script.Metadata?.Chapters;
+      if ( chapters is null || chapters.Count == 0 )
+      {
+         return;
+      }
+
+      double previousPercent = double.NaN;
+      const double doubleSnapThreshold = _snapThreshold * 2;
+      foreach ( var chapter in chapters )
+      {
+         var percent = chapter.StartTime / videoDuration;
+         if ( doubleSnapThreshold < percent && percent < 1 - doubleSnapThreshold && ( double.IsNaN( previousPercent ) || percent - previousPercent > doubleSnapThreshold ) )
+         {
+            _snapPoints.Add( new SnapPoint( chapter.Name, percent ) );
+            previousPercent = percent;
+         }
+      }
+
+      if ( _snapPoints.Count != 0 )
+      {
+         SnapIndicator.ItemsSource = _snapPoints;
       }
    }
 
@@ -126,21 +166,47 @@ internal sealed partial class VideoControls
 
    private void OnScrubberMouseMove( object sender, MouseEventArgs e )
    {
-      TrackPreview.Width = Math.Clamp( Mouse.GetPosition( TrackContainer ).X, 0, TrackContainer.ActualWidth );
+      var pos = Mouse.GetPosition( TrackContainer ).X;
+      var percentPos = pos / TrackContainer.ActualWidth;
 
-      TimePreviewText.Text = _timeProvider.GetTimeStringAtPosition( TrackPreview.Width / PositionTrack.ActualWidth );
+      string snapPointName = string.Empty;
+      if ( percentPos < _snapThreshold )
+      {
+         pos = 0;
+         percentPos = 0;
+      }
+      else
+      {
+         var snapPoint = _snapPoints.Find( x => Math.Abs( x.Percent - percentPos ) <= _snapThreshold );
+         if ( snapPoint is not null )
+         {
+            pos = snapPoint.Percent * TrackContainer.ActualWidth;
+            percentPos = snapPoint.Percent;
+            snapPointName = snapPoint.Name;
+         }
+      }
+
+      if ( TrackPreview.Width.IsEqualTo( pos ) )
+      {
+         return;
+      }
+
+      TrackPreview.Width = pos;
+
+      var timeString = _timeProvider.GetTimeStringAtPosition( percentPos );
+      if ( !string.IsNullOrEmpty( snapPointName ) )
+      {
+         timeString += $" {snapPointName}";
+      }
+
+      TimePreviewText.Text = timeString;
+      TimePreviewText.UpdateLayout();
       Canvas.SetLeft( TimePreview, TrackPreview.Width - ( TimePreview.ActualWidth / 2 ) );
    }
 
    private async void OnTrackClicked( object sender, RoutedEventArgs e )
    {
       var newPosition = (float)( TrackPreview.Width / PositionTrack.ActualWidth );
-
-      // Snap to the beginning if clicking early enough
-      if ( newPosition < 0.01f )
-      {
-         newPosition = 0;
-      }
 
       if ( _playbackTimer.IsEnabled )
       {

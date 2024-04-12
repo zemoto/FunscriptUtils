@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:commonControls="clr-namespace:ZemotoCommon.UI.Controls"
              mc:Ignorable="d"
              Unloaded="OnUnloaded">
    <Grid>
@@ -32,11 +33,11 @@
                     Visibility="Collapsed">
                <Border.Background>
                   <SolidColorBrush Color="Black"
-                                   Opacity="0.7" />
+                                   Opacity="0.5" />
                </Border.Background>
                <TextBlock x:Name="TimePreviewText"
                           FontWeight="SemiBold"
-                          Margin="8,2,7,4"
+                          Margin="6,2,6,4"
                           Foreground="White" />
             </Border>
          </Canvas>
@@ -44,15 +45,16 @@
          <Grid x:Name="PositionTrack"
                Grid.Row="0"
                Cursor="Hand"
-               Height="16"
+               Height="17"
                Background="Transparent">
             <Grid x:Name="TrackContainer"
                   Opacity="0.72"
                   VerticalAlignment="Bottom"
-                  Margin="0,0,0,6"
+                  Margin="0,0,0,7"
                   Height="3">
                <Rectangle x:Name="TrackBackground"
                           Fill="#9C9C9C"
+                          Opacity="0.7"
                           RadiusX="2"
                           RadiusY="2" />
 
@@ -68,14 +70,36 @@
                           HorizontalAlignment="Left"
                           RadiusX="2"
                           RadiusY="2" />
+
+               <ItemsControl x:Name="SnapIndicator">
+                  <ItemsControl.ItemsPanel>
+                     <ItemsPanelTemplate>
+                        <commonControls:RatioCanvas />
+                     </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemContainerStyle>
+                     <Style>
+                        <Setter Property="commonControls:RatioCanvas.XRatio"
+                                Value="{Binding Percent, Mode=OneTime}" />
+                     </Style>
+                  </ItemsControl.ItemContainerStyle>
+                  <ItemsControl.ItemTemplate>
+                     <DataTemplate>
+                        <Rectangle Width="2"
+                                   Height="99"
+                                   HorizontalAlignment="Center"
+                                   Fill="Black"
+                                   StrokeThickness="0" />
+                     </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+               </ItemsControl>
             </Grid>
             
             <Rectangle x:Name="Heatmap"
                        Opacity="0.5"
                        VerticalAlignment="Bottom"
                        Fill="Transparent"
-                       Height="4"
-                       Margin="0,0,0,-1" />
+                       Height="4" />
          </Grid>
 
          <TextBlock x:Name="TimeLabelContainer"
