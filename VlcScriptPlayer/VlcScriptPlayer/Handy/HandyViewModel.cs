@@ -4,58 +4,30 @@ using System.Windows.Input;
 
 namespace VlcScriptPlayer.Handy;
 
-internal sealed class HandyViewModel : ObservableObject
+internal sealed partial class HandyViewModel : ObservableObject
 {
+   [property: JsonIgnore]
+   [ObservableProperty]
    private bool _requestInProgress;
-   [JsonIgnore]
-   public bool RequestInProgress
-   {
-      get => _requestInProgress;
-      set => SetProperty( ref _requestInProgress, value );
-   }
 
+   [property: JsonIgnore]
+   [ObservableProperty]
    private bool _isConnected;
-   [JsonIgnore]
-   public bool IsConnected
-   {
-      get => _isConnected;
-      set => SetProperty( ref _isConnected, value );
-   }
 
+   [ObservableProperty]
    private string _connectionId;
-   public string ConnectionId
-   {
-      get => _connectionId;
-      set => SetProperty( ref _connectionId, value );
-   }
 
+   [ObservableProperty]
    private int _desiredOffset = -125;
-   public int DesiredOffset
-   {
-      get => _desiredOffset;
-      set => SetProperty( ref _desiredOffset, value );
-   }
 
+   [ObservableProperty]
    private double _desiredSlideMin;
-   public double DesiredSlideMin
-   {
-      get => _desiredSlideMin;
-      set => SetProperty( ref _desiredSlideMin, value );
-   }
 
+   [ObservableProperty]
    private double _desiredSlideMax = 100;
-   public double DesiredSlideMax
-   {
-      get => _desiredSlideMax;
-      set => SetProperty( ref _desiredSlideMax, value );
-   }
 
+   [ObservableProperty]
    private bool _setOptionsWhenSyncing = true;
-   public bool SetOptionsWhenSyncing
-   {
-      get => _setOptionsWhenSyncing;
-      set => SetProperty( ref _setOptionsWhenSyncing, value );
-   }
 
    [JsonIgnore]
    public ICommand ConnectCommand { get; set; }

@@ -36,6 +36,9 @@ dotnet_diagnostic.CA1031.severity = none
 # IDE0058: Expression value is never used
 dotnet_diagnostic.IDE0058.severity = suggestion
 
+# MVVMTK0034: Direct field reference to [ObservableProperty] backing field
+dotnet_diagnostic.MVVMTK0034.severity = none
+
 # RCS1079: Implement the method instead of throwing NotImplementedException
 dotnet_diagnostic.RCS1079.severity = none
 csharp_using_directive_placement = outside_namespace:silent

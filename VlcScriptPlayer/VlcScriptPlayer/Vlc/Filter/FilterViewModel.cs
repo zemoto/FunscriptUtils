@@ -30,26 +30,14 @@ internal enum EqualizerPresets : uint
    Techno
 }
 
-internal sealed class FilterViewModel : ObservableObject
+internal sealed partial class FilterViewModel : ObservableObject
 {
+   [ObservableProperty]
    private EqualizerPresets _equalizerPreset = EqualizerPresets.Headphones;
-   public EqualizerPresets EqualizerPreset
-   {
-      get => _equalizerPreset;
-      set => SetProperty( ref _equalizerPreset, value );
-   }
 
+   [ObservableProperty]
    private bool _boostBass;
-   public bool BoostBass
-   {
-      get => _boostBass;
-      set => SetProperty( ref _boostBass, value );
-   }
 
+   [ObservableProperty]
    private bool _boostSaturation;
-   public bool BoostSaturation
-   {
-      get => _boostSaturation;
-      set => SetProperty( ref _boostSaturation, value );
-   }
 }

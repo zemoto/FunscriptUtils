@@ -4,7 +4,7 @@ using System;
 
 namespace VlcScriptPlayer.Vlc.Filter;
 
-internal sealed class VlcFilter( MediaPlayer player, MarqueeViewModel marquee ) : ObservableObject, IDisposable
+internal sealed partial class VlcFilter( MediaPlayer player, MarqueeViewModel marquee ) : ObservableObject, IDisposable
 {
    [Flags]
    private enum EqualizerUpdateType
@@ -48,54 +48,33 @@ internal sealed class VlcFilter( MediaPlayer player, MarqueeViewModel marquee ) 
    {
       if ( updateType.HasFlag( EqualizerUpdateType.Volume ) )
       {
-         _ = _equalizer.SetPreamp( _volumeAmpEnabled ? 20f : _defaultPreampValue );
+         _ = _equalizer.SetPreamp( VolumeAmpEnabled ? 20f : _defaultPreampValue );
       }
       if ( updateType.HasFlag( EqualizerUpdateType.Bass ) )
       {
-         _ = _equalizer.SetAmp( _bassBoostEnabled ? 20f : _defaultBassValue, 0 );
+         _ = _equalizer.SetAmp( BassBoostEnabled ? 20f : _defaultBassValue, 0 );
       }
 
       _ = player.SetEqualizer( _equalizer );
    }
 
+   [ObservableProperty]
    private bool _volumeAmpEnabled;
-   public bool VolumeAmpEnabled
-   {
-      get => _volumeAmpEnabled;
-      set
-      {
-         if ( SetProperty( ref _volumeAmpEnabled, value ) )
-         {
-            SetEqualizer( EqualizerUpdateType.Volume );
-         }
-      }
-   }
+   partial void OnVolumeAmpEnabledChanged( bool value ) => SetEqualizer( EqualizerUpdateType.Volume );
 
+   [ObservableProperty]
    private bool _bassBoostEnabled;
-   public bool BassBoostEnabled
+   partial void OnBassBoostEnabledChanged( bool value )
    {
-      get => _bassBoostEnabled;
-      set
-      {
-         if ( SetProperty( ref _bassBoostEnabled, value ) )
-         {
-            SetEqualizer( EqualizerUpdateType.Bass );
-            marquee.SetText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
-         }
-      }
+      SetEqualizer( EqualizerUpdateType.Bass );
+      marquee.SetText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
    }
 
+   [ObservableProperty]
    private bool _saturationBoostEnabled;
-   public bool SaturationBoostEnabled
+   partial void OnSaturationBoostEnabledChanged( bool value )
    {
-      get => _saturationBoostEnabled;
-      set
-      {
-         if ( SetProperty( ref _saturationBoostEnabled, value ) )
-         {
-            player.SetAdjustFloat( VideoAdjustOption.Saturation, value ? 1.5f : 1f );
-            marquee.SetText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
-         }
-      }
+      player.SetAdjustFloat( VideoAdjustOption.Saturation, value ? 1.5f : 1f );
+      marquee.SetText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
    }
 }

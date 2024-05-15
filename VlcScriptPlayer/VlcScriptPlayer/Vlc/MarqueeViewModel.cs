@@ -16,7 +16,7 @@ internal enum MarqueeType
    Process
 }
 
-internal sealed class MarqueeViewModel : ObservableObject
+internal sealed partial class MarqueeViewModel : ObservableObject
 {
    private bool _enabled;
    private MarqueeType _type;
@@ -59,12 +59,8 @@ internal sealed class MarqueeViewModel : ObservableObject
       SetText( text );
    }
 
+   [ObservableProperty]
    private string _text;
-   public string Text
-   {
-      get => _text;
-      private set => SetProperty( ref _text, value );
-   }
 
    public MarqueePosition Position
    {

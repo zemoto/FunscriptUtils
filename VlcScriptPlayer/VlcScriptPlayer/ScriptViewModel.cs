@@ -5,46 +5,25 @@ using ZemotoCommon;
 
 namespace VlcScriptPlayer;
 
-internal sealed class ScriptViewModel : ObservableObject
+internal sealed partial class ScriptViewModel : ObservableObject
 {
    public void ReloadScript() => _script = null;
 
+   [ObservableProperty]
    private SystemFile _videoFile;
-   public SystemFile VideoFile
-   {
-      get => _videoFile;
-      set => SetProperty( ref _videoFile, value );
-   }
 
+   [ObservableProperty]
    private SystemFile _scriptFile;
-   public SystemFile ScriptFile
-   {
-      get => _scriptFile;
-      set
-      {
-         if ( SetProperty( ref _scriptFile, value ) )
-         {
-            _script = null;
-         }
-      }
-   }
+   partial void OnScriptFileChanged( SystemFile value ) => _script = null;
 
    private Funscript _script;
    public Funscript Script => _script ??= _scriptFile.DeserializeContents<Funscript>();
 
+   [ObservableProperty]
    private string _scriptFolder = string.Empty;
-   public string ScriptFolder
-   {
-      get => _scriptFolder;
-      set => SetProperty( ref _scriptFolder, value );
-   }
 
+   [ObservableProperty]
    private bool _notifyOnScriptFileModified;
-   public bool NotifyOnScriptFileModified
-   {
-      get => _notifyOnScriptFileModified;
-      set => SetProperty( ref _notifyOnScriptFileModified, value );
-   }
 
    [JsonIgnore]
    public ICommand SelectVideoCommand { get; set; }

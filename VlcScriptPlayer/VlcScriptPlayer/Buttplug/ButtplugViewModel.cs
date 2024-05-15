@@ -4,46 +4,25 @@ using System.Windows.Input;
 
 namespace VlcScriptPlayer.Buttplug;
 
-internal sealed class ButtplugViewModel : ObservableObject
+internal sealed partial class ButtplugViewModel : ObservableObject
 {
+   [property: JsonIgnore]
+   [ObservableProperty]
    private bool _isConnectedToServer;
-   [JsonIgnore]
-   public bool IsConnectedToServer
-   {
-      get => _isConnectedToServer;
-      set => SetProperty( ref _isConnectedToServer, value );
-   }
 
    [JsonIgnore]
-   public bool IsConnectedToDevice => !string.IsNullOrEmpty( DeviceName );
+   public bool IsConnectedToDevice => !string.IsNullOrEmpty( _deviceName );
 
+   [property: JsonIgnore]
+   [ObservableProperty]
+   [NotifyPropertyChangedFor( nameof( IsConnectedToDevice ) )]
    private string _deviceName;
-   [JsonIgnore]
-   public string DeviceName
-   {
-      get => _deviceName;
-      set
-      {
-         if ( SetProperty( ref _deviceName, value ) )
-         {
-            OnPropertyChanged( nameof( IsConnectedToDevice ) );
-         }
-      }
-   }
 
+   [ObservableProperty]
    private int _intensity = 100;
-   public int Intensity
-   {
-      get => _intensity;
-      set => SetProperty( ref _intensity, value );
-   }
 
+   [ObservableProperty]
    private int _offset = -125;
-   public int Offset
-   {
-      get => _offset;
-      set => SetProperty( ref _offset, value );
-   }
 
    [JsonIgnore]
    public ICommand ConnectToServerCommand { get; set; }
