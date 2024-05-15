@@ -1,4 +1,4 @@
-﻿using ZemotoCommon.UI;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace VlcScriptPlayer.Vlc;
 
@@ -16,7 +16,7 @@ internal enum MarqueeType
    Process
 }
 
-internal sealed class MarqueeViewModel : ViewModelBase
+internal sealed class MarqueeViewModel : ObservableObject
 {
    private bool _enabled;
    private MarqueeType _type;

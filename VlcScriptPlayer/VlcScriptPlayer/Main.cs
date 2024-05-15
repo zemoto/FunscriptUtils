@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -7,7 +8,6 @@ using VlcScriptPlayer.UI;
 using VlcScriptPlayer.UI.VideoPlayer;
 using VlcScriptPlayer.Vlc;
 using ZemotoCommon;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer;
 

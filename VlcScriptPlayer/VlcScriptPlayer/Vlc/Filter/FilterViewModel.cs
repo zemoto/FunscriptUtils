@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using ZemotoCommon.UI;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.ComponentModel;
 
 namespace VlcScriptPlayer.Vlc.Filter;
 
@@ -30,7 +30,7 @@ internal enum EqualizerPresets : uint
    Techno
 }
 
-internal sealed class FilterViewModel : ViewModelBase
+internal sealed class FilterViewModel : ObservableObject
 {
    private EqualizerPresets _equalizerPreset = EqualizerPresets.Headphones;
    public EqualizerPresets EqualizerPreset

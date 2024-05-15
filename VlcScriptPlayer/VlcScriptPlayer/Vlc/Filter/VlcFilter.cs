@@ -1,10 +1,10 @@
-﻿using LibVLCSharp.Shared;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using LibVLCSharp.Shared;
 using System;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc.Filter;
 
-internal sealed class VlcFilter( MediaPlayer player, MarqueeViewModel marquee ) : ViewModelBase, IDisposable
+internal sealed class VlcFilter( MediaPlayer player, MarqueeViewModel marquee ) : ObservableObject, IDisposable
 {
    [Flags]
    private enum EqualizerUpdateType

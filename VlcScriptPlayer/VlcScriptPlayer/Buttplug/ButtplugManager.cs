@@ -1,8 +1,8 @@
 using Buttplug.Client;
 using Buttplug.Client.Connectors.WebsocketConnector;
+using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Threading.Tasks;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Buttplug;
 

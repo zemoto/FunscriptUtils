@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using LibVLCSharp.Shared;
 using System;
 using System.Linq;
@@ -5,7 +6,6 @@ using System.Threading;
 using System.Windows;
 using VlcScriptPlayer.UI;
 using VlcScriptPlayer.Vlc.Filter;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc;
 

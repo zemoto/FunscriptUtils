@@ -1,10 +1,10 @@
-﻿using System.Text.Json.Serialization;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Text.Json.Serialization;
 using System.Windows.Input;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Buttplug;
 
-internal sealed class ButtplugViewModel : ViewModelBase
+internal sealed class ButtplugViewModel : ObservableObject
 {
    private bool _isConnectedToServer;
    [JsonIgnore]

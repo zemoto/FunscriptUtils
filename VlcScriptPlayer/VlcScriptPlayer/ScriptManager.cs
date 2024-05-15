@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using Ookii.Dialogs.Wpf;
 using System;
 using System.Diagnostics;
@@ -6,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using ZemotoCommon;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer;
 

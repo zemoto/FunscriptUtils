@@ -1,10 +1,10 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text.Json.Serialization;
 using System.Windows.Input;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Handy;
 
-internal sealed class HandyViewModel : ViewModelBase
+internal sealed class HandyViewModel : ObservableObject
 {
    private bool _requestInProgress;
    [JsonIgnore]

@@ -1,9 +1,9 @@
-﻿using System;
-using ZemotoCommon.UI;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System;
 
 namespace VlcScriptPlayer;
 
-internal sealed class Logger : ViewModelBase
+internal sealed class Logger : ObservableObject
 {
    public static readonly Logger Instance = new();
 

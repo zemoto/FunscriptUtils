@@ -1,13 +1,13 @@
+using CommunityToolkit.Mvvm.Input;
 using System.Text.Json.Serialization;
 using VlcScriptPlayer.Buttplug;
 using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.Vlc;
 using VlcScriptPlayer.Vlc.Filter;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.UI;
 
-internal sealed class MainViewModel : ViewModelBase
+internal sealed class MainViewModel
 {
    public HandyViewModel HandyVm { get; init; } = new();
    public ButtplugViewModel ButtplugVm { get; init; } = new();

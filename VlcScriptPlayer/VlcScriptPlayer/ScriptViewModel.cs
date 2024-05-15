@@ -1,11 +1,11 @@
-﻿using System.Text.Json.Serialization;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Text.Json.Serialization;
 using System.Windows.Input;
 using ZemotoCommon;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer;
 
-internal sealed class ScriptViewModel : ViewModelBase
+internal sealed class ScriptViewModel : ObservableObject
 {
    public void ReloadScript() => _script = null;
 

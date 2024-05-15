@@ -1,11 +1,12 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using ZemotoCommon.UI;
 
 namespace VlcScriptPlayer.Vlc;
 
-internal sealed class PlaybackSettingsViewModel : ViewModelBase
+internal sealed class PlaybackSettingsViewModel : ObservableObject
 {
    private List<string> _audioOutputs;
    [JsonIgnore]
