@@ -4,7 +4,7 @@ using System;
 
 namespace VlcScriptPlayer.Vlc.Filter;
 
-internal sealed partial class VlcFilter( MediaPlayer player, MarqueeViewModel marquee ) : ObservableObject, IDisposable
+internal sealed partial class VlcFilter : ObservableObject, IDisposable
 {
    [Flags]
    private enum EqualizerUpdateType
@@ -15,9 +15,19 @@ internal sealed partial class VlcFilter( MediaPlayer player, MarqueeViewModel ma
       All = Volume | Bass
    }
 
+   private readonly MediaPlayer _player;
+   private readonly MarqueeViewModel _marquee;
+
    private Equalizer _equalizer;
    private float _defaultBassValue;
    private float _defaultPreampValue;
+
+   public VlcFilter( MediaPlayer player, MarqueeViewModel marquee )
+   {
+      _player = player;
+      _marquee = marquee;
+      _player.SetAdjustFloat( VideoAdjustOption.Saturation, 1.5f );
+   }
 
    public void Dispose() => _equalizer?.Dispose();
 
@@ -34,14 +44,13 @@ internal sealed partial class VlcFilter( MediaPlayer player, MarqueeViewModel ma
       SetEqualizer( EqualizerUpdateType.All );
 
       _saturationBoostEnabled = filterConfig.BoostSaturation;
-      player.SetAdjustInt( VideoAdjustOption.Enable, 1 );
-      player.SetAdjustFloat( VideoAdjustOption.Saturation, _saturationBoostEnabled ? 1.5f : 1f );
+      _player.SetAdjustInt( VideoAdjustOption.Enable, _saturationBoostEnabled ? 1 : 0 );
    }
 
    // This must be called before MediaPlayer.Stop() or else an Access Violation will occur when libvlc unloads the filters module.
    public void UnsetFilters()
    {
-      player.SetAdjustInt( VideoAdjustOption.Enable, 0 );
+      _player.SetAdjustInt( VideoAdjustOption.Enable, 0 );
    }
 
    private void SetEqualizer( EqualizerUpdateType updateType )
@@ -55,7 +64,7 @@ internal sealed partial class VlcFilter( MediaPlayer player, MarqueeViewModel ma
          _ = _equalizer.SetAmp( BassBoostEnabled ? 20f : _defaultBassValue, 0 );
       }
 
-      _ = player.SetEqualizer( _equalizer );
+      _ = _player.SetEqualizer( _equalizer );
    }
 
    [ObservableProperty]
@@ -67,14 +76,14 @@ internal sealed partial class VlcFilter( MediaPlayer player, MarqueeViewModel ma
    partial void OnBassBoostEnabledChanged( bool value )
    {
       SetEqualizer( EqualizerUpdateType.Bass );
-      marquee.SetText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
+      _marquee.SetText( value ? "Bass Boost Enabled" : "Bass Boost Disabled" );
    }
 
    [ObservableProperty]
    private bool _saturationBoostEnabled;
    partial void OnSaturationBoostEnabledChanged( bool value )
    {
-      player.SetAdjustFloat( VideoAdjustOption.Saturation, value ? 1.5f : 1f );
-      marquee.SetText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
+      _player.SetAdjustInt( VideoAdjustOption.Enable, value ? 1 : 0 );
+      _marquee.SetText( value ? "Saturation Boost Enabled" : "Saturation Boost Disabled" );
    }
 }
