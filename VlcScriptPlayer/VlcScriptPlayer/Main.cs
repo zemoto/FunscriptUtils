@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using VlcScriptPlayer.Buttplug;
@@ -27,6 +29,13 @@ internal sealed class Main : IAsyncDisposable
    {
       _model = ConfigSerializer.ReadFromFile();
       _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync(), () => !_playerOpen );
+
+      var monitors = new List<string>();
+      for ( int i = 0; i < System.Windows.Forms.Screen.AllScreens.Length; i++ )
+      {
+         monitors.Add( $"Monitor {i + 1}" );
+      }
+      _model.PlaybackVm.Monitors = monitors;
 
       _vlc = new VlcManager( _model.FilterVm, _model.PlaybackVm );
       _handy = new HandyManager( _model.HandyVm );
@@ -75,7 +84,7 @@ internal sealed class Main : IAsyncDisposable
             }
 
             _window.Hide();
-            var videoPlayer = new VideoPlayerWindow( _vlc, _script );
+            var videoPlayer = new VideoPlayerWindow( _vlc, _script, _model.PlaybackVm.SelectedMonitorIdx );
             videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFile.FullPath );
 
             _ = videoPlayer.ShowDialog();

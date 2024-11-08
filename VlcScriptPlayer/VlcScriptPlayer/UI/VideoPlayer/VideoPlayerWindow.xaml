@@ -8,13 +8,13 @@
         xmlns:videoPlayer="clr-namespace:VlcScriptPlayer.UI.VideoPlayer"
         mc:Ignorable="d"
         x:Name="Root"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         AllowsTransparency="True"
         ShowActivated="True"
         SizeToContent="Manual"
         WindowStyle="None"
-        WindowState="Maximized"
         Closing="OnClosing"
+        Loaded="OnLoaded"
         Cursor="Arrow">
    <wpf:VideoView x:Name="VideoPlayer"
                   Background="Black">

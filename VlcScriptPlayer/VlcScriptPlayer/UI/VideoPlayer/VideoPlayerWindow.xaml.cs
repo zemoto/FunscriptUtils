@@ -13,7 +13,7 @@ internal sealed partial class VideoPlayerWindow
    private readonly VlcManager _vlc;
    private readonly ScriptManager _scriptManager;
 
-   public VideoPlayerWindow( VlcManager vlc, ScriptManager scriptManager )
+   public VideoPlayerWindow( VlcManager vlc, ScriptManager scriptManager, int monitorIdx )
    {
       _hideScrubberTimer = new DispatcherTimer( TimeSpan.FromSeconds( 1 ), DispatcherPriority.Normal, OnHideScrubberTimerTick, Dispatcher ) { IsEnabled = false };
       _vlc = vlc;
@@ -25,6 +25,18 @@ internal sealed partial class VideoPlayerWindow
       VideoPlayer.MediaPlayer = vlc.Player;
 
       vlc.MediaOpened += OnMediaOpened;
+
+      var targetScreen = System.Windows.Forms.Screen.AllScreens[monitorIdx];
+      var workingArea = targetScreen.WorkingArea;
+      Left = workingArea.Left;
+      Top = workingArea.Top;
+      Width = workingArea.Width;
+      Height = workingArea.Height;
+   }
+
+   private void OnLoaded( object sender, RoutedEventArgs e )
+   {
+      WindowState = WindowState.Maximized;
    }
 
    private void OnMediaOpened( object sender, EventArgs e )

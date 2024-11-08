@@ -16,26 +16,44 @@
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
          <ColumnDefinition Width="Auto" />
+         <ColumnDefinition Width="Auto" />
          <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
 
-      <Button Grid.Row="0"
-              Grid.Column="0"
-              Grid.ColumnSpan="90"
-              HorizontalAlignment="Left"
-              Padding="12,0"
-              Content="Advanced"
-              Command="{Binding ShowAdvancedPlaybackSettingsCommand, Mode=OneTime}" />
+      <StackPanel Grid.Row="0"
+                  Grid.Column="0"
+                  Grid.ColumnSpan="90"
+                  Orientation="Horizontal">
+         <TextBlock Text="Monitor:"
+                    VerticalAlignment="Center"
+                    Margin="0,0,8,0" />
+
+         <ComboBox ItemsSource="{Binding Monitors, Mode=OneWay}"
+                   SelectedIndex="{Binding SelectedMonitorIdx, Mode=TwoWay}"
+                   Height="24"
+                   Width="100" />
+      </StackPanel>
 
       <CheckBox Grid.Row="2" 
                 Grid.Column="0"
                 Content="Loop Video"
                 Margin="0,0,8,0"
+                VerticalAlignment="Center"
                 IsChecked="{Binding Loop, Mode=TwoWay}" />
 
       <CheckBox Grid.Row="2"
                 Grid.Column="1"
                 Content="Autoplay"
+                Margin="0,0,8,0"
+                VerticalAlignment="Center"
                 IsChecked="{Binding Autoplay, Mode=TwoWay}" />
+
+      <Button Grid.Row="2"
+              Grid.Column="3"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Center"
+              Padding="12,0"
+              Content="Advanced"
+              Command="{Binding ShowAdvancedPlaybackSettingsCommand, Mode=OneTime}" />
    </Grid>
 </GroupBox>
