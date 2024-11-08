@@ -13,7 +13,7 @@ internal static class ConfigSerializer
       IgnoreReadOnlyProperties = true,
    };
 
-   public static MainViewModel ReadFromFile() => new SystemFile( _configName ).DeserializeContents<MainViewModel>();
+   public static MainViewModel ReadFromFile() => new SystemFile( _configName ).DeserializeContents<MainViewModel>() ?? new MainViewModel();
 
    public static void SaveToFile( MainViewModel mainVm )
    {
