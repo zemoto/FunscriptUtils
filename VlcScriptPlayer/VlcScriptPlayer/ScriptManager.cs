@@ -72,7 +72,7 @@ internal sealed class ScriptManager : IDisposable
          return;
       }
 
-      if ( !_model.ScriptFile.Exists() || !FileUtils.GetDefaultAppForExtension( _model.ScriptFile.Extension, out var editorExe ) )
+      if ( !_model.ScriptFile.Exists() || !UtilityMethods.GetDefaultAppForExtension( _model.ScriptFile.Extension, out var editorExe ) )
       {
          return;
       }
