@@ -8,11 +8,14 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace VlcScriptPlayer.Handy;
 
 internal sealed class HandyApi : IDisposable
 {
+   private const string _appId = "<placeholder>";
+
    private readonly HttpClient _client = new();
    private readonly ResiliencePipeline<HttpResponseMessage> _pipeline;
 
@@ -40,10 +43,39 @@ internal sealed class HandyApi : IDisposable
       _lastUploadedScriptSha256 = string.Empty;
       _estimatedClientServerOffset = 0;
 
-      _ = _client.DefaultRequestHeaders.Remove( "X-Connection-Key" );
+      var accessToken = await GetAccessToken( connectionId );
+      if ( string.IsNullOrEmpty( accessToken ) )
+      {
+         return false;
+      }
+
+      _client.DefaultRequestHeaders.Clear();
       _client.DefaultRequestHeaders.Add( "X-Connection-Key", connectionId );
+      _client.DefaultRequestHeaders.Add( "Authorization", $"Bearer {accessToken}" );
 
       return await ConnectAsync() && await SetupServerClockSyncAsync() && await EnsureModeAsync();
+   }
+
+   private async Task<string> GetAccessToken( string connectionId )
+   {
+      var urlBuilder = new UriBuilder( Endpoints.AccessTokenEndpoint );
+      var queryString = HttpUtility.ParseQueryString( string.Empty );
+
+      queryString["apikey"] = _appId;
+      queryString["ck"] = connectionId;
+      queryString["ttl"] = "14400";
+
+      urlBuilder.Query = queryString.ToString();
+
+      using var response = await DoRequest( () => _client.GetAsync( urlBuilder.Uri ), "GetAccessToken" );
+      if ( response?.IsSuccessStatusCode != true )
+      {
+         return string.Empty;
+      }
+
+      var responseString = await response.Content.ReadAsStringAsync();
+      var parsedResponse = JsonSerializer.Deserialize<GetTokenResponse>( responseString );
+      return parsedResponse.Token;
    }
 
    private async Task<bool> ConnectAsync()
@@ -55,9 +87,9 @@ internal sealed class HandyApi : IDisposable
       }
 
       var responseString = await response.Content.ReadAsStringAsync();
-      var parsedResponse = JsonSerializer.Deserialize<ConnectedResponse>( responseString );
+      var parsedResponse = JsonSerializer.Deserialize<ResultWrapperResponse<ConnectedResponse>>( responseString );
 
-      if ( parsedResponse.IsConnected )
+      if ( parsedResponse.Result.IsConnected )
       {
          Logger.Log( "Connection successful" );
       }
@@ -66,18 +98,18 @@ internal sealed class HandyApi : IDisposable
          Logger.LogError( "No Handy found to connect to" );
       }
 
-      return parsedResponse.IsConnected;
+      return parsedResponse.Result.IsConnected;
    }
 
    private async Task<bool> SetupServerClockSyncAsync()
    {
       Logger.Log( "Syncing clock with server clock" );
       var calculatedOffsets = new List<double>();
-      for ( int i = 0; i < 30; i++ )
+      for ( int i = 0; i < 20; i++ )
       {
-         var clientSendTime = DateTimeOffset.Now;
+         var clientSendTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
          using var response = await DoRequest( () => _client.GetAsync( Endpoints.ServerClockEndpoint ) );
-         var clientReceiveTime = DateTimeOffset.Now;
+         var clientReceiveTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
          if ( response?.IsSuccessStatusCode != true )
          {
             return false;
@@ -87,9 +119,9 @@ internal sealed class HandyApi : IDisposable
          var serverTimeResponse = JsonSerializer.Deserialize<ServerTimeResponse>( serverTimeRawResponse );
 
          var rtd = clientReceiveTime - clientSendTime;
-         var clientReceiveServerTime = serverTimeResponse.ServerTime + ( rtd / 2 ).TotalMilliseconds;
+         var clientReceiveServerTime = serverTimeResponse.ServerTime + ( rtd / 2 );
 
-         calculatedOffsets.Add( clientReceiveServerTime - clientReceiveTime.ToUnixTimeMilliseconds() );
+         calculatedOffsets.Add( clientReceiveServerTime - clientReceiveTime );
       }
 
       var mean = calculatedOffsets.Average();
@@ -180,8 +212,8 @@ internal sealed class HandyApi : IDisposable
       }
 
       responseString = await setupResponse.Content.ReadAsStringAsync();
-      var parsedSetupResponse = JsonSerializer.Deserialize<SetupResponse>( responseString );
-      if ( parsedSetupResponse.Result == -1 )
+      var parsedSetupResponse = JsonSerializer.Deserialize<ResultWrapperResponse<SetupResponse>>( responseString );
+      if ( parsedSetupResponse.Result is null )
       {
          Logger.LogError( parsedSetupResponse.Error.Message );
          return false;
@@ -194,8 +226,9 @@ internal sealed class HandyApi : IDisposable
    public async Task PlayScriptAsync( long startTime )
    {
       var estimatedServerTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + _estimatedClientServerOffset;
-      var content = new StringContent( $"{{ \"estimatedServerTime\": {estimatedServerTime}, \"startTime\": {startTime} }}", Encoding.UTF8, "application/json" );
-      using var _ = await DoRequest( () => _client.PutAsync( Endpoints.PlayEndpoint, content ) );
+      var content = new StringContent( $"{{ \"server_time\": {estimatedServerTime}, \"start_time\": {startTime} }}", Encoding.UTF8, "application/json" );
+      using var response = await DoRequest( () => _client.PutAsync( Endpoints.PlayEndpoint, content ) );
+      var responseString = await response.Content.ReadAsStringAsync();
    }
 
    public async Task StopScriptAsync()

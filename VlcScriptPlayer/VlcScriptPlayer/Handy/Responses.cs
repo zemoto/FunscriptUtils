@@ -2,6 +2,21 @@
 
 namespace VlcScriptPlayer.Handy;
 
+internal sealed class GetTokenResponse
+{
+   [JsonPropertyName( "token" )]
+   public string Token { get; set; }
+}
+
+internal sealed class ResultWrapperResponse<T>
+{
+   [JsonPropertyName( "result" )]
+   public T Result { get; set; }
+
+   [JsonPropertyName( "error" )]
+   public ErrorResponse Error { get; set; }
+}
+
 internal sealed class ConnectedResponse
 {
    [JsonPropertyName( "connected" )]
@@ -10,7 +25,7 @@ internal sealed class ConnectedResponse
 
 internal sealed class ServerTimeResponse
 {
-   [JsonPropertyName( "serverTime" )]
+   [JsonPropertyName( "server_time" )]
    public long ServerTime { get; set; }
 }
 
@@ -36,14 +51,9 @@ internal sealed class UploadResponse
 
 internal sealed class SetupResponse
 {
-   [JsonPropertyName( "result" )]
-   public int Result { get; set; } = -1;
-
-   [JsonPropertyName( "error" )]
-   public SetupResponseError Error { get; set; }
 }
 
-internal sealed class SetupResponseError
+internal sealed class ErrorResponse
 {
    [JsonPropertyName( "message" )]
    public string Message { get; set; }
