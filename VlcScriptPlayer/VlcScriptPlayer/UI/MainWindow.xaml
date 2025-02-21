@@ -9,7 +9,6 @@
         xmlns:commonui="clr-namespace:ZemotoCommon.UI"
         xmlns:handy="clr-namespace:VlcScriptPlayer.Handy"
         xmlns:filter="clr-namespace:VlcScriptPlayer.Vlc.Filter"
-        xmlns:buttplug="clr-namespace:VlcScriptPlayer.Buttplug"
         xmlns:vlc="clr-namespace:VlcScriptPlayer.Vlc"
         mc:Ignorable="d"
         Title="VLC Script Player"
@@ -33,16 +32,9 @@
          <ColumnDefinition Width="350" />
       </Grid.ColumnDefinitions>
 
-      <TabControl Grid.Row="0"
-                  Grid.Column="0">
-         <TabItem Header="Handy">
-            <ui:HandySettings DataContext="{Binding HandyVm, Mode=OneTime}" />
-         </TabItem>
-
-         <TabItem Header="Buttplug">
-            <ui:ButtplugSettings DataContext="{Binding ButtplugVm, Mode=OneTime}" />
-         </TabItem>
-      </TabControl>
+      <ui:HandySettings Grid.Row="0"
+                        Grid.Column="0"
+                        DataContext="{Binding HandyVm, Mode=OneTime}" />
 
       <ui:FilterSettings Grid.Row="2"
                          Grid.Column="0"

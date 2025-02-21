@@ -61,7 +61,7 @@ internal sealed class HotkeyManager : IDisposable
             _vlc.Filter.SaturationBoostEnabled = !_vlc.Filter.SaturationBoostEnabled;
             break;
          case Key.R when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
-            if ( _handy.CanSync )
+            if ( _handy.IsConnected )
             {
                _vlc.Marquee.SetText( "Retrieving Range...", MarqueeType.Process );
                var (handyMin, handyMax) = await _handy.GetHandyRangeAsync();

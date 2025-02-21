@@ -1,47 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.Vlc;
 
 namespace VlcScriptPlayer;
 
-internal interface ISyncTarget
-{
-   bool CanSync { get; }
-
-   Task<bool> SetupSyncAsync( Funscript script );
-   Task UpdateScriptAsync( Funscript script );
-   Task StartSyncAsync( long time );
-   Task StopSyncAsync();
-   Task CleanupAsync( bool syncSetupSuccessful );
-}
-
-internal sealed class VlcScriptSynchronizer : IAsyncDisposable
+internal sealed class VlcScriptSynchronizer : IDisposable
 {
    private readonly VlcManager _vlc;
    private readonly ScriptManager _scriptManager;
-   private readonly List<ISyncTarget> _syncTargets;
+   private readonly HandyManager _handy;
 
-   private bool _syncSetupSuccessful;
-
-   public VlcScriptSynchronizer( VlcManager vlc, ScriptManager scriptManager, params ISyncTarget[] syncTargets )
+   public VlcScriptSynchronizer( VlcManager vlc, ScriptManager scriptManager, HandyManager handy )
    {
       _vlc = vlc;
 
       _scriptManager = scriptManager;
       _scriptManager.ScriptChanged += OnScriptChanged;
 
-      _syncTargets = syncTargets.Where( x => x.CanSync ).ToList();
-      if ( _syncTargets.Count > 0 )
+      _handy = handy;
+      if ( _handy.IsConnected )
       {
          _vlc.MediaOpened += OnMediaOpened;
          _vlc.MediaClosed += OnPlayerPausedOrClosed;
       }
    }
 
-   public async ValueTask DisposeAsync()
+   public void Dispose()
    {
       var player = _vlc.Player;
       player.Playing -= OnPlayerPlaying;
@@ -51,16 +37,11 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       _vlc.MediaClosed -= OnPlayerPausedOrClosed;
 
       _scriptManager.ScriptChanged -= OnScriptChanged;
-
-      foreach ( var syncTarget in _syncTargets )
-      {
-         await syncTarget.CleanupAsync( _syncSetupSuccessful );
-      }
    }
 
    private async void OnScriptChanged( object sender, EventArgs e )
    {
-      if ( _syncTargets.Count == 0 )
+      if ( !_handy.IsConnected )
       {
          return;
       }
@@ -68,10 +49,7 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       _vlc.SetPlaybackEnabled( false );
       _vlc.Marquee.SetPriorityText( "Sending updated script to devices..." );
 
-      foreach ( var syncTarget in _syncTargets )
-      {
-         await syncTarget.UpdateScriptAsync( _scriptManager.Script );
-      }
+      await _handy.UpdateScriptAsync( _scriptManager.Script );
 
       _vlc.Marquee.FinalizePriorityText( "Updated script synced" );
       _vlc.SetPlaybackEnabled( true );
@@ -86,29 +64,9 @@ internal sealed class VlcScriptSynchronizer : IAsyncDisposable
       player.Paused += OnPlayerPausedOrClosed;
    }
 
-   private void OnPlayerPlaying( object sender, EventArgs e ) => _ = ThreadPool.QueueUserWorkItem( async _ => await StartSyncAsync() );
+   private void OnPlayerPlaying( object sender, EventArgs e ) => _ = ThreadPool.QueueUserWorkItem( async _ => await _handy.StartSyncAsync( (long)_vlc.TimeProvider.GetCurrentTime().TotalMilliseconds ) );
 
-   private void OnPlayerPausedOrClosed( object sender, EventArgs e ) => _ = ThreadPool.QueueUserWorkItem( async _ => await StopSyncAsync() );
+   private void OnPlayerPausedOrClosed( object sender, EventArgs e ) => _ = ThreadPool.QueueUserWorkItem( async _ => await _handy.StopSyncAsync() );
 
-   public async Task<bool> SetupSyncAsync( Funscript script )
-   {
-      foreach ( var syncTarget in _syncTargets )
-      {
-         if ( !await syncTarget.SetupSyncAsync( script ) )
-         {
-            return false;
-         }
-      }
-
-      _syncSetupSuccessful = true;
-      return true;
-   }
-
-   private async Task StartSyncAsync()
-   {
-      var time = (long)_vlc.TimeProvider.GetCurrentTime().TotalMilliseconds;
-      await Task.WhenAll( _syncTargets.Select( x => x.StartSyncAsync( time ) ) );
-   }
-
-   private async Task StopSyncAsync() => await Task.WhenAll( _syncTargets.Select( x => x.StopSyncAsync() ) );
+   public async Task<bool> SetupSyncAsync( Funscript script ) => await _handy.SetupSyncAsync( script );
 }

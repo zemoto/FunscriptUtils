@@ -1,10 +1,8 @@
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using VlcScriptPlayer.Buttplug;
 using VlcScriptPlayer.Handy;
 using VlcScriptPlayer.UI;
 using VlcScriptPlayer.UI.VideoPlayer;
@@ -19,7 +17,6 @@ internal sealed class Main : IAsyncDisposable
    private readonly MainViewModel _model;
    private readonly VlcManager _vlc;
    private readonly HandyManager _handy;
-   private readonly ButtplugManager _buttplug;
    private readonly ScriptManager _script;
    private readonly HotkeyManager _hotkeyManager;
 
@@ -40,7 +37,6 @@ internal sealed class Main : IAsyncDisposable
       _vlc = new VlcManager( _model.FilterVm, _model.PlaybackVm );
       _handy = new HandyManager( _model.HandyVm );
       _script = new ScriptManager( _model.ScriptVm );
-      _buttplug = new ButtplugManager( _model.ButtplugVm );
       _hotkeyManager = new HotkeyManager( _vlc, _handy, _script );
 
       _window = new MainWindow( _model );
@@ -60,7 +56,6 @@ internal sealed class Main : IAsyncDisposable
       _vlc.Dispose();
       _hotkeyManager.Dispose();
       _script.Dispose();
-      await _buttplug.DisposeAsync();
    }
 
    public void Start() => _window.Show();
@@ -75,20 +70,17 @@ internal sealed class Main : IAsyncDisposable
 
       using ( new ScopeGuard( () => _playerOpen = true, () => _playerOpen = false ) )
       {
-         var synchronizer = new VlcScriptSynchronizer( _vlc, _script, _handy, _buttplug );
-         await using ( synchronizer.ConfigureAwait( true ) )
+         using var synchronizer = new VlcScriptSynchronizer( _vlc, _script, _handy );
+         if ( !await synchronizer.SetupSyncAsync( _model.ScriptVm.Script ).ConfigureAwait( true ) )
          {
-            if ( !await synchronizer.SetupSyncAsync( _model.ScriptVm.Script ).ConfigureAwait( true ) )
-            {
-               return;
-            }
-
-            _window.Hide();
-            var videoPlayer = new VideoPlayerWindow( _vlc, _script, _model.PlaybackVm.SelectedMonitorIdx );
-            videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFile.FullPath );
-
-            _ = videoPlayer.ShowDialog();
+            return;
          }
+
+         _window.Hide();
+         var videoPlayer = new VideoPlayerWindow( _vlc, _script, _model.PlaybackVm.SelectedMonitorIdx );
+         videoPlayer.Loaded += ( _, _ ) => _vlc.OpenVideo( _model.ScriptVm.VideoFile.FullPath );
+
+         _ = videoPlayer.ShowDialog();
       }
 
       _window.Show();

@@ -27,8 +27,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Buttplug" Version="3.0.1" />
-		<PackageReference Include="Buttplug.Client.Connectors.WebsocketConnector" Version="3.0.1" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 		<PackageReference Include="ConfigureAwait.Fody" Version="3.3.2">
 			<PrivateAssets>all</PrivateAssets>

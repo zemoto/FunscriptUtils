@@ -5,7 +5,7 @@ using ZemotoCommon;
 
 namespace VlcScriptPlayer.Handy;
 
-internal sealed class HandyManager : ISyncTarget, IDisposable
+internal sealed class HandyManager : IDisposable
 {
    private readonly HandyApi _handyApi = new();
    private readonly HandyViewModel _model;
@@ -47,8 +47,7 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
       await _handyApi.SetRangeAsync( _model.DesiredSlideMin, _model.DesiredSlideMax );
    }
 
-   //ISyncTarget
-   public bool CanSync => _model.IsConnected;
+   public bool IsConnected => _model.IsConnected;
 
    public async Task<bool> SetupSyncAsync( Funscript script )
    {
@@ -68,6 +67,4 @@ internal sealed class HandyManager : ISyncTarget, IDisposable
    public async Task StartSyncAsync( long time ) => await _handyApi.PlayScriptAsync( time );
 
    public async Task StopSyncAsync() => await _handyApi.StopScriptAsync();
-
-   public Task CleanupAsync( bool syncSetupSuccessful ) => Task.CompletedTask;
 }
