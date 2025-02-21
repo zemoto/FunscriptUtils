@@ -2,6 +2,7 @@
 using Polly.Retry;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -14,13 +15,14 @@ namespace VlcScriptPlayer.Handy;
 
 internal sealed class HandyApi : IDisposable
 {
-   private const string _appId = "<placeholder>";
+   private const string _appId = "TURGS1RUVkxWRUkzUnpGSFUxaFRSVFV4UTBoRFJEVkZPRGcjRm9TSnAxUWlYNWVFR2t4YW5ydlgwMGxHLUhhOVNMZlplSjJOUm5NYTliTQ";
 
    private readonly HttpClient _client = new();
    private readonly ResiliencePipeline<HttpResponseMessage> _pipeline;
 
    private long _estimatedClientServerOffset;
    private string _lastUploadedScriptSha256;
+   private HandyToken _accessToken;
 
    public HandyApi()
    {
@@ -40,42 +42,51 @@ internal sealed class HandyApi : IDisposable
 
    public async Task<bool> ConnectToAndSetupHandyAsync( string connectionId )
    {
+      _client.DefaultRequestHeaders.Clear();
       _lastUploadedScriptSha256 = string.Empty;
       _estimatedClientServerOffset = 0;
 
-      var accessToken = await GetAccessToken( connectionId );
-      if ( string.IsNullOrEmpty( accessToken ) )
+      if ( _accessToken?.IsValid( connectionId ) != true )
       {
-         return false;
+         _accessToken = await GetAccessToken( connectionId );
+         if ( _accessToken is null )
+         {
+            return false;
+         }
+      }
+      else
+      {
+         Logger.Log( "Reusing access token" );
       }
 
-      _client.DefaultRequestHeaders.Clear();
       _client.DefaultRequestHeaders.Add( "X-Connection-Key", connectionId );
-      _client.DefaultRequestHeaders.Add( "Authorization", $"Bearer {accessToken}" );
+      _client.DefaultRequestHeaders.Add( "Authorization", $"Bearer {_accessToken.Token}" );
 
       return await ConnectAsync() && await SetupServerClockSyncAsync() && await EnsureModeAsync();
    }
 
-   private async Task<string> GetAccessToken( string connectionId )
+   private async Task<HandyToken> GetAccessToken( string connectionId )
    {
+      const int ExpirationInSeconds = 14400;
+
       var urlBuilder = new UriBuilder( Endpoints.AccessTokenEndpoint );
       var queryString = HttpUtility.ParseQueryString( string.Empty );
 
       queryString["apikey"] = _appId;
       queryString["ck"] = connectionId;
-      queryString["ttl"] = "14400";
+      queryString["ttl"] = ExpirationInSeconds.ToString( CultureInfo.InvariantCulture );
 
       urlBuilder.Query = queryString.ToString();
 
       using var response = await DoRequest( () => _client.GetAsync( urlBuilder.Uri ), "GetAccessToken" );
       if ( response?.IsSuccessStatusCode != true )
       {
-         return string.Empty;
+         return null;
       }
 
       var responseString = await response.Content.ReadAsStringAsync();
       var parsedResponse = JsonSerializer.Deserialize<GetTokenResponse>( responseString );
-      return parsedResponse.Token;
+      return new HandyToken( parsedResponse.Token, connectionId, DateTime.Now + TimeSpan.FromSeconds( ExpirationInSeconds ) );
    }
 
    private async Task<bool> ConnectAsync()
@@ -282,5 +293,15 @@ internal sealed class HandyApi : IDisposable
          _ = sb.Append( bytes[i].ToString( "x2", System.Globalization.CultureInfo.InvariantCulture ) );
       }
       return sb.ToString();
+   }
+
+   private sealed class HandyToken( string token, string connectionId, DateTime expirationTime )
+   {
+      private readonly string _connectionId = connectionId;
+      private readonly DateTime _expirationTime = expirationTime;
+
+      public string Token { get; } = token;
+
+      public bool IsValid( string connectionId ) => DateTime.Now < _expirationTime && connectionId.Equals( _connectionId, StringComparison.Ordinal );
    }
 }
