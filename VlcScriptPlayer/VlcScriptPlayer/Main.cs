@@ -11,7 +11,7 @@ using ZemotoCommon;
 
 namespace VlcScriptPlayer;
 
-internal sealed class Main : IAsyncDisposable
+internal sealed class Main : IDisposable
 {
    private readonly MainWindow _window;
    private readonly MainViewModel _model;
@@ -43,13 +43,13 @@ internal sealed class Main : IAsyncDisposable
       _window.Closed += OnMainWindowClosed;
    }
 
-   private async void OnMainWindowClosed( object sender, EventArgs e )
+   private void OnMainWindowClosed( object sender, EventArgs e )
    {
-      await DisposeAsync().ConfigureAwait( true );
+      Dispose();
       Application.Current.Shutdown();
    }
 
-   public async ValueTask DisposeAsync()
+   public void Dispose()
    {
       ConfigSerializer.SaveToFile( _model );
       _handy.Dispose();
