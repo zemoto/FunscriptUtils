@@ -2,6 +2,12 @@
 
 namespace VlcScriptPlayer.Handy;
 
+internal sealed class DeviceInfoResponse
+{
+   [JsonPropertyName( "fw_version" )]
+   public string Version { get; set; }
+}
+
 internal sealed class GetTokenResponse
 {
    [JsonPropertyName( "token" )]
@@ -23,7 +29,13 @@ internal sealed class ConnectedResponse
    public bool IsConnected { get; set; }
 }
 
-internal sealed class ServerTimeResponse
+internal sealed class ServerTimeV2Response
+{
+   [JsonPropertyName( "serverTime" )]
+   public long ServerTime { get; set; }
+}
+
+internal sealed class ServerTimeV3Response
 {
    [JsonPropertyName( "server_time" )]
    public long ServerTime { get; set; }

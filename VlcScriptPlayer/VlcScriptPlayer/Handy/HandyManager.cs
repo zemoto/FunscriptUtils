@@ -1,24 +1,33 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
+using VlcScriptPlayer.Handy.Api;
 using ZemotoCommon;
 
 namespace VlcScriptPlayer.Handy;
 
 internal sealed class HandyManager : IDisposable
 {
-   private readonly HandyApi _handyApi = new();
+   private readonly HttpClient _client = new();
    private readonly HandyViewModel _model;
+   private readonly HandyApiV2 _handyApiV2;
+   private readonly HandyApiV3 _handyApiV3;
+
+   private HandyApiBase _handyApi;
 
    public HandyManager( HandyViewModel model )
    {
+      _handyApiV2 = new HandyApiV2( _client );
+      _handyApiV3 = new HandyApiV3( _client );
+
       _model = model;
       _model.ConnectCommand = new RelayCommand( async () => await ConnectToHandyAsync() );
       _model.SetOffsetCommand = new RelayCommand( async () => await SetHandyOffsetAsync() );
       _model.SetRangeCommand = new RelayCommand( async () => await SetHandyRangeAsync() );
    }
 
-   public void Dispose() => _handyApi.Dispose();
+   public void Dispose() => _client.Dispose();
 
    public async Task<(double, double)> GetHandyRangeAsync() => await _handyApi.GetRangeAsync();
 
@@ -27,12 +36,19 @@ internal sealed class HandyManager : IDisposable
       using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
 
       _model.IsConnected = false;
-      if ( !await _handyApi.ConnectToAndSetupHandyAsync( _model.ConnectionId ) )
-      {
-         return;
-      }
 
-      _model.IsConnected = true;
+      _handyApi = _handyApiV3;
+      var connectionStatus = await _handyApi.ConnectToAndSetupHandyAsync( _model.ConnectionId );
+      if ( connectionStatus is ConnectionStatus.Connected )
+      {
+         _model.IsConnected = true;
+      }
+      else if ( connectionStatus is ConnectionStatus.DeviceIncompatible )
+      {
+         _handyApi = _handyApiV2;
+         connectionStatus = await _handyApi.ConnectToAndSetupHandyAsync( _model.ConnectionId );
+         _model.IsConnected = connectionStatus is ConnectionStatus.Connected;
+      }
    }
 
    private async Task SetHandyOffsetAsync()
