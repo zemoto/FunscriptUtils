@@ -18,6 +18,8 @@ internal sealed class HandyApiV3( HttpClient client ) : HandyApiBase( client )
 
    private HandyToken _accessToken;
 
+   protected override bool CanSyncTime { get; } = true;
+
    protected override Endpoints GetEndpoints() => new( _rootEndpoint, _slideEndpoint );
 
    protected override async Task<bool> GetDeviceCompatibleAsync()

@@ -176,6 +176,22 @@ internal abstract class HandyApiBase
       using var _ = await DoRequest( () => _client.PutAsync( _endpoints.StopEndpoint, null ) );
    }
 
+   public async Task SyncTimeAsync( long currentTime )
+   {
+      var estimatedServerTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + _estimatedClientServerOffset;
+      var syncContent = new StringContent( $"{{ \"current_time\": {currentTime}, \"server_time\": {estimatedServerTime}, \"filter\": 0.5 }}", Encoding.UTF8, "application/json" );
+      using var _ = await DoRequest( () => _client.PutAsync( _endpoints.SyncTimeEndpoint, syncContent ) );
+   }
+
+   protected virtual bool CanSyncTime { get; }
+   protected abstract Endpoints GetEndpoints();
+   protected abstract Task<bool> GetDeviceCompatibleAsync();
+   protected abstract Task<Dictionary<string, string>> GetClientHeadersAsync( string connectionId );
+   protected abstract bool ConnectionSuccessful( string responseString, out string error );
+   protected abstract bool SetupSuccessful( string responseString, out string error );
+   protected abstract long ParseServerTimeResponse( string responseString );
+   protected abstract StringContent GetPlayScriptContent( long serverTime, long startTime );
+
    protected async Task<HttpResponseMessage> DoRequest( Func<Task<HttpResponseMessage>> request, string requestName, string successMessage = "" )
    {
       try
@@ -199,14 +215,6 @@ internal abstract class HandyApiBase
          return null;
       }
    }
-
-   protected abstract Endpoints GetEndpoints();
-   protected abstract Task<bool> GetDeviceCompatibleAsync();
-   protected abstract Task<Dictionary<string, string>> GetClientHeadersAsync( string connectionId );
-   protected abstract bool ConnectionSuccessful( string responseString, out string error );
-   protected abstract bool SetupSuccessful( string responseString, out string error );
-   protected abstract long ParseServerTimeResponse( string responseString );
-   protected abstract StringContent GetPlayScriptContent( long serverTime, long startTime );
 
    private async Task<bool> ConnectAsync()
    {
@@ -305,6 +313,7 @@ internal abstract class HandyApiBase
       public string SetupEndpoint = $"{root}hssp/setup";
       public string PlayEndpoint = $"{root}hssp/play";
       public string StopEndpoint = $"{root}hssp/stop";
+      public string SyncTimeEndpoint = $"{root}hssp/synctime";
       public string SlideEndpoint = slideEndpoint;
 
       public const string UploadCSVEndpoint = "https://www.handyfeeling.com/api/sync/upload?local=true";

@@ -67,8 +67,12 @@ internal sealed class HandyManager : IDisposable
 
    public async Task<bool> SetupSyncAsync( Funscript script )
    {
-      using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
+      if ( !_model.IsConnected )
+      {
+         return true;
+      }
 
+      using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
       if ( _model.SetOptionsWhenSyncing )
       {
          await _handyApi.SetOffsetAsync( _model.DesiredOffset );
@@ -83,4 +87,6 @@ internal sealed class HandyManager : IDisposable
    public async Task StartSyncAsync( long time ) => await _handyApi.PlayScriptAsync( time );
 
    public async Task StopSyncAsync() => await _handyApi.StopScriptAsync();
+
+   public async Task SyncTimeAsync( long time ) => await _handyApi.SyncTimeAsync( time );
 }

@@ -60,6 +60,18 @@ internal sealed class HotkeyManager : IDisposable
          case Key.S when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
             _vlc.Filter.SaturationBoostEnabled = !_vlc.Filter.SaturationBoostEnabled;
             break;
+         case Key.S when ( Keyboard.Modifiers & ModifierKeys.Shift ) == ModifierKeys.Shift:
+            if ( _handy.IsConnected )
+            {
+               _vlc.Marquee.SetText( "Syncing time...", MarqueeType.Process );
+               await _handy.SyncTimeAsync( (long)_vlc.TimeProvider.GetCurrentTime().TotalMilliseconds );
+               _vlc.Marquee.SetText( "Time synced" );
+            }
+            else
+            {
+               _vlc.Marquee.SetText( "Error: Handy not connected" );
+            }
+            break;
          case Key.R when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
             if ( _handy.IsConnected )
             {
