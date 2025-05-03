@@ -1,17 +1,5 @@
-local function getPosAtTime(first, second, time)
-	local gapInSeconds = second.at - first.at;
-	local change = second.pos - first.pos
-	local speed = change / gapInSeconds
-	
-	local relativeTime = time - first.at
-	return first.pos + (speed * relativeTime)	
-end
-
-local function getSpeed(firstTime, firstPos, secondTime, secondPos)
-	local gapInSeconds = secondTime - firstTime;
-	local change = math.abs(secondPos - firstPos)
-	return change / gapInSeconds
-end
+package.path = package.path .. ";"..os.getenv('APPDATA').."\\OFS\\OFS3_data\\extensions/?.lua"
+local common = require("common")
 
 local SoftenImpact = {}
 SoftenImpact.SoftenAfterTop = true
@@ -23,78 +11,89 @@ SoftenImpact.AfterBottomPercentDistance = 15
 SoftenImpact.SoftenBeforeTop = true
 SoftenImpact.BeforeTopPercentDistance = 15
 
-function SoftenImpact.softenImpact(speedLimit)
-	local script = ofs.Script(ofs.ActiveIdx())
-	local actionCount = #script.actions
+function SoftenImpact.gui()
+	if ofs.Button( "Reset" ) then
+		SoftenImpact.SoftenAfterTop = true
+		SoftenImpact.SoftenBeforeBottom = true
+		SoftenImpact.SoftenAfterBottom = true
+		SoftenImpact.SoftenBeforeTop = true
+	end
+
+	SoftenImpact.SoftenAfterTop, ATchecked = ofs.Checkbox( "After Top", SoftenImpact.SoftenAfterTop )
+	SoftenImpact.AfterTopPercentDistance, ATchanged = ofs.SliderInt("AT", SoftenImpact.AfterTopPercentDistance, 10, 60)
+	if ATchanged then
+		SoftenImpact.AfterTopPercentDistance = math.min(100 - SoftenImpact.BeforeBottomPercentDistance - 1, SoftenImpact.AfterTopPercentDistance)
+	end
 	
-	if not script:hasSelection() then
+	SoftenImpact.SoftenBeforeBottom, BBchecked = ofs.Checkbox( "Before Bottom", SoftenImpact.SoftenBeforeBottom )
+	SoftenImpact.BeforeBottomPercentDistance, BBchanged = ofs.SliderInt("BB", SoftenImpact.BeforeBottomPercentDistance, 10, 60)
+	if BBchanged then
+		SoftenImpact.BeforeBottomPercentDistance = math.min(100 - SoftenImpact.AfterTopPercentDistance - 1, SoftenImpact.BeforeBottomPercentDistance)
+	end
+	
+	SoftenImpact.SoftenAfterBottom, ABchecked = ofs.Checkbox( "After Bottom", SoftenImpact.SoftenAfterBottom )
+	SoftenImpact.AfterBottomPercentDistance, ABchanged = ofs.SliderInt("AB", SoftenImpact.AfterBottomPercentDistance, 10, 60)
+	if ABchanged then
+		SoftenImpact.AfterBottomPercentDistance = math.min(100 - SoftenImpact.BeforeTopPercentDistance - 1, SoftenImpact.AfterBottomPercentDistance)
+	end
+	
+	SoftenImpact.SoftenBeforeTop, BTchecked = ofs.Checkbox( "Before Top", SoftenImpact.SoftenBeforeTop )
+	SoftenImpact.BeforeTopPercentDistance, BTchanged = ofs.SliderInt("BT", SoftenImpact.BeforeTopPercentDistance, 10, 60)
+	if BTchanged then
+		SoftenImpact.BeforeTopPercentDistance = math.min(100 - SoftenImpact.AfterBottomPercentDistance - 1, SoftenImpact.BeforeTopPercentDistance)
+	end	
+	
+	if (ATchecked or ATchanged or BBchecked or BBchanged or ABchecked or ABchanged or BTchecked or BTchanged) and ofs.Undo() then
+		SoftenImpact.softenImpact()
+	end
+end
+
+function SoftenImpact.softenImpact()
+	local script = ofs.Script(ofs.ActiveIdx())
+	local stepSize = common.getFrameStepSize()
+	local filter = function(first,second) return first.pos ~= second.pos and second.at - first.at > stepSize * 2 end
+    local targetActions = common.getTargetActions(script, filter)
+	if targetActions == nil or #targetActions == 0 then
 		return
 	end
 	
-	local newActions = {}
-
-	local changesMade = false
-	for i=1,actionCount do
-		local prevAction = nil
-		local nextAction = nil
-		local currentAction = script.actions[i]
+	common.StartAddingActions()
 		
-		if not currentAction.selected then
-			goto continue
-		end
+	for idx, targetAction in ipairs(targetActions) do
+		local currentAction = targetAction.first
+		local nextAction = targetAction.second
 		
-		if i > 1 then
-			prevAction = script.actions[i-1]
-		end
+		local gap = nextAction.at - currentAction.at
+		if currentAction.pos < nextAction.pos then
+			if SoftenImpact.SoftenAfterBottom then
+				local newAt = currentAction.at + math.max(common.GetClosestFrameTime(gap*(SoftenImpact.AfterBottomPercentDistance/100.0)),stepSize)
+				local newPos = (currentAction.pos + (common.getPosAtTime(currentAction, nextAction, newAt)))/2
+				common.AddAction(currentAction, nextAction, newAt, newPos)
+			end
 		
-		if i < actionCount then
-			nextAction = script.actions[i+1]
-		end
-		
-		local isTop = ((prevAction ~= nil and currentAction.pos >= prevAction.pos) or prevAction == nil) and ((nextAction ~= nil and currentAction.pos >= nextAction.pos) or nextAction == nil)
-		local isBottom = ((prevAction ~= nil and currentAction.pos <= prevAction.pos) or prevAction == nil) and ((nextAction ~= nil and currentAction.pos <= nextAction.pos) or nextAction == nil)
-		
-		if isTop and SoftenImpact.SoftenAfterTop and nextAction ~= nil and nextAction.selected and nextAction.pos ~= currentAction.pos and nextAction.at - currentAction.at > 0.09 then
-			local nextImpactTime = math.max((nextAction.at - currentAction.at)*(SoftenImpact.AfterTopPercentDistance/100.0),0.03333)
-			local nextImpactPos = (currentAction.pos + (getPosAtTime(currentAction, nextAction, currentAction.at+nextImpactTime)))/2
-			table.insert(newActions, {at=currentAction.at+nextImpactTime, pos=nextImpactPos})
-			changesMade = true
-		end
-		
-		if isBottom and SoftenImpact.SoftenBeforeBottom and prevAction ~= nil and prevAction.selected and prevAction.pos ~= currentAction.pos and currentAction.at - prevAction.at > 0.09 then		
-			local prevImpactTime = math.max((currentAction.at - prevAction.at)*(SoftenImpact.BeforeBottomPercentDistance/100.0),0.03333)			
-			local prevImpactPos = (currentAction.pos + (getPosAtTime(prevAction, currentAction, currentAction.at-prevImpactTime)))/2
-			table.insert(newActions, {at=currentAction.at-prevImpactTime, pos=prevImpactPos})
-			changesMade = true
-		end
-		
-		if isBottom and SoftenImpact.SoftenAfterBottom and nextAction ~= nil and nextAction.selected and nextAction.pos ~= currentAction.pos and nextAction.at - currentAction.at > 0.09 then
-			local nextImpactTime = math.max((nextAction.at - currentAction.at)*(SoftenImpact.AfterBottomPercentDistance/100.0),0.03333)
-			local nextImpactPos = (currentAction.pos + (getPosAtTime(currentAction, nextAction, currentAction.at+nextImpactTime)))/2
-			table.insert(newActions, {at=currentAction.at+nextImpactTime, pos=nextImpactPos})
-			changesMade = true
-		end
-		
-		if isTop and SoftenImpact.SoftenBeforeTop and prevAction ~= nil and prevAction.selected and prevAction.pos ~= currentAction.pos and currentAction.at - prevAction.at > 0.09 then		
-			local prevImpactTime = math.max((currentAction.at - prevAction.at)*(SoftenImpact.BeforeTopPercentDistance/100.0),0.03333)			
-			local prevImpactPos = (currentAction.pos + (getPosAtTime(prevAction, currentAction, currentAction.at-prevImpactTime)))/2
-			table.insert(newActions, {at=currentAction.at-prevImpactTime, pos=prevImpactPos})
-			changesMade = true
-		end
+			if SoftenImpact.SoftenBeforeTop then		
+				local newAt = nextAction.at - math.max(common.GetClosestFrameTime(gap*(SoftenImpact.BeforeTopPercentDistance/100.0)),stepSize)		
+				local newPos = (nextAction.pos + (common.getPosAtTime(currentAction, nextAction, newAt)))/2
+				common.AddAction(currentAction, nextAction, newAt, newPos)
+			end
+		else
+			if SoftenImpact.SoftenAfterTop then
+				local newAt = currentAction.at + math.max(common.GetClosestFrameTime(gap*(SoftenImpact.AfterTopPercentDistance/100.0)),stepSize)
+				local newPos = (currentAction.pos + (common.getPosAtTime(currentAction, nextAction, newAt)))/2
+				common.AddAction(currentAction, nextAction, newAt, newPos)
+			end
+			
+			if SoftenImpact.SoftenBeforeBottom then		
+				local newAt = nextAction.at - math.max(common.GetClosestFrameTime(gap*(SoftenImpact.BeforeBottomPercentDistance/100.0)),stepSize)		
+				local newPos = (nextAction.pos + (common.getPosAtTime(currentAction, nextAction, newAt)))/2
+				common.AddAction(currentAction, nextAction, newAt, newPos)
+			end
+		end	
 		
 		::continue::
 	end
 
-	if changesMade then
-		for idx, newAction in ipairs(newActions) do
-			local newAction = Action.new(newAction.at, newAction.pos);
-			newAction.selected = true
-			script.actions:add(newAction)
-		end
-		
-		script:sort()
-		script:commit()
-	end
+	common.commitNewActions(script)
 end
 
 return SoftenImpact

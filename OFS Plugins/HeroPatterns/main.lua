@@ -1,8 +1,10 @@
 local matchPatternModule = require("matchPattern")
+local matchPatternEXModule = require("matchPatternEX")
 local hardModeModule = require("hardMode")
 local bookendModule = require("bookend")
 local centerModule = require("center")
 local groundModule = require("ground")
+local raiseModule = require("raise")
 
 local HeroPatterns = {}
 HeroPatterns.SelectedPatternIdx = 1
@@ -30,11 +32,13 @@ function gui()
 	
 	ofs.Separator()
 
-	HeroPatterns.SelectedPatternIdx, changed = ofs.Combo( "", HeroPatterns.SelectedPatternIdx, { "Match Pattern", "Hard Mode", "Bookend", "Center", "Ground" } )
+	HeroPatterns.SelectedPatternIdx, changed = ofs.Combo( "", HeroPatterns.SelectedPatternIdx, { "Match Pattern", "Match Pattern EX", "Hard Mode", "Bookend", "Center", "Ground", "Raise" } )
 	
 	if HeroPatterns.SelectedPatternIdx == 1 then -- Match Pattern
 		MatchPattern.IsHardMode, isHardModeChanged = ofs.Checkbox( "Script is hard mode", MatchPattern.IsHardMode )
-	elseif HeroPatterns.SelectedPatternIdx == 4 then -- Center
+	elseif HeroPatterns.SelectedPatternIdx == 2 then -- Match Pattern EX
+		matchPatternEXModule.HeroMax, changes = ofs.SliderInt("Max", matchPatternEXModule.HeroMax, 10, 100)
+	elseif HeroPatterns.SelectedPatternIdx == 5 then -- Center
 		Center.Max, maxChanged = ofs.SliderInt("Max", Center.Max, 10, 100)
 		Center.Min, minChanged = ofs.SliderInt("Min", Center.Min, 0, 90)
 	end
@@ -47,13 +51,17 @@ function applyPattern()
 		else
 			matchPatternModule.matchPattern.easy()
 		end
-	elseif HeroPatterns.SelectedPatternIdx == 2 then -- Hard Mode
+	elseif HeroPatterns.SelectedPatternIdx == 2 then -- Match Pattern EX
+		matchPatternEXModule.apply()
+	elseif HeroPatterns.SelectedPatternIdx == 3 then -- Hard Mode
 		hardModeModule.hardMode()
-	elseif HeroPatterns.SelectedPatternIdx == 3 then -- Bookend
+	elseif HeroPatterns.SelectedPatternIdx == 4 then -- Bookend
 		bookendModule.bookend()
-	elseif HeroPatterns.SelectedPatternIdx == 4 then -- Center
+	elseif HeroPatterns.SelectedPatternIdx == 5 then -- Center
 		centerModule.center(Center.Min,Center.Max)
-	elseif HeroPatterns.SelectedPatternIdx == 5 then -- Ground
+	elseif HeroPatterns.SelectedPatternIdx == 6 then -- Ground
 		groundModule.ground()
+	elseif HeroPatterns.SelectedPatternIdx == 7 then -- Raise
+		raiseModule.raise()
 	end
 end

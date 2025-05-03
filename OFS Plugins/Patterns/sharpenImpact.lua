@@ -20,12 +20,12 @@ function sharpenImpact()
 		end
 		
 		local gap = nextAction.at - currentAction.at
-		if currentAction.pos ~= 0 or nextAction.pos ~= 0 or gap > 0.1 or gap < 0.04 then
+		if currentAction.pos ~= 0 or nextAction.pos ~= 0 or gap > 0.15 or gap < 0.04 then
 			goto continue 
 		end
 	
-		local speed = getSpeedBetweenActions(prevAction,currentAction)
-		local change = math.floor(speed * 0.9 * gap / 2)
+		local speed = 400;
+		local change = math.max(math.floor((speed * 0.9 * gap / 2) + 0.5),8) -- min 8 to prevent too small of an action
 		if currentAction.pos > prevAction.pos then
 			change = change * -1
 		end

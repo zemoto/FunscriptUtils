@@ -9,17 +9,9 @@ function gui()
 		cleanVibration()
 	end
 	
-	ofs.SameLine()
-	
 	if ofs.Button( "Delete Intermediary" ) then
 		deleteIntermediary()
 	end
-	
-	if ofs.Button( "Delete MidPoints" ) then
-		deleteMidPoints()
-	end
-	
-	ofs.SameLine()
 	
 	if ofs.Button( "Clean Redundants" ) then
 		cleanRedundants()
@@ -35,8 +27,14 @@ function gui()
 		deletePostHolds()
 	end
 	
-	if ofs.Button( "Clean Ignored MidPoints" ) then
-		deleteIgnoredMidPoints()
+	if ofs.Button( "Delete Mids" ) then
+		deleteMidPoints()
+	end
+	
+	ofs.SameLine()
+	
+	if ofs.Button( "Delete Mid of Mids" ) then
+		deleteMidOfMidPoints()
 	end
 end
 
@@ -169,43 +167,6 @@ function deleteIntermediary()
 	end	
 end
 
-function deleteMidPoints()
-	local script = ofs.Script(ofs.ActiveIdx())
-	local actionCount = #script.actions
-	
-	if not script:hasSelection() then
-		return
-	end
-	
-	local actionsToRemoveFound = false
-	for i=2,actionCount-1 do
-		local prevAction = script.actions[i-1]
-		local currentAction = script.actions[i]
-		local nextAction = script.actions[i+1]
-	
-		if not currentAction.selected then
-			goto continue
-		end
-		
-		local isBottom = currentAction.pos < nextAction.pos and currentAction.pos < prevAction.pos
-		local isTop = currentAction.pos > nextAction.pos and currentAction.pos > prevAction.pos
-		local isHold = currentAction.pos == nextAction.pos or currentAction.pos == prevAction.pos
-		local isMid = not isBottom and not isTop and not isHold
-		
-		if isMid then
-			script:markForRemoval(i)
-			actionsToRemoveFound = true
-		end
-		
-		::continue::
-	end
-
-	if actionsToRemoveFound then
-		script:removeMarked()
-		script:commit()
-	end	
-end
-
 function deletePreHolds()
 	local script = ofs.Script(ofs.ActiveIdx())
 	local actionCount = #script.actions
@@ -261,12 +222,20 @@ function cleanRedundants()
 	local actionCount = #script.actions
 	
 	local actionsToRemoveFound = false	
-	for i=2,actionCount do
+	for i=2,actionCount-1 do
 		local prevAction = script.actions[i-1]
 		local currentAction = script.actions[i]
+		local nextAction = script.actions[i+1]
 		
-		if currentAction.at - prevAction.at < 0.019 then
+		local isMid = (prevAction.pos < currentAction.pos and currentAction.pos < nextAction.pos) or (prevAction.pos > currentAction.pos and currentAction.pos > nextAction.pos)
+		local isRedundantHold = prevAction.pos == currentAction.pos and currentAction.pos == nextAction.pos and currentAction.at - prevAction.at < 2
+		
+		local speedChangeRatio = getSpeedBetweenActions(prevAction,currentAction) / getSpeedBetweenActions(currentAction,nextAction)
+		local speedChangeIsNegligible = (speedChangeRatio > 0.9 and speedChangeRatio < 1.1) or math.abs(getSpeedBetweenActions(prevAction,currentAction) - getSpeedBetweenActions(currentAction,nextAction)) < 10
+		
+		if currentAction.at - prevAction.at < 0.019 or isRedundantHold or (isMid and speedChangeIsNegligible) then
 			script:markForRemoval(i)
+			prevAction.selected = true
 			actionsToRemoveFound = true
 		end
 	end
@@ -277,9 +246,13 @@ function cleanRedundants()
 	end	
 end
 
-function deleteIgnoredMidPoints()
+function deleteMidPoints()
 	local script = ofs.Script(ofs.ActiveIdx())
 	local actionCount = #script.actions
+	
+	if not script:hasSelection() then
+		return
+	end
 	
 	local actionsToRemoveFound = false
 	for i=2,actionCount-1 do
@@ -287,12 +260,43 @@ function deleteIgnoredMidPoints()
 		local currentAction = script.actions[i]
 		local nextAction = script.actions[i+1]
 	
-		local isBottom = currentAction.pos < nextAction.pos and currentAction.pos < prevAction.pos
-		local isTop = currentAction.pos > nextAction.pos and currentAction.pos > prevAction.pos
-		local isHold = currentAction.pos == nextAction.pos or currentAction.pos == prevAction.pos
-		local isMid = not isBottom and not isTop and not isHold
+		if currentAction.selected and ((prevAction.pos < currentAction.pos and currentAction.pos < nextAction.pos) or (prevAction.pos > currentAction.pos and currentAction.pos > nextAction.pos)) then
+			script:markForRemoval(i)
+			actionsToRemoveFound = true
+		end
+	end
+
+	if actionsToRemoveFound then
+		script:removeMarked()
+		script:commit()
+	end	
+end
+
+function deleteMidOfMidPoints()
+	local script = ofs.Script(ofs.ActiveIdx())
+	local actionCount = #script.actions
+	
+	if not script:hasSelection() then
+		return
+	end
+	
+	local actionsToRemoveFound = false
+	for i=3,actionCount-2 do
+		local prevPrevAction = script.actions[i-2]
+		local prevAction = script.actions[i-1]
+		local currentAction = script.actions[i]
+		local nextAction = script.actions[i+1]
+		local nextNextAction = script.actions[i+2]
+	
+		if not currentAction.selected then
+			goto continue
+		end
 		
-		if isMid and getSpeedBetweenActions(prevAction,currentAction) > 364 then
+		local prevIsMid = (prevPrevAction.pos < prevAction.pos and prevAction.pos < currentAction.pos) or (prevPrevAction.pos > prevAction.pos and prevAction.pos > currentAction.pos)
+		local isMid = (prevAction.pos < currentAction.pos and currentAction.pos < nextAction.pos) or (prevAction.pos > currentAction.pos and currentAction.pos > nextAction.pos)
+		local nextIsMid = (currentAction.pos < nextAction.pos and nextAction.pos < nextNextAction.pos) or (currentAction.pos > nextAction.pos and nextAction.pos > nextNextAction.pos)
+		
+		if prevIsMid and isMid and nextIsMid then
 			script:markForRemoval(i)
 			actionsToRemoveFound = true
 		end

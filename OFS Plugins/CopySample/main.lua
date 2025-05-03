@@ -4,6 +4,7 @@ local CopySample = {}
 CopySample.SampleStart = -1
 CopySample.Duration = -1
 CopySample.MatchingSamples = {}
+CopySample.SelectMatches = false
 
 function init()
 end
@@ -32,6 +33,8 @@ function gui()
 		ofs.Text( "Sample Saved: " .. formatTime(CopySample.SampleStart) .. " to " .. formatTime(CopySample.SampleStart + CopySample.Duration) )
 		ofs.Text( "Matching Samples Found: " .. #CopySample.MatchingSamples )
 	end
+	
+	CopySample.SelectMatches, changed = ofs.Checkbox( "Select Matches", CopySample.SelectMatches )
 end
 
 function saveSelectionAsSample()
@@ -104,12 +107,19 @@ function saveSelectionAsSample()
 		end
 		
 		if templateSampleSize < spotInSample then
+			if CopySample.SelectMatches then
+				action.selected = true
+			end
 			table.insert(CopySample.MatchingSamples, runningSampleStart)
 			runningSampleStart = -1
 			spotInSample = 1
 		else
 			i = i + 1
 		end
+	end
+	
+	if CopySample.SelectMatches and #CopySample.MatchingSamples > 0 then
+		script:commit()
 	end
 end
 
