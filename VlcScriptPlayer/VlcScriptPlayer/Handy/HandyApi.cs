@@ -277,7 +277,7 @@ internal sealed class HandyApi
          var serverReceiveTime = JsonSerializer.Deserialize<ServerTimeResponse>( serverTimeRawResponse ).ServerTime;
 
          var rtd = clientReceiveTime - clientSendTime;
-         var clientReceiveServerTime = serverReceiveTime + rtd / 2;
+         var clientReceiveServerTime = serverReceiveTime + ( rtd / 2 );
 
          calculatedOffsets.Add( clientReceiveServerTime - clientReceiveTime );
       }
@@ -342,6 +342,7 @@ internal sealed class HandyApi
       {
          _ = sb.Append( bytes[i].ToString( "x2", CultureInfo.InvariantCulture ) );
       }
+
       return sb.ToString();
    }
 

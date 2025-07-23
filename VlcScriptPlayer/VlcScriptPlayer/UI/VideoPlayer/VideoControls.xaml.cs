@@ -131,14 +131,17 @@ internal sealed partial class VideoControls
       {
          _ = filterString.Append( 'V' );
       }
+
       if ( _filter.SaturationBoostEnabled )
       {
          _ = filterString.Append( 'S' );
       }
+
       if ( _filter.BassBoostEnabled )
       {
          _ = filterString.Append( 'B' );
       }
+
       FilterIndicator.Text = filterString.ToString();
    }
 

@@ -71,6 +71,7 @@ internal sealed class HotkeyManager : IDisposable
             {
                _vlc.Marquee.SetText( "Error: Handy not connected" );
             }
+
             break;
          case Key.R when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
             if ( _handy.IsConnected )
@@ -83,6 +84,7 @@ internal sealed class HotkeyManager : IDisposable
             {
                _vlc.Marquee.SetText( "Error: Handy not connected" );
             }
+
             break;
          case Key.E when ( Keyboard.Modifiers & ModifierKeys.Control ) == ModifierKeys.Control:
             _script.OpenSelectedScriptInEditor();

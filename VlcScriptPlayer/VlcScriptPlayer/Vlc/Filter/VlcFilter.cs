@@ -59,6 +59,7 @@ internal sealed partial class VlcFilter : ObservableObject, IDisposable
       {
          _ = _equalizer.SetPreamp( VolumeAmpEnabled ? 20f : _defaultPreampValue );
       }
+
       if ( updateType.HasFlag( EqualizerUpdateType.Bass ) )
       {
          _ = _equalizer.SetAmp( BassBoostEnabled ? 20f : _defaultBassValue, 0 );

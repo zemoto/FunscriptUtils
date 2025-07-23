@@ -62,24 +62,15 @@ internal sealed partial class MarqueeViewModel : ObservableObject
    [ObservableProperty]
    private string _text;
 
-   public MarqueePosition Position
-   {
-      get
-      {
-         if ( _displayingPriorityText )
-         {
-            return MarqueePosition.Priority;
-         }
-
-         return _type switch
-         {
-            MarqueeType.General => MarqueePosition.Info,
-            MarqueeType.Volume => MarqueePosition.Volume,
-            MarqueeType.Process => MarqueePosition.Info,
-            _ => MarqueePosition.Info,
-         };
-      }
-   }
+   public MarqueePosition Position => _displayingPriorityText
+            ? MarqueePosition.Priority
+            : _type switch
+            {
+               MarqueeType.General => MarqueePosition.Info,
+               MarqueeType.Volume => MarqueePosition.Volume,
+               MarqueeType.Process => MarqueePosition.Info,
+               _ => MarqueePosition.Info,
+            };
 
    public bool IsPerpetual => _type is MarqueeType.Process || _displayingPriorityText;
 }

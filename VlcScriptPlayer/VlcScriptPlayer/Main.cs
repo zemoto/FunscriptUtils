@@ -32,6 +32,7 @@ internal sealed class Main : IDisposable
       {
          monitors.Add( $"Monitor {i + 1}" );
       }
+
       _model.PlaybackVm.Monitors = monitors;
 
       _vlc = new VlcManager( _model.FilterVm, _model.PlaybackVm );

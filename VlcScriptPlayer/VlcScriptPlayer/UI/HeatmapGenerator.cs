@@ -73,7 +73,7 @@ internal static class HeatmapGenerator
          }
       }
 
-      return new LinearGradientBrush( new GradientStopCollection( gradientStops ) );
+      return new LinearGradientBrush( [.. gradientStops] );
    }
 
    private static Color GetColorForSpeed( double speed )

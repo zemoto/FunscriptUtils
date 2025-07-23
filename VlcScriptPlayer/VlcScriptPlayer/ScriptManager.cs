@@ -68,7 +68,7 @@ internal sealed class ScriptManager : IDisposable
    {
       if ( _scriptFileEditorProcess is not null )
       {
-         NativeMethods.SetForegroundWindow( _scriptFileEditorProcess.MainWindowHandle );
+         _ = NativeMethods.SetForegroundWindow( _scriptFileEditorProcess.MainWindowHandle );
          return;
       }
 
@@ -168,6 +168,7 @@ internal sealed class ScriptManager : IDisposable
             _model.ReloadScript();
             ScriptChanged?.Invoke( this, EventArgs.Empty );
          }
+
          _scriptFileWatcher.EnableRaisingEvents = true;
       }
    }
