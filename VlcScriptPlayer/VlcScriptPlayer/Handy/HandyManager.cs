@@ -2,7 +2,6 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using VlcScriptPlayer.Handy.Api;
 using ZemotoCommon;
 
 namespace VlcScriptPlayer.Handy;
@@ -10,16 +9,12 @@ namespace VlcScriptPlayer.Handy;
 internal sealed class HandyManager : IDisposable
 {
    private readonly HttpClient _client = new();
+   private readonly HandyApi _handyApi;
    private readonly HandyViewModel _model;
-   private readonly HandyApiV2 _handyApiV2;
-   private readonly HandyApiV3 _handyApiV3;
-
-   private HandyApiBase _handyApi;
 
    public HandyManager( HandyViewModel model )
    {
-      _handyApiV2 = new HandyApiV2( _client );
-      _handyApiV3 = new HandyApiV3( _client );
+      _handyApi = new HandyApi( _client );
 
       _model = model;
       _model.ConnectCommand = new RelayCommand( async () => await ConnectToHandyAsync() );
@@ -34,21 +29,7 @@ internal sealed class HandyManager : IDisposable
    private async Task ConnectToHandyAsync()
    {
       using var _ = new ScopeGuard( () => _model.RequestInProgress = true, () => _model.RequestInProgress = false );
-
-      _model.IsConnected = false;
-
-      _handyApi = _handyApiV3;
-      var connectionStatus = await _handyApi.ConnectToAndSetupHandyAsync( _model.ConnectionId );
-      if ( connectionStatus is ConnectionStatus.Connected )
-      {
-         _model.IsConnected = true;
-      }
-      else if ( connectionStatus is ConnectionStatus.DeviceIncompatible )
-      {
-         _handyApi = _handyApiV2;
-         connectionStatus = await _handyApi.ConnectToAndSetupHandyAsync( _model.ConnectionId );
-         _model.IsConnected = connectionStatus is ConnectionStatus.Connected;
-      }
+      _model.IsConnected = await _handyApi.ConnectToAndSetupHandyAsync( _model.ConnectionId );
    }
 
    private async Task SetHandyOffsetAsync()

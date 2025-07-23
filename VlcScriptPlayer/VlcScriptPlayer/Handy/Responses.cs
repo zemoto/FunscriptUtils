@@ -29,13 +29,7 @@ internal sealed class ConnectedResponse
    public bool IsConnected { get; set; }
 }
 
-internal sealed class ServerTimeV2Response
-{
-   [JsonPropertyName( "serverTime" )]
-   public long ServerTime { get; set; }
-}
-
-internal sealed class ServerTimeV3Response
+internal sealed class ServerTimeResponse
 {
    [JsonPropertyName( "server_time" )]
    public long ServerTime { get; set; }
