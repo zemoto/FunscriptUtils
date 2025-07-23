@@ -15,10 +15,11 @@ internal sealed class Main : IDisposable
 {
    private readonly MainWindow _window;
    private readonly MainViewModel _model;
-   private readonly VlcManager _vlc;
    private readonly HandyManager _handy;
    private readonly ScriptManager _script;
-   private readonly HotkeyManager _hotkeyManager;
+
+   private VlcManager _vlc;
+   private HotkeyManager _hotkeyManager;
 
    private bool _playerOpen;
 
@@ -35,10 +36,8 @@ internal sealed class Main : IDisposable
 
       _model.PlaybackVm.Monitors = monitors;
 
-      _vlc = new VlcManager( _model.FilterVm, _model.PlaybackVm );
       _handy = new HandyManager( _model.HandyVm );
       _script = new ScriptManager( _model.ScriptVm );
-      _hotkeyManager = new HotkeyManager( _vlc, _handy, _script );
 
       _window = new MainWindow( _model );
       _window.Closed += OnMainWindowClosed;
@@ -54,9 +53,10 @@ internal sealed class Main : IDisposable
    {
       ConfigSerializer.SaveToFile( _model );
       _handy.Dispose();
-      _vlc.Dispose();
-      _hotkeyManager.Dispose();
       _script.Dispose();
+
+      _vlc?.Dispose();
+      _hotkeyManager?.Dispose();
    }
 
    public void Start() => _window.Show();
@@ -68,6 +68,9 @@ internal sealed class Main : IDisposable
          Logger.LogError( "Could not find script or video file" );
          return;
       }
+
+      _vlc ??= new VlcManager( _model.FilterVm, _model.PlaybackVm );
+      _hotkeyManager ??= new HotkeyManager( _vlc, _handy, _script );
 
       using ( new ScopeGuard( () => _playerOpen = true, () => _playerOpen = false ) )
       {
