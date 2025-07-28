@@ -55,6 +55,9 @@
               Command="{Binding UploadScriptAndLaunchPlayerCommand, Mode=OneTime}">
          <Button.IsEnabled>
             <MultiBinding Converter="{x:Static commonui:MultiBoolToBoolAndConverter.Instance}">
+               <Binding Path="HandyVm.RequestInProgress"
+                        Converter="{x:Static commonui:InvertBoolConverter.Instance}"
+                        Mode="OneWay" />
                <Binding Path="ScriptVm.VideoFile"
                         Converter="{StaticResource InequalityConverter}"
                         ConverterParameter="{x:Null}"
