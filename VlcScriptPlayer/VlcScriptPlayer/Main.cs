@@ -17,6 +17,7 @@ internal sealed class Main : IDisposable
    private readonly MainViewModel _model;
    private readonly HandyManager _handy;
    private readonly ScriptManager _script;
+   private readonly Task _initVlcTask;
 
    private VlcManager _vlc;
    private HotkeyManager _hotkeyManager;
@@ -41,6 +42,12 @@ internal sealed class Main : IDisposable
 
       _window = new MainWindow( _model );
       _window.Closed += OnMainWindowClosed;
+
+      _initVlcTask = new Task( () =>
+      {
+         _vlc = new VlcManager( _model.FilterVm, _model.PlaybackVm );
+         _hotkeyManager = new HotkeyManager( _vlc, _handy, _script );
+      } );
    }
 
    private void OnMainWindowClosed( object sender, EventArgs e )
@@ -59,7 +66,11 @@ internal sealed class Main : IDisposable
       _hotkeyManager?.Dispose();
    }
 
-   public void Start() => _window.Show();
+   public void Start()
+   {
+      _window.Show();
+      _initVlcTask.Start();
+   }
 
    private async Task UploadScriptAndLaunchPlayerAsync()
    {
@@ -69,8 +80,7 @@ internal sealed class Main : IDisposable
          return;
       }
 
-      _vlc ??= new VlcManager( _model.FilterVm, _model.PlaybackVm );
-      _hotkeyManager ??= new HotkeyManager( _vlc, _handy, _script );
+      await _initVlcTask.ConfigureAwait( true );
 
       using ( new ScopeGuard( () => _playerOpen = true, () => _playerOpen = false ) )
       {
