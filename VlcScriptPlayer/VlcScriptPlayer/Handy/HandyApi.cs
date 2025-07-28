@@ -1,14 +1,10 @@
-﻿using Polly;
-using Polly.Retry;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -16,42 +12,24 @@ namespace VlcScriptPlayer.Handy;
 
 internal sealed class HandyApi : IDisposable
 {
-   private const string _rootEndpoint = "https://www.handyfeeling.com/api/handy-rest/v3/";
-   private const string _checkConnectionEndpoint = $"{_rootEndpoint}connected";
-   private const string _serverClockEndpoint = $"{_rootEndpoint}servertime";
-   private const string _modeEndpoint = $"{_rootEndpoint}mode";
-   private const string _offsetEndpoint = $"{_rootEndpoint}hstp/offset";
-   private const string _setupEndpoint = $"{_rootEndpoint}hssp/setup";
-   private const string _playEndpoint = $"{_rootEndpoint}hssp/play";
-   private const string _stopEndpoint = $"{_rootEndpoint}hssp/stop";
-   private const string _syncTimeEndpoint = $"{_rootEndpoint}hssp/synctime";
-   private const string _slideEndpoint = $"{_rootEndpoint}slider/stroke";
-   private const string _accessTokenEndpoint = $"{_rootEndpoint}auth/token/issue";
-   private const string _uploadCSVEndpoint = "https://www.handyfeeling.com/api/sync/upload?local=true";
+   private static readonly Uri _rootEndpoint = new( "https://www.handyfeeling.com/api/handy-rest/v3/" );
+   private static readonly Uri _checkConnectionEndpoint = new( $"{_rootEndpoint}connected" );
+   private static readonly Uri _serverClockEndpoint = new( $"{_rootEndpoint}servertime" );
+   private static readonly Uri _modeEndpoint = new( $"{_rootEndpoint}mode" );
+   private static readonly Uri _offsetEndpoint = new( $"{_rootEndpoint}hstp/offset" );
+   private static readonly Uri _setupEndpoint = new( $"{_rootEndpoint}hssp/setup" );
+   private static readonly Uri _playEndpoint = new( $"{_rootEndpoint}hssp/play" );
+   private static readonly Uri _stopEndpoint = new( $"{_rootEndpoint}hssp/stop" );
+   private static readonly Uri _syncTimeEndpoint = new( $"{_rootEndpoint}hssp/synctime" );
+   private static readonly Uri _slideEndpoint = new( $"{_rootEndpoint}slider/stroke" );
+   private static readonly Uri _accessTokenEndpoint = new( $"{_rootEndpoint}auth/token/issue" );
+   private static readonly Uri _uploadCSVEndpoint = new( "https://www.handyfeeling.com/api/sync/upload?local=true" );
 
-   private readonly HttpClient _client = new();
-   private readonly ResiliencePipeline<HttpResponseMessage> _pipeline;
+   private readonly RobustHttpClient _client = new();
 
    private HandyToken _accessToken;
    private long _estimatedClientServerOffset;
    private string _lastUploadedScriptSha256;
-
-   public HandyApi()
-   {
-      _client.Timeout = TimeSpan.FromSeconds( 3 );
-
-      var retryStrategy = new RetryStrategyOptions<HttpResponseMessage>
-      {
-         Delay = TimeSpan.FromSeconds( 1 ),
-         ShouldHandle = args => ValueTask.FromResult( args.Outcome.Exception is not null and not TaskCanceledException ),
-         OnRetry = static args =>
-         {
-            Logger.LogError( $"Exception on attempt #{args.AttemptNumber}: {args.Outcome.Exception.Message}" );
-            return default;
-         }
-      };
-      _pipeline = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetry( retryStrategy ).Build();
-   }
 
    public void Dispose() => _client.Dispose();
 
@@ -83,13 +61,13 @@ internal sealed class HandyApi : IDisposable
    public async Task<bool> SetOffsetAsync( int offset )
    {
       var content = new StringContent( JsonSerializer.Serialize( new { offset } ), Encoding.UTF8, "application/json" );
-      using var result = await DoRequest( () => _client.PutAsync( _offsetEndpoint, content ), "SetOffset", $"Offset set to {offset}ms" );
+      using var result = await _client.RequestAsync( HttpMethod.Put, _offsetEndpoint, content, "SetOffset", $"Offset set to {offset}ms" );
       return result?.IsSuccessStatusCode == true;
    }
 
    public async Task<(double, double)> GetRangeAsync()
    {
-      using var response = await DoRequest( () => _client.GetAsync( _slideEndpoint ) );
+      using var response = await _client.RequestAsync( HttpMethod.Get, _slideEndpoint );
       if ( response?.IsSuccessStatusCode != true )
       {
          return (0, 0);
@@ -115,7 +93,7 @@ internal sealed class HandyApi : IDisposable
       }
 
       var content = new StringContent( JsonSerializer.Serialize( new { min, max } ), Encoding.UTF8, "application/json" );
-      using var result = await DoRequest( () => _client.PutAsync( _slideEndpoint, content ), "SetRange", $"Range set to {min}-{max}" );
+      using var result = await _client.RequestAsync( HttpMethod.Put, _slideEndpoint, content, "SetRange", $"Range set to {min}-{max}" );
       return result?.IsSuccessStatusCode == true;
    }
 
@@ -138,7 +116,7 @@ internal sealed class HandyApi : IDisposable
 
       var formData = new MultipartFormDataContent { { new StringContent( csv ), "syncFile", "VlcScriptPlayer.csv" } };
 
-      using var uploadResponse = await DoRequest( () => _client.PostAsync( _uploadCSVEndpoint, formData ), "UploadingScript" );
+      using var uploadResponse = await _client.RequestAsync( HttpMethod.Post, _uploadCSVEndpoint, formData, "UploadingScript" );
       if ( uploadResponse?.IsSuccessStatusCode != true )
       {
          return false;
@@ -153,7 +131,7 @@ internal sealed class HandyApi : IDisposable
       }
 
       var setupContent = new StringContent( JsonSerializer.Serialize( new { url = parsedUploadResponse.Url } ), Encoding.UTF8, "application/json" );
-      using var setupResponse = await DoRequest( () => _client.PutAsync( _setupEndpoint, setupContent ), "SyncSetup" );
+      using var setupResponse = await _client.RequestAsync( HttpMethod.Put, _setupEndpoint, setupContent, "SyncSetup" );
       if ( setupResponse?.IsSuccessStatusCode != true )
       {
          return false;
@@ -176,12 +154,12 @@ internal sealed class HandyApi : IDisposable
    {
       var estimatedServerTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + _estimatedClientServerOffset;
       var content = new StringContent( JsonSerializer.Serialize( new { server_time = estimatedServerTime, start_time = startTime } ), Encoding.UTF8, "application/json" );
-      using var _ = await DoRequest( () => _client.PutAsync( _playEndpoint, content ) );
+      using var _ = await _client.RequestAsync( HttpMethod.Put, _playEndpoint, content );
    }
 
    public async Task StopScriptAsync()
    {
-      using var _ = await DoRequest( () => _client.PutAsync( _stopEndpoint, null ) );
+      using var _ = await _client.RequestAsync( HttpMethod.Put, _stopEndpoint );
    }
 
    public async Task SyncTimeAsync( long currentTime )
@@ -189,7 +167,7 @@ internal sealed class HandyApi : IDisposable
       var estimatedServerTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + _estimatedClientServerOffset;
 
       var syncContent = new StringContent( JsonSerializer.Serialize( new { current_time = currentTime, server_time = estimatedServerTime, filter = 0.5f } ), Encoding.UTF8, "application/json" );
-      using var _ = await DoRequest( () => _client.PutAsync( _syncTimeEndpoint, syncContent ) );
+      using var _ = await _client.RequestAsync( HttpMethod.Put, _syncTimeEndpoint, syncContent );
    }
 
    private async Task<HandyToken> GetAccessToken( string connectionId )
@@ -206,7 +184,7 @@ internal sealed class HandyApi : IDisposable
 
       urlBuilder.Query = queryString.ToString();
 
-      using var response = await DoRequest( () => _client.GetAsync( urlBuilder.Uri ), "GetAccessToken" );
+      using var response = await _client.RequestAsync( HttpMethod.Get, urlBuilder.Uri, null, "GetAccessToken" );
       if ( response?.IsSuccessStatusCode != true )
       {
          return null;
@@ -228,7 +206,7 @@ internal sealed class HandyApi : IDisposable
 
    private async Task<bool> ConnectAsync()
    {
-      using var response = await DoRequest( () => _client.GetAsync( _checkConnectionEndpoint ), "Connect" );
+      using var response = await _client.RequestAsync( HttpMethod.Get, _checkConnectionEndpoint, null, "Connect" );
       if ( response?.IsSuccessStatusCode != true )
       {
          return false;
@@ -272,7 +250,7 @@ internal sealed class HandyApi : IDisposable
       for ( int i = 0; i < numRequests; i++ )
       {
          var clientSendTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-         using var response = await DoRequest( () => _client.GetAsync( _serverClockEndpoint ) );
+         using var response = await _client.RequestAsync( HttpMethod.Get, _serverClockEndpoint );
          var clientReceiveTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
          if ( response?.IsSuccessStatusCode != true )
          {
@@ -298,50 +276,9 @@ internal sealed class HandyApi : IDisposable
 
    private async Task<bool> EnsureModeAsync()
    {
-      var content = new StringContent( JsonSerializer.Serialize( new { mode = 1 } ), Encoding.UTF8, "application/json" );
-      using var response = await DoRequest( () => _client.PutAsync( _modeEndpoint, content ), "SetMode", "Mode set to HSSP" );
+      var content = new StringContent( JsonSerializer.Serialize( new { mode = 8 } ), Encoding.UTF8, "application/json" );
+      using var response = await _client.RequestAsync( HttpMethod.Put, _modeEndpoint, content, "SetMode", "Mode set to HSSP" );
       return response?.IsSuccessStatusCode == true;
-   }
-
-   private async Task<HttpResponseMessage> DoRequest( Func<Task<HttpResponseMessage>> request )
-   {
-      try
-      {
-         return await _pipeline.ExecuteAsync( async _ => await request(), CancellationToken.None );
-      }
-      catch
-      {
-         return null;
-      }
-   }
-
-   private async Task<HttpResponseMessage> DoRequest( Func<Task<HttpResponseMessage>> request, string requestName, string successMessage = "" )
-   {
-      try
-      {
-         Logger.Log( $"Sending Request: {requestName}" );
-         var response = await _pipeline.ExecuteAsync( async _ => await request(), CancellationToken.None );
-         if ( !response.IsSuccessStatusCode )
-         {
-            Logger.LogError( $"Request failed with code {response.StatusCode}" );
-         }
-         else if ( !string.IsNullOrEmpty( successMessage ) )
-         {
-            Logger.Log( successMessage );
-         }
-
-         return response;
-      }
-      catch ( TaskCanceledException )
-      {
-         Logger.LogError( "Request timed out" );
-         return null;
-      }
-      catch ( Exception ex )
-      {
-         Logger.LogError( $"Request failed - {ex.Message}" );
-         return null;
-      }
    }
 
    private static string ComputeSha256Hash( string rawData )
