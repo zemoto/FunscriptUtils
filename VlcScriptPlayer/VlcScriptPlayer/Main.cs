@@ -26,7 +26,7 @@ internal sealed class Main : IDisposable
 
    public Main()
    {
-      _model = ConfigSerializer.ReadFromFile();
+      _model = MainViewModel.ReadFromFile();
       _model.UploadScriptAndLaunchPlayerCommand = new RelayCommand( async () => await UploadScriptAndLaunchPlayerAsync(), () => !_playerOpen );
 
       var monitors = new List<string>();
@@ -58,7 +58,7 @@ internal sealed class Main : IDisposable
 
    public void Dispose()
    {
-      ConfigSerializer.SaveToFile( _model );
+      _model.SaveToFile();
       _handy.Dispose();
       _script.Dispose();
 
