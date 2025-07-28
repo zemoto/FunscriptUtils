@@ -39,6 +39,7 @@ internal sealed class GetSlideResponse
 {
    [JsonPropertyName( "min" )]
    public double Min { get; set; }
+
    [JsonPropertyName( "max" )]
    public double Max { get; set; }
 }
@@ -53,10 +54,6 @@ internal sealed class UploadResponse
 
    [JsonPropertyName( "url" )]
    public string Url { get; set; }
-}
-
-internal sealed class SetupResponse
-{
 }
 
 internal sealed class ErrorResponse

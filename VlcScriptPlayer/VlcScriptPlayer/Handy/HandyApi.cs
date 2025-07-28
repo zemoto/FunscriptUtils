@@ -137,7 +137,7 @@ internal sealed class HandyApi : IDisposable
 
       responseString = await setupResponse.Content.ReadAsStringAsync();
 
-      var parsedSetupResponse = JsonSerializer.Deserialize<ResultWrapperResponse<SetupResponse>>( responseString );
+      var parsedSetupResponse = JsonSerializer.Deserialize<ResultWrapperResponse<object>>( responseString );
       if ( parsedSetupResponse.Result is null )
       {
          Logger.LogError( parsedSetupResponse.Error.Message );
