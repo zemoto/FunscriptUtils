@@ -19,7 +19,6 @@ internal sealed class HandyApi : IDisposable
    private static readonly Uri _setupEndpoint = new( $"{_rootEndpoint}hssp/setup" );
    private static readonly Uri _playEndpoint = new( $"{_rootEndpoint}hssp/play" );
    private static readonly Uri _stopEndpoint = new( $"{_rootEndpoint}hssp/stop" );
-   private static readonly Uri _syncTimeEndpoint = new( $"{_rootEndpoint}hssp/synctime" );
    private static readonly Uri _slideEndpoint = new( $"{_rootEndpoint}slider/stroke" );
    private static readonly Uri _accessTokenEndpoint = new( $"{_rootEndpoint}auth/token/issue" );
    private static readonly Uri _uploadCSVEndpoint = new( "https://www.handyfeeling.com/api/sync/upload?local=true" );
@@ -159,14 +158,6 @@ internal sealed class HandyApi : IDisposable
    public async Task StopScriptAsync()
    {
       using var _ = await _client.RequestAsync( HttpMethod.Put, _stopEndpoint );
-   }
-
-   public async Task SyncTimeAsync( long currentTime )
-   {
-      var estimatedServerTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + _estimatedClientServerOffset;
-
-      var syncContent = new StringContent( JsonSerializer.Serialize( new { current_time = currentTime, server_time = estimatedServerTime, filter = 0.5f } ), Encoding.UTF8, "application/json" );
-      using var _ = await _client.RequestAsync( HttpMethod.Put, _syncTimeEndpoint, syncContent );
    }
 
    private async Task<HandyToken> GetAccessToken( string connectionId )

@@ -67,6 +67,4 @@ internal sealed class HandyManager : IDisposable
    public async Task StartSyncAsync( long time ) => await _api.PlayScriptAsync( time );
 
    public async Task StopSyncAsync() => await _api.StopScriptAsync();
-
-   public async Task SyncTimeAsync( long time ) => await _api.SyncTimeAsync( time );
 }
