@@ -37,17 +37,29 @@ internal sealed class HandyApi : IDisposable
       _lastUploadedScriptSha256 = string.Empty;
       _estimatedClientServerOffset = 0;
 
-      if ( _accessToken?.IsValid( connectionId ) != true )
+      if ( ( _accessToken?.IsValid( connectionId ) ) == true )
       {
-         _accessToken = await GetAccessToken( connectionId );
-         if ( _accessToken is null )
-         {
-            return false;
-         }
+         Logger.Log( "Reusing access token" );
       }
       else
       {
-         Logger.Log( "Reusing access token" );
+         _accessToken = HandyToken.ReadFromFile();
+         if ( ( _accessToken?.IsValid( connectionId ) ) == true )
+         {
+            Logger.Log( "Reusing access token from file" );
+         }
+         else
+         {
+            _accessToken = await GetAccessToken( connectionId );
+            if ( _accessToken is null )
+            {
+               return false;
+            }
+            else
+            {
+               _accessToken.SaveToFile();
+            }
+         }
       }
 
       _client.DefaultRequestHeaders.Add( "X-Connection-Key", connectionId );
@@ -275,15 +287,5 @@ internal sealed class HandyApi : IDisposable
       }
 
       return sb.ToString();
-   }
-
-   private sealed class HandyToken( string token, string connectionId, DateTime expirationTime )
-   {
-      private readonly string _connectionId = connectionId;
-      private readonly DateTime _expirationTime = expirationTime;
-
-      public string Token { get; } = token;
-
-      public bool IsValid( string connectionId ) => DateTime.UtcNow < _expirationTime && connectionId.Equals( _connectionId, StringComparison.Ordinal );
    }
 }
