@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -13,7 +14,7 @@ using System.Web;
 
 namespace VlcScriptPlayer.Handy;
 
-internal sealed class HandyApi
+internal sealed class HandyApi : IDisposable
 {
    private const string _rootEndpoint = "https://www.handyfeeling.com/api/handy-rest/v3/";
    private const string _checkConnectionEndpoint = $"{_rootEndpoint}connected";
@@ -28,20 +29,21 @@ internal sealed class HandyApi
    private const string _accessTokenEndpoint = $"{_rootEndpoint}auth/token/issue";
    private const string _uploadCSVEndpoint = "https://www.handyfeeling.com/api/sync/upload?local=true";
 
-   private readonly HttpClient _client;
+   private readonly HttpClient _client = new();
    private readonly ResiliencePipeline<HttpResponseMessage> _pipeline;
 
    private HandyToken _accessToken;
    private long _estimatedClientServerOffset;
    private string _lastUploadedScriptSha256;
 
-   public HandyApi( HttpClient client )
+   public HandyApi()
    {
-      _client = client;
+      _client.Timeout = TimeSpan.FromSeconds( 3 );
 
       var retryStrategy = new RetryStrategyOptions<HttpResponseMessage>
       {
          Delay = TimeSpan.FromSeconds( 1 ),
+         ShouldHandle = args => ValueTask.FromResult( args.Outcome.Exception is not null and not TaskCanceledException ),
          OnRetry = static args =>
          {
             Logger.LogError( $"Exception on attempt #{args.AttemptNumber}: {args.Outcome.Exception.Message}" );
@@ -50,6 +52,8 @@ internal sealed class HandyApi
       };
       _pipeline = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetry( retryStrategy ).Build();
    }
+
+   public void Dispose() => _client.Dispose();
 
    public async Task<bool> ConnectToAndSetupHandyAsync( string connectionId )
    {
@@ -76,10 +80,11 @@ internal sealed class HandyApi
       return await ConnectAsync() && await SetupServerClockSyncAsync() && await EnsureModeAsync();
    }
 
-   public async Task SetOffsetAsync( int offset )
+   public async Task<bool> SetOffsetAsync( int offset )
    {
       var content = new StringContent( JsonSerializer.Serialize( new { offset } ), Encoding.UTF8, "application/json" );
-      using var _ = await DoRequest( () => _client.PutAsync( _offsetEndpoint, content ), "SetOffset", $"Offset set to {offset}ms" );
+      using var result = await DoRequest( () => _client.PutAsync( _offsetEndpoint, content ), "SetOffset", $"Offset set to {offset}ms" );
+      return result?.IsSuccessStatusCode == true;
    }
 
    public async Task<(double, double)> GetRangeAsync()
@@ -100,17 +105,18 @@ internal sealed class HandyApi
       return (slideResponse.Min, slideResponse.Max);
    }
 
-   public async Task SetRangeAsync( double min, double max )
+   public async Task<bool> SetRangeAsync( double min, double max )
    {
       const int minRange = 10;
       if ( min >= max - minRange )
       {
          Logger.LogError( "Invalid slide min/max range" );
-         return;
+         return false;
       }
 
       var content = new StringContent( JsonSerializer.Serialize( new { min, max } ), Encoding.UTF8, "application/json" );
-      using var request = await DoRequest( () => _client.PutAsync( _slideEndpoint, content ), "SetRange", $"Range set to {min}-{max}" );
+      using var result = await DoRequest( () => _client.PutAsync( _slideEndpoint, content ), "SetRange", $"Range set to {min}-{max}" );
+      return result?.IsSuccessStatusCode == true;
    }
 
    public async Task<bool> UploadScriptAsync( Funscript script )
@@ -326,9 +332,14 @@ internal sealed class HandyApi
 
          return response;
       }
+      catch ( TaskCanceledException )
+      {
+         Logger.LogError( "Request timed out" );
+         return null;
+      }
       catch ( Exception ex )
       {
-         Logger.LogError( $"Request failed: {ex.Message}" );
+         Logger.LogError( $"Request failed - {ex.Message}" );
          return null;
       }
    }
