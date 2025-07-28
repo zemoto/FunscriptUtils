@@ -65,7 +65,7 @@ internal sealed class HandyApi : IDisposable
       return result?.IsSuccessStatusCode == true;
    }
 
-   public async Task<(double, double)> GetRangeAsync()
+   public async Task<(int, int)> GetRangeAsync()
    {
       using var response = await _client.RequestAsync( HttpMethod.Get, _slideEndpoint );
       if ( response?.IsSuccessStatusCode != true )
@@ -74,13 +74,13 @@ internal sealed class HandyApi : IDisposable
       }
 
       var responseString = await response.Content.ReadAsStringAsync();
-      var slideResponse = JsonSerializer.Deserialize<GetSlideResponse>( responseString );
-      if ( slideResponse is null )
+      var slideResponse = JsonSerializer.Deserialize<ResultWrapperResponse<GetSlideResponse>>( responseString );
+      if ( slideResponse.Result is null )
       {
          return (0, 0);
       }
 
-      return (slideResponse.Min, slideResponse.Max);
+      return ((int)( slideResponse.Result.Min * 100 ), (int)( slideResponse.Result.Max * 100 ));
    }
 
    public async Task<bool> SetRangeAsync( double min, double max )
