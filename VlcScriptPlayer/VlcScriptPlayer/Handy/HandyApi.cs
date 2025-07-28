@@ -15,7 +15,6 @@ internal sealed class HandyApi : IDisposable
    private static readonly Uri _rootEndpoint = new( "https://www.handyfeeling.com/api/handy-rest/v3/" );
    private static readonly Uri _checkConnectionEndpoint = new( $"{_rootEndpoint}connected" );
    private static readonly Uri _serverClockEndpoint = new( $"{_rootEndpoint}servertime" );
-   private static readonly Uri _modeEndpoint = new( $"{_rootEndpoint}mode" );
    private static readonly Uri _offsetEndpoint = new( $"{_rootEndpoint}hstp/offset" );
    private static readonly Uri _setupEndpoint = new( $"{_rootEndpoint}hssp/setup" );
    private static readonly Uri _playEndpoint = new( $"{_rootEndpoint}hssp/play" );
@@ -55,7 +54,7 @@ internal sealed class HandyApi : IDisposable
       _client.DefaultRequestHeaders.Add( "X-Connection-Key", connectionId );
       _client.DefaultRequestHeaders.Add( "Authorization", $"Bearer {_accessToken.Token}" );
 
-      return await ConnectAsync() && await SetupServerClockSyncAsync() && await EnsureModeAsync();
+      return await ConnectAsync() && await SetupServerClockSyncAsync();
    }
 
    public async Task<bool> SetOffsetAsync( int offset )
@@ -272,13 +271,6 @@ internal sealed class HandyApi : IDisposable
       Logger.Log( $"Server clock sync completed: {_estimatedClientServerOffset}ms offset" );
 
       return true;
-   }
-
-   private async Task<bool> EnsureModeAsync()
-   {
-      var content = new StringContent( JsonSerializer.Serialize( new { mode = 8 } ), Encoding.UTF8, "application/json" );
-      using var response = await _client.RequestAsync( HttpMethod.Put, _modeEndpoint, content, "SetMode", "Mode set to HSSP" );
-      return response?.IsSuccessStatusCode == true;
    }
 
    private static string ComputeSha256Hash( string rawData )
