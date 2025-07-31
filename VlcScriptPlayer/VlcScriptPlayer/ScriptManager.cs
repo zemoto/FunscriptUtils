@@ -44,14 +44,16 @@ internal sealed class ScriptManager : IDisposable
    public bool VerifyPaths()
    {
       bool pathsValid = true;
-      if ( !_model.VideoFile.Exists() )
+      if ( _model.VideoFile is not null && !_model.VideoFile.Exists() )
       {
+         Logger.LogError( $"Video file not found: {_model.VideoFile.FullPath}" );
          _model.VideoFile = null;
          pathsValid = false;
       }
 
-      if ( !_model.ScriptFile.Exists() )
+      if ( _model.ScriptFile is not null && !_model.ScriptFile.Exists() )
       {
+         Logger.LogError( $"Script file not found: {_model.ScriptFile.FullPath}" );
          _model.ScriptFile = null;
          pathsValid = false;
       }

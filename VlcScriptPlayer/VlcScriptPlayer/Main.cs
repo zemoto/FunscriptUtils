@@ -76,7 +76,6 @@ internal sealed class Main : IDisposable
    {
       if ( !_script.VerifyPaths() )
       {
-         Logger.LogError( "Could not find script or video file" );
          return;
       }
 
