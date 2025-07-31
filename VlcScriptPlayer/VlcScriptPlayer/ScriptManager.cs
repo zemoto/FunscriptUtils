@@ -115,7 +115,7 @@ internal sealed class ScriptManager : IDisposable
       EditScriptAsync( editorExe );
    }
 
-   public static bool NameAndDirectoryMatch( SystemFile l, SystemFile r ) => l.NameNoExtension.Equals( r.NameNoExtension, StringComparison.OrdinalIgnoreCase ) && l.Directory.Equals( r.Directory, StringComparison.OrdinalIgnoreCase );
+   private static bool NameAndDirectoryMatch( SystemFile l, SystemFile r ) => l.NameNoExtension.Equals( r.NameNoExtension, StringComparison.OrdinalIgnoreCase ) && l.Directory.Equals( r.Directory, StringComparison.OrdinalIgnoreCase );
 
    private async void EditScriptAsync( string editorExe )
    {
