@@ -1,9 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace VlcScriptPlayer;
+
+internal sealed class EnforceLongJsonConverter : JsonConverter<long>
+{
+   public override long Read( ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options ) => (long)reader.GetDouble();
+   public override void Write( Utf8JsonWriter writer, long value, JsonSerializerOptions options ) => writer.WriteNumberValue( value );
+}
 
 internal sealed class FunscriptMetadata
 {
@@ -26,6 +33,7 @@ internal sealed class FunscriptAction
    public int Position { get; init; }
 
    [JsonPropertyName( "at" )]
+   [JsonConverter( typeof( EnforceLongJsonConverter ) )]
    public long Time { get; init; }
 }
 
