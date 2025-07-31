@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using ZemotoCommon;
@@ -64,6 +65,25 @@ internal sealed class ScriptManager : IDisposable
       }
 
       return pathsValid;
+   }
+
+   public bool LoadScript()
+   {
+      if ( !_model.ScriptFile.Exists() )
+      {
+         return true;
+      }
+
+      try
+      {
+         _model.Script = _model.ScriptFile.DeserializeContents<Funscript>();
+         return true;
+      }
+      catch ( JsonException ex )
+      {
+         Logger.LogError( $"Invalid value in script on line {ex.LineNumber} position {ex.BytePositionInLine}" );
+         return false;
+      }
    }
 
    public void OpenSelectedScriptInEditor()
@@ -165,9 +185,8 @@ internal sealed class ScriptManager : IDisposable
       if ( _model.NotifyOnScriptFileModified )
       {
          _scriptFileWatcher.EnableRaisingEvents = false;
-         if ( _model.ScriptFile.Exists() )
+         if ( _model.ScriptFile.Exists() && LoadScript() )
          {
-            _model.ReloadScript();
             ScriptChanged?.Invoke( this, EventArgs.Empty );
          }
 

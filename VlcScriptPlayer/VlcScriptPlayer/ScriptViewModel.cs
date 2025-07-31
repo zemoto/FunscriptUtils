@@ -7,17 +7,14 @@ namespace VlcScriptPlayer;
 
 internal sealed partial class ScriptViewModel : ObservableObject
 {
-   public void ReloadScript() => _script = null;
-
    [ObservableProperty]
    private SystemFile _videoFile;
 
    [ObservableProperty]
    private SystemFile _scriptFile;
-   partial void OnScriptFileChanged( SystemFile value ) => _script = null;
 
+   [ObservableProperty]
    private Funscript _script;
-   public Funscript Script => _script ??= _scriptFile.DeserializeContents<Funscript>();
 
    [ObservableProperty]
    private string _scriptFolder = string.Empty;

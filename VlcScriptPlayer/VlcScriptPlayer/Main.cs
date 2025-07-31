@@ -74,7 +74,7 @@ internal sealed class Main : IDisposable
 
    private async Task UploadScriptAndLaunchPlayerAsync()
    {
-      if ( !_script.VerifyPaths() )
+      if ( !_script.VerifyPaths() || !_script.LoadScript() )
       {
          return;
       }
